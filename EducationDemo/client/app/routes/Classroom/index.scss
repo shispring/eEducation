@@ -1,0 +1,260 @@
+#classroom {
+  background: url('../../assets/images/background.png') no-repeat center;
+  background-size: cover;
+  padding: .5rem;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-areas: 
+    "title title title title"
+    "students students students students"
+    "board board board teacher"
+    "board board board channel";
+  grid-template-rows: 1.5rem 4rem 4fr 7fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-gap: .5rem;
+  .title {
+    grid-area: title;
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      span {
+        margin: 0 1rem;
+        color: #FFF;
+        width: 7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    .btn-group {
+      float: right;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      #recordBtn {
+        background-color: #FF4D89;
+        border-radius: .9rem;
+        padding: 0.2rem 1.5rem;
+        height: auto;
+        &.disabled {
+          color: #006EDF;
+          background-color: #E8F5FC;
+        }
+      }
+      .btn {
+        cursor: pointer;
+        margin-left: .5rem;
+        color: white;
+        border-radius: .3rem;
+        border: white solid 1px;
+        width: 1.1rem;
+        height: 1.1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+  }
+  .students-container {
+    grid-area: students;
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    justify-items: center;
+    align-items: center;
+    .student-window {
+      width: 3.5rem;
+      height: 3.5rem;
+      background: #000;
+      overflow: hidden;
+      border-radius: 0.25rem;
+      border: 1px solid white;
+      position: relative;
+      .student-video{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        background: black;
+      }
+      .student-bar{
+        position: absolute;
+        bottom: 0;
+        height: 1rem;
+        display: flex;
+        width: 100%;
+        color: white;
+        font-size:0.5rem;
+        align-items: flex-end;
+        padding: 0.1rem 0.2rem;
+        font-weight: 100;
+      }
+    }
+  }
+  .board-container {
+    grid-area: board;
+    position: relative;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    .board-bar {
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      height: 3rem;
+      background: rgba(0, 0, 0, 0.27);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #FFF;
+      .btn {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+    }
+    .board {
+      height: 100%;
+      background-color: #FFF;
+    }
+  }
+  .teacher-container {
+    grid-area: teacher;
+    position: relative;
+    .teacher-bar {
+      width: 100%;
+      position: absolute;
+      bottom: 0;
+      height: 1rem;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      color: white;
+      padding-left: 0.25rem;
+      font-size: 0.65rem;
+    }
+    .teacher-window {
+      position: relative;
+      height: 100%;
+      .teacher-video {
+        position: absolute;
+        width: 100%;
+        bottom: 1.2rem;
+        display: flex;
+        top: 0;
+        overflow: hidden;
+        border-radius: 0.25rem;
+        align-items: center;
+        justify-content: center;
+        background: black;
+      }
+    }
+  }
+  .channel-container {
+    grid-area: channel;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    .channel {
+      height: 100%;
+      display: flex;
+      flex-flow: column;
+      background: #FFF;
+
+      .channel-header {
+        background: #E8F5FC;
+        color: #0398E7;
+        height: 1.5rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.6rem;
+      }
+
+      .channel-box {
+        flex-grow: 1;
+      }
+
+      .channel-input {
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        padding: .25rem;
+        #sendBtn {
+          margin-left: .5rem;
+        }
+      }
+    }
+  }
+  .message-item.left{
+    .message-content{
+      background-color:#F3F4F5;
+    }
+
+    .arrow{
+      border-right-width: 0.3rem;
+      border-right-style: solid;
+      border-right-color: #F3F4F5;
+      margin-left: 2%;
+    }
+    .message-sender{
+      padding-left: 1rem;
+    }
+  }
+  .message-item.right{
+    .message-content{
+      background-color:#7ED321;
+    }
+
+    .arrow{
+      border-left-width: 0.3rem;
+      border-left-style: solid;
+      border-left-color: #7ED321;
+      margin-right: 2%;
+    }
+    .message-sender{
+      padding-right: 1rem;
+    }
+  }
+  .message-item.right{
+
+  }
+  .message-item {
+    margin: 0.5rem 0rem;
+    clear: both;
+    .message-content {
+      color: #333333;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.25rem;
+      position: relative;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .message-sender{
+      clear: both;
+      font-size: 0.45rem;
+      color: rgba(0,0,0,0.4);
+    }
+    .arrow {
+      position: relative;
+      width: 0px;
+      height: 0px;
+      border-top: 0.3rem solid transparent;
+      border-bottom: 0.3rem solid transparent;
+      margin-top: 0.6rem;
+    }
+  }
+  .loader{
+    position: absolute;
+    display: none;
+  }
+  .loader.loading{
+    display: inline-block;
+  }
+}

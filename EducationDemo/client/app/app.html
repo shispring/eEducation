@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Agora Education</title>
+    <link rel="stylesheet" href="./app.global.css">
+    <script>
+      (function() {
+        if (!process.env.HOT) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = './dist/style.css';
+          // HACK: Writing the script path should be done with webpack
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+      }());
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script defer>
+      {
+        const scripts = [];
+
+        // Dynamically insert the DLL script in development env in the
+        // renderer process
+        if (process.env.NODE_ENV === 'development') {
+          scripts.push('../dll/renderer.dev.dll.js');
+        }
+
+        // Dynamically insert the bundled app script in the renderer process
+        const port = process.env.PORT || 1212;
+        scripts.push(
+          (process.env.HOT)
+            ? 'http://localhost:' + port + '/dist/renderer.dev.js'
+            : './dist/renderer.prod.js'
+        );
+
+        // Dynamically insert sdk depends on os
+        let platform = (function() {
+          switch(process.platform) {
+            case 'win32':
+              return 'win'
+            default:
+            case 'darwin':
+              return 'mac'
+          }
+        }())
+        platform = platform || process.env.PLATFORM
+        let dir = 'native-' + platform
+
+        scripts.unshift(`./AgoraSDK/AgoraSig-1.2.1.3.js`);
+        scripts.unshift(`./AgoraSDK/AgoraSdk.js`);
+        scripts.unshift(`./AgoraSDK/AgoraRender.js`);
+        scripts.unshift(`./AgoraSDK/webgl-utils.js`);
+     
+        // then .node
+        document.write('<script defer> var agora = require(".\/AgoraSDK\/'+ dir +'\/agora_node_ext.node") <\/script>');
+
+        document.write(
+          scripts
+            .map(script => '<script defer src="' + script + '"><\/script>')
+            .join('')
+        );
+      }
+    </script>
+    <!-- <script>
+      var agora = require('./external-mac/agora_node_ext.node')
+    </script> -->
+    <!-- <script defer src="./AgoraSDK/webgl-utils.js"></script>
+    <script defer src="./AgoraSDK/AgoraRender.js"></script>
+    <script defer src="./AgoraSDK/AgoraSdk.js"></script>
+    <script defer src="./AgoraSDK/AgoraSig-1.2.1.3.js"></script> -->
+  </body>
+</html>

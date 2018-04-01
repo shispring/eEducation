@@ -1,0 +1,90 @@
+#networkTesting {
+  background: url('../../assets/images/background.png') no-repeat center;
+  background-size: cover;
+  padding: 4.5rem;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 51rem;
+  min-height: 33rem;
+  .main {
+    width: 42rem;
+    height: 24rem;
+    background: #FFF;
+    border-radius: 1.1rem;
+    // padding: 1.1rem;
+    display: flex;
+    position: relative;
+  }
+
+  .content {
+    width: 50%;
+    border-top-left-radius: 1.1rem;
+    border-bottom-left-radius: 1.1rem;
+    padding: 1.5rem 3rem;
+    header {
+      margin-bottom: .5rem;
+    }
+  }
+
+  .illustration {
+    position: relative;
+    border-top-right-radius: 1.1rem;
+    border-bottom-right-radius: 1.1rem;
+    width: 50%;
+    background: url('../../assets/images/network-testing-illustration.png') no-repeat center;
+    background-size: contain;
+    .title {
+      margin-top: 2.5rem;
+      color: #617BBC;
+      text-align: center;
+    }
+    .button-group {
+      position: absolute;
+      bottom: 3rem;
+      right: 4rem;
+    }
+  }
+
+  .stats- {
+    &title {
+      font-size: .7rem;
+      color: #9B9B9B;
+      text-align: center;
+    }
+    &body {
+      font-size: 1rem;
+      color: #4A4A4A;
+      text-align: center;
+      padding: .5rem;
+    }
+  }
+
+  .network-status {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    // background: #B8E986;
+    // color: #7ED321;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #nextBtn {
+    background-color: #FF4D89;
+    border-radius: 1.1rem;
+    padding: .5rem 3rem;
+    box-sizing: border-box;
+    height: auto;
+    border-color: transparent;
+    transition: all .1s ease-in;
+    &:hover {
+      border-color: #B5BEC8;
+      box-shadow: 0 0 1px 1px #B5BEC8;
+      background-color: lighten($color: #FF4D89, $amount: 3)
+    }
+  }
+}

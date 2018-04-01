@@ -1,0 +1,12 @@
+* text eol=lf
+*.dll binary
+*.node binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.icns binary
+*.exe binary
+*.mp3 binary
+VideoSource binary
