@@ -118,13 +118,8 @@ class Index extends React.Component {
       this.setState({
         isLogining: false
       })
-      if (role === 'teacher') {
-        message.error('Classroom occupied!')
-      } else if (role === 'student') {
-        message.error('Classroom not existed!')
-      } else {
-        message.error('Unknown error!')
-      }
+      let errInfo = err.response.data.err
+      message.error('Error: ' + errInfo)
     })
 
     // this.$client.login(username, channel, role).then(() => {
