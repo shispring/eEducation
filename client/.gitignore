@@ -56,3 +56,5 @@ npm-debug.log.*
 /app/**/*.txt
 
 .vscode
+
+agora.config.local.js
