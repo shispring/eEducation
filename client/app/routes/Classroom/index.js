@@ -37,6 +37,8 @@ class Classroom extends React.Component {
         } else {
           this.$rtc.subscribe(2, board)
         }
+        this.$rtc.setupViewContentMode("videosource", 1);
+        this.$rtc.setupViewContentMode("2", 1);
       } else {
         board.innerHTML = ''
       }
@@ -238,6 +240,8 @@ class Classroom extends React.Component {
             } else {
               this.$rtc.subscribe(2, board)
             }
+            this.$rtc.setupViewContentMode("videosource", 1);
+            this.$rtc.setupViewContentMode("2", 1);
             break;
           case 'StopSharing':
             board.innerHTML = ''
@@ -286,13 +290,11 @@ class Classroom extends React.Component {
       this.$rtc.on('videosourcejoinedsuccess', uid => {
         console.log('Screen Share Source joined success')
         this.startSharing()
-        this.$rtc.videoSourceSetVideoProfile(54, false)
         this._sharingPrepared = true
       })
-      // set to fit mode
-      // this.$rtc.setupViewContentMode("videosource", 1);
       this.$rtc.videoSourceInitialize()
       this.$rtc.videoSourceSetChannelProfile(1)
+      this.$rtc.videoSourceSetVideoProfile(43, false)
       this.$rtc.videoSourceJoin(null, this.$client.channel, null, 2)
     } else {
       this.startSharing()

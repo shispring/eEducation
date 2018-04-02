@@ -11,6 +11,11 @@
 .wrapper {
   height: 100%;
   min-height: 100%;
+  -webkit-app-region: drag;
+}
+
+.wrapper .main {
+  -webkit-app-region: no-drag;
 }
 
 html {

@@ -60,6 +60,7 @@
     }
   }
   .students-container {
+    -webkit-app-region: no-drag;
     grid-area: students;
     display: grid;
     grid-template-columns: repeat(16, 1fr);
@@ -97,6 +98,7 @@
     }
   }
   .board-container {
+    -webkit-app-region: no-drag;
     grid-area: board;
     position: relative;
     border-radius: 0.25rem;
@@ -123,6 +125,7 @@
     }
   }
   .teacher-container {
+    -webkit-app-region: no-drag;
     grid-area: teacher;
     position: relative;
     .teacher-bar {
@@ -156,6 +159,7 @@
     }
   }
   .channel-container {
+    -webkit-app-region: no-drag;
     grid-area: channel;
     border-radius: 0.25rem;
     overflow: hidden;
