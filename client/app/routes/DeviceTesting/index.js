@@ -85,7 +85,7 @@ class DeviceTesting extends React.Component {
                   <Progress percent={this.state.inputVolume} showInfo={false}></Progress>
                 </FormItem>
                 <FormItem style={{ 'marginBottom': '6px' }} label="Speaker" colon={false}>
-                  <Select defaultValue={0}>
+                  <Select defaultValue={0} onChange={val => this.handlePlaybackDeviceChange(val)}>
                     {this.audioPlaybackDevices.map((item, index) => {
                       return (
                         <Option key={item.deviceid} value={index}>{item.devicename}</Option>
@@ -121,6 +121,10 @@ class DeviceTesting extends React.Component {
 
   handleVideoDeviceChange = (val) => {
     this.$rtc.setVideoDevice(this.audioDevices[val].deviceid)
+  }
+
+  handlePlaybackDeviceChange = (val) => {
+    this.$rtc.setAudioPlaybackDevice(this.audioPlaybackDevices[val].deviceid)
   }
 
   handlePlaybackVolume = (val) => {
