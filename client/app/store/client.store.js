@@ -175,6 +175,7 @@ class Client {
     const rtcEngine = this.$rtc.rtcEngine;
     const audience = this.role !== 'teacher' && this.role !== 'student';
     rtcEngine.setClientRole(isAudience ? 2 : 1);
+    // rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
     rtcEngine.enableDualStreamMode(true);
     rtcEngine.enableVideo(true);
     rtcEngine.enableLocalVideo(true);
@@ -203,6 +204,7 @@ class Client {
     this.$signal.logout();
     this.$rtc.leave();
     this.$rtc.rtcEngine.videoSourceRelease()
+    this.$rtc.rtcEngine.videoSourceLeave()
     this.$socket.close();
     clearInterval(this.socketTimer);
     this.userInfoMap.clear();

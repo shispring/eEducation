@@ -51,6 +51,7 @@ class Classroom extends React.Component {
 
   componentWillUnmount () {
     this.stopSharing()
+    this.$rtc.videoSourceLeave()
     this.$rtc.videoSourceRelease()
   }
 
@@ -295,7 +296,7 @@ class Classroom extends React.Component {
       })
       this.$rtc.videoSourceInitialize()
       this.$rtc.videoSourceSetChannelProfile(1)
-      this.$rtc.videoSourceSetVideoProfile(43, false)
+      this.$rtc.videoSourceSetVideoProfile(50, false)
       this.$rtc.videoSourceJoin(null, this.$client.channel, null, 2)
     } else {
       this.startSharing()
@@ -462,6 +463,11 @@ class MessageBox extends React.Component {
       window.location.hash = ''
     }
 
+  }
+
+  componentDidUpdate() {
+    let box = document.querySelector('.channel-box')
+    box.scrollTop = box.scrollHeight - box.clientHeight
   }
 
   render() {

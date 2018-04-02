@@ -165,8 +165,6 @@
     overflow: hidden;
     .channel {
       height: 100%;
-      display: flex;
-      flex-flow: column;
       background: #FFF;
 
       .channel-header {
@@ -180,7 +178,9 @@
       }
 
       .channel-box {
-        flex-grow: 1;
+        height: calc(100% - 3.5rem);
+        overflow-y: auto;
+        scroll-behavior: smooth;
       }
 
       .channel-input {
