@@ -3,7 +3,8 @@ import { Button, Input, Tooltip, Spin } from 'antd'
 import { inject, observer } from 'mobx-react'
 import axios from 'axios'
 import {
-  APP_ID
+  APP_ID,
+  SERVER_URL
 } from '../../agora.config'
 
 import './index.scss'
@@ -328,7 +329,7 @@ class Classroom extends React.Component {
     //     isRecording: true
     //   })
     // }, 1500)
-    axios.post('http://123.155.153.85:3232/v1/recording/start', {
+    axios.post(SERVER_URL + '/v1/recording/start', {
       appid: APP_ID,
       channel: this.$client.channel,
       uid: this.$client.uid
@@ -357,7 +358,7 @@ class Classroom extends React.Component {
     //     isRecording: false
     //   })
     // }, 1500)
-    axios.post('http://123.155.153.85:3232/v1/recording/stop', {
+    axios.post(SERVER_URL + '/v1/recording/stop', {
       appid: APP_ID,
       channel: this.$client.channel,
       uid: this.$client.uid

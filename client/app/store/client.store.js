@@ -7,15 +7,14 @@ import axios from 'axios';
 import { message } from 'antd';
 import {
   APP_ID,
-  SIGNAL_ID
+  SIGNAL_ID,
+  SERVER_URL
 } from '../agora.config';
 import {
   SignalingClient,
   RtcClient
 } from '../utils/AgoraSdkWrapper';
 
-// const socketServerUrl = 'http://10.60.2.75:3232'
-// /?appid=xxx&channel=xxx&name=yyy
 /**
  * @description client for this demo
  */
@@ -151,14 +150,14 @@ class Client {
       throw TypeError('Invaild role!')
     }
     return new Promise((resolve, reject) => {
-      axios.post('http://123.155.153.85:3232/v1/room/join', {
+      axios.post(SERVER_URL + '/v1/room/join', {
         appid: APP_ID,
         channel: channel,
         name: username,
         token: token,
         role: roleNo
       }).then(res => {
-        this.$socket = io(`http://123.155.153.85:3232/?appid=${APP_ID}&channel=${channel}&name=${username}`)
+        this.$socket = io(`${SERVER_URL}/?appid=${APP_ID}&channel=${channel}&name=${username}`)
         this.subscribeSocketEvents()
         resolve()
       }).catch(err => {
