@@ -111,6 +111,8 @@ class Index extends React.Component {
         this.setState({
           isLogining: false
         })
+      }).catch(err => {
+        message.error('Failed to login Signaling Server, Error: '+ err)
       })
     }).catch(err => {
       this.setState({
