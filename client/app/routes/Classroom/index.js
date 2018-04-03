@@ -256,8 +256,11 @@ class Classroom extends React.Component {
     })
     this.$rtc.on('userjoined', (uid, elapsed) => {
       // only teacher should use high stream
-      if (uid === this.$client.teacher) {
+      let teacher = this.$client.streams.get(this.$client.teacher)
+      if (uid === teacher.uid) {
         this.$rtc.setRemoteVideoStreamType(uid, 0)
+      } else {
+        this.$rtc.setRemoteVideoStreamType(uid, 1)
       }
 
       // sharing stream come in
