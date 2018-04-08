@@ -7,6 +7,8 @@ import {
   SERVER_URL
 } from '../../agora.config'
 
+const ipcRenderer = require('electron').ipcRenderer
+
 import './index.scss'
 
 @inject('ClientStore')
@@ -19,7 +21,8 @@ class Classroom extends React.Component {
       activated: false,
       networkQuality: 2,
       isRecording: false,
-      recordBtnLoading: false
+      recordBtnLoading: false,
+      isFullScreen: false
     }
     this.isSharing = false
   }
@@ -148,6 +151,18 @@ class Classroom extends React.Component {
       )
     }
 
+    // max/shrink button
+    let maxBtn
+    if (this.state.isFullScreen) {
+      maxBtn = (
+        <Button className="btn" ghost icon="shrink" onClick={this.handleMax}></Button>   
+      )
+    } else {
+      maxBtn = (
+        <Button className="btn" ghost icon="arrows-alt" onClick={this.handleMax}></Button>   
+      )
+    }
+
     return (
       <div className="wrapper" id="classroom">
         <header className="title">
@@ -165,8 +180,9 @@ class Classroom extends React.Component {
 
           <div className="btn-group">
             {RecordingButton}
-            <div className="btn">-</div>
-            <div className="btn" onClick={this.handleExit}>-></div>
+            {maxBtn}
+            <Button className="btn" ghost icon="minus" onClick={this.handleMin}></Button>
+            <Button className="btn" ghost icon="logout" onClick={this.handleExit}></Button>
           </div>
         </header>
         <section className="students-container">{students}</section>
@@ -200,6 +216,24 @@ class Classroom extends React.Component {
     window.location.hash = ''
   }
 
+  handleMin = () => {
+    ipcRenderer.send('hide-window')
+  }
+
+  handleMax = () => {
+    if (this.state.isFullScreen) {
+      ipcRenderer.send('restore-window')
+      this.setState({
+        isFullScreen: !this.state.isFullScreen
+      })
+    } else {
+      ipcRenderer.send('max-window')
+      this.setState({
+        isFullScreen: !this.state.isFullScreen
+      })
+    }
+  }
+
   handleKeyPress = e => {
     if (e.key === 'Enter') {
       this.handleSendMsg();
@@ -227,7 +261,7 @@ class Classroom extends React.Component {
       })
     })
     this.$rtc.on('error', (err, msg) => {
-      console.error(err)
+      console.error('RtcEngine throw an error: ' + err)
     })
     this.$rtc.on('lastmilequality', (quality) => {
       // console.log(quality)

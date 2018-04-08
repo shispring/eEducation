@@ -10,7 +10,7 @@
  *
  * @flow
  */
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import MenuBuilder from './menu';
 
 let mainWindow = null;
@@ -84,4 +84,17 @@ app.on('ready', async () => {
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
+
+  ipcMain.on('hide-window', () => {
+    mainWindow.minimize()
+  })
+
+  ipcMain.on('max-window', () => {
+    mainWindow.maximize()
+  })
+
+  ipcMain.on('restore-window', () => {
+    mainWindow.unmaximize()
+  })
 });
+
