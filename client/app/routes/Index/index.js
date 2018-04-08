@@ -93,8 +93,16 @@ class Index extends React.Component {
       return message.error('Username can only consist a-z | A-Z | 0-9!')
     }
 
+    if (/^2$/.test(username)) {
+      return message.error('Username can not be 2!')
+    }
+
     if (!/^[0-9a-zA-Z]+$/.test(channel)) {
       return message.error('Channel can only consist a-z | A-Z | 0-9!')
+    }
+
+    if (/^null$/.test(channel)) {
+      return message.error('Channel can not be "null"!')
     }
 
     if (username.length > 8 || channel.length > 8) {
