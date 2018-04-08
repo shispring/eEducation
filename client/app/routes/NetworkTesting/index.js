@@ -12,13 +12,15 @@ const FormItem = Form.Item
 class NetworkTesting extends React.Component {
   constructor(props) {
     super(props)
-    if (this.props.ClientStore.uid === -1) {
-      window.location.hash = ''
-    }
     this.state = {
       networkQuality: 2
     }
-    this.$rtc = props.ClientStore.$rtc.rtcEngine
+    try {
+      this.$rtc = props.ClientStore.$rtc.rtcEngine
+    } catch (err) {
+      console.error(err)
+      window.location.hash = ''
+    }
   }
 
   componentDidMount() {
@@ -33,6 +35,11 @@ class NetworkTesting extends React.Component {
 
   componentWillUnmount () {
     this.$rtc.disableLastmileTest()
+  }
+
+  componentDidCatch (err, info) {
+    console.error(err)
+    window.location.hash = ''
   }
 
   render() {

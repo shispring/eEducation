@@ -55,6 +55,11 @@ class Classroom extends React.Component {
     this.$rtc.videoSourceRelease()
   }
 
+  componentDidCatch (err, info) {
+    console.error(err)
+    window.location.hash = ''
+  }
+
   render() {
     // get network status
     const profile = {

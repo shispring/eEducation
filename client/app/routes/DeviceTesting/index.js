@@ -14,8 +14,15 @@ const Option = Select.Option
 class DeviceTesting extends React.Component {
   constructor(props) {
     super(props)
-    this.$client = props.ClientStore
-    this.$rtc = props.ClientStore.$rtc.rtcEngine
+
+    try {
+      this.$client = props.ClientStore
+      this.$rtc = props.ClientStore.$rtc.rtcEngine
+    } catch (err) {
+      console.error(err)
+      window.location.hash = ''
+    }
+
     this.outputVolume = this.$rtc.getAudioPlaybackVolume()
     this.state = {
       inputVolume: 0,
@@ -60,8 +67,8 @@ class DeviceTesting extends React.Component {
   }
 
   componentDidCatch (err, info) {
-    window.location.hash = ''
     console.error(err)
+    window.location.hash = ''
   }
 
   render() {
