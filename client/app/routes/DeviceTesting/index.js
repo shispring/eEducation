@@ -14,17 +14,14 @@ const Option = Select.Option
 class DeviceTesting extends React.Component {
   constructor(props) {
     super(props)
-    if (this.props.ClientStore.uid === -1) {
-      window.location.hash = ''
-    }
     this.$client = props.ClientStore
     this.$rtc = props.ClientStore.$rtc.rtcEngine
-    this.videoDevices = this.$rtc.getVideoDevices()
-    this.audioDevices = this.$rtc.getAudioRecordingDevices()
-    this.audioPlaybackDevices = this.$rtc.getAudioPlaybackDevices()
     this.outputVolume = this.$rtc.getAudioPlaybackVolume()
     this.state = {
-      inputVolume: 0
+      inputVolume: 0,
+      videoDevices: this.$rtc.getVideoDevices(),
+      audioDevices: this.$rtc.getAudioRecordingDevices(),
+      audioPlaybackDevices: this.$rtc.getAudioPlaybackDevices()
     }
   }
 
@@ -34,6 +31,17 @@ class DeviceTesting extends React.Component {
     this.$rtc.startPreview()
     console.log(this.$rtc.startAudioRecordingDeviceTest(100))
     this.$rtc.on('audiovolumeindication', (...args) => this.inputVolumeIndicate(...args))
+    this.$rtc.on('audiodevicestatechanged', (...args) => {
+      this.setState({
+        audioDevices: this.$rtc.getAudioRecordingDevices(),
+        audioPlaybackDevices: this.$rtc.getAudioPlaybackDevices()
+      })
+    })
+    this.$rtc.on('videodevicestatechanged', (...args) => {
+      this.setState({
+        videoDevices: this.$rtc.getVideoDevices()
+      })
+    })
     // this.$rtc.startEchoTest()    
   }
 
@@ -51,6 +59,11 @@ class DeviceTesting extends React.Component {
     // this.$rtc.stopEchoTest()
   }
 
+  componentDidCatch (err, info) {
+    window.location.hash = ''
+    console.error(err)
+  }
+
   render() {
     return (
       <div className="wrapper" id="deviceTesting">
@@ -63,7 +76,7 @@ class DeviceTesting extends React.Component {
               <Form>
                 <FormItem style={{ 'marginBottom': '6px' }} label="Camera" colon={false}>
                   <Select defaultValue={0} onChange={val => this.handleVideoDeviceChange(val)}>
-                    {this.videoDevices.map((item, index) => {
+                    {this.state.videoDevices.map((item, index) => {
                       return (
                         <Option key={item.deviceid} value={index}>{item.devicename}</Option>
                       )
@@ -72,7 +85,7 @@ class DeviceTesting extends React.Component {
                 </FormItem>
                 <FormItem style={{ 'marginBottom': '6px' }} label="Microphone" colon={false}>
                   <Select defaultValue={0} onChange={val => this.handleAudioDeviceChange(val)}>
-                    {this.audioDevices.map((item, index) => {
+                    {this.state.audioDevices.map((item, index) => {
                       return (
                         <Option key={item.deviceid} value={index}>{item.devicename}</Option>
                       )
@@ -86,7 +99,7 @@ class DeviceTesting extends React.Component {
                 </FormItem>
                 <FormItem style={{ 'marginBottom': '6px' }} label="Speaker" colon={false}>
                   <Select defaultValue={0} onChange={val => this.handlePlaybackDeviceChange(val)}>
-                    {this.audioPlaybackDevices.map((item, index) => {
+                    {this.state.audioPlaybackDevices.map((item, index) => {
                       return (
                         <Option key={item.deviceid} value={index}>{item.devicename}</Option>
                       )
@@ -116,15 +129,15 @@ class DeviceTesting extends React.Component {
   }
 
   handleAudioDeviceChange = (val) => {
-    this.$rtc.setAudioRecordingDevice(this.videoDevices[val].deviceid)
+    this.$rtc.setAudioRecordingDevice(this.state.videoDevices[val].deviceid)
   }
 
   handleVideoDeviceChange = (val) => {
-    this.$rtc.setVideoDevice(this.audioDevices[val].deviceid)
+    this.$rtc.setVideoDevice(this.state.audioDevices[val].deviceid)
   }
 
   handlePlaybackDeviceChange = (val) => {
-    this.$rtc.setAudioPlaybackDevice(this.audioPlaybackDevices[val].deviceid)
+    this.$rtc.setAudioPlaybackDevice(this.state.audioPlaybackDevices[val].deviceid)
   }
 
   handlePlaybackVolume = (val) => {

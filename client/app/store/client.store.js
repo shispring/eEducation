@@ -175,7 +175,7 @@ class Client {
     const rtcEngine = this.$rtc.rtcEngine;
     const audience = this.role !== 'teacher' && this.role !== 'student';
     rtcEngine.setClientRole(isAudience ? 2 : 1);
-    // rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
+    rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
     rtcEngine.enableDualStreamMode(true);
     rtcEngine.enableVideo(true);
     rtcEngine.enableLocalVideo(true);
