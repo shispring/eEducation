@@ -33,7 +33,7 @@ export default merge.smart(baseConfig, {
       analyzerMode: process.env.OPEN_ANALYZER === 'true' ? 'server' : 'disabled',
       openAnalyzer: process.env.OPEN_ANALYZER === 'true'
     }),
-
+            
     /**
      * Create global constants which can be configured at compile time.
      *
@@ -45,7 +45,7 @@ export default merge.smart(baseConfig, {
      */
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
-      DEBUG_PROD: 'false'
+      DEBUG_PROD: 'true'
     })
   ],
 

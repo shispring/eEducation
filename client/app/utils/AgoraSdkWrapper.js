@@ -80,9 +80,7 @@ class SignalingClient {
   join(channel) {
     return new Promise((resolve, reject) => {
       if (!this.session) {
-        throw {
-          Message: '"session" must be initialized before joining channel'
-        };
+        throw new Error('"session" must be initialized before joining channel')
       }
       this.channel = this.session.channelJoin(channel);
       // proxy callback on channel to channelEmitter

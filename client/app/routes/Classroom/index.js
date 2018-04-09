@@ -35,17 +35,20 @@ class Classroom extends React.Component {
       this.subscribeRTCEvents()
       this.$client.join()
       let board = document.querySelector('.board')
-      if (this.$client.isSharingStarted) {
-        if (this.$client.role === 'teacher') {
-          this.$rtc.setupLocalVideoSource(board)
+      if (board) {
+        if (this.$client.isSharingStarted) {
+          if (this.$client.role === 'teacher') {
+            this.$rtc.setupLocalVideoSource(board)
+          } else {
+            this.$rtc.subscribe(2, board)
+          }
+          this.$rtc.setupViewContentMode("videosource", 1);
+          this.$rtc.setupViewContentMode("2", 1);
         } else {
-          this.$rtc.subscribe(2, board)
+          board.innerHTML = ''
         }
-        this.$rtc.setupViewContentMode("videosource", 1);
-        this.$rtc.setupViewContentMode("2", 1);
-      } else {
-        board.innerHTML = ''
       }
+
     } catch (err) {
       console.log(err)
       window.location.hash = ''
@@ -187,7 +190,9 @@ class Classroom extends React.Component {
         </header>
         <section className="students-container">{students}</section>
         <section className="board-container">
-          <div className="board"></div>
+          <div className="board">
+
+          </div>
           {ScreenSharingBtn}
         </section>
         <section className="teacher-container">
@@ -274,24 +279,25 @@ class Classroom extends React.Component {
       if (name === 'sharingEvent' && type === 'update') {
         // receive instructions from teacher
         let board = document.querySelector('.board')
-        switch(value) {
-          case 'StartSharing':
-            if (this.$client.role === 'teacher') {
-              this.$rtc.setupLocalVideoSource(board)
-            } else {
-              this.$rtc.subscribe(2, board)
-            }
-            this.$rtc.setupViewContentMode("videosource", 1);
-            this.$rtc.setupViewContentMode("2", 1);
-            break;
-          case 'StopSharing':
-            board.innerHTML = ''
-            break;
-          default:
-            break;
+        if (board) {
+          switch(value) {
+            case 'StartSharing':
+              if (this.$client.role === 'teacher') {
+                this.$rtc.setupLocalVideoSource(board)
+              } else {
+                this.$rtc.subscribe(2, board)
+              }
+              this.$rtc.setupViewContentMode("videosource", 1);
+              this.$rtc.setupViewContentMode("2", 1);
+              break;
+            case 'StopSharing':
+              board.innerHTML = ''
+              break;
+            default:
+              break;
+          }
         }
       }
-
     })
     this.$rtc.on('userjoined', (uid, elapsed) => {
       // only teacher should use high stream
