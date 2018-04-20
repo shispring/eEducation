@@ -14,6 +14,8 @@ import {
   SignalingClient,
   RtcClient
 } from '../utils/AgoraSdkWrapper';
+const path = require("path");
+
 
 /**
  * @description client for this demo
@@ -21,6 +23,9 @@ import {
 class Client {
   init(rtcId, signalId) {
     this.$rtc = new RtcClient(rtcId);
+    const rtcEngine = this.$rtc.rtcEngine;
+    rtcEngine.setLogFile("/Library/Caches/log.txt");
+    
     // this.$rtc = new RtcClient(rtcId, true, '/Users/menthays/Projects/Demos/education-demo/AgoraSdk.log')
     this.$signal = new SignalingClient(signalId);
     this.$socket = {}
@@ -175,6 +180,7 @@ class Client {
     const rtcEngine = this.$rtc.rtcEngine;
     const audience = this.role !== 'teacher' && this.role !== 'student';
     rtcEngine.setClientRole(isAudience ? 2 : 1);
+    rtcEngine.setParameters('{"che.audio.live_for_comm":true}');
     rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
     rtcEngine.enableDualStreamMode(true);
     rtcEngine.enableVideo(true);
