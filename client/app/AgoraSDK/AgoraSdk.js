@@ -868,8 +868,8 @@ class AgoraRtcEngine extends EventEmitter {
         return this.rtcengine.setProfile(profile, merge);
     }
 
-    videoSourceInitialize(){
-        return this.rtcengine.videoSourceInitialize();
+    videoSourceInitialize(appid){
+        return this.rtcengine.videoSourceInitialize(appid);
     }
 
     videoSourceJoin(token, cname, chanInfo, uid) {

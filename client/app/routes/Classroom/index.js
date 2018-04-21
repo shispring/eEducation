@@ -342,7 +342,8 @@ class Classroom extends React.Component {
         this.startSharing()
         this._sharingPrepared = true
       })
-      this.$rtc.videoSourceInitialize()
+      this.$rtc.videoSourceInitialize(APP_ID);
+      console.log(`video source appid: ${APP_ID}`);
       this.$rtc.videoSourceSetChannelProfile(1)
       this.$rtc.videoSourceSetVideoProfile(50, false)
       this.$rtc.videoSourceJoin(null, this.$client.channel, null, 2)
