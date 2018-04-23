@@ -24,9 +24,9 @@ class Client {
   init(rtcId, signalId) {
     this.$rtc = new RtcClient(rtcId);
     const rtcEngine = this.$rtc.rtcEngine;
-    rtcEngine.setLogFile("/Library/Caches/log.txt");
+    // rtcEngine.setLogFile("/Library/Caches/log.txt");
+    rtcEngine.setLogFile("./log.txt");
     
-    // this.$rtc = new RtcClient(rtcId, true, '/Users/menthays/Projects/Demos/education-demo/AgoraSdk.log')
     this.$signal = new SignalingClient(signalId);
     this.$socket = {}
     // init
