@@ -24,8 +24,11 @@ class Client {
   init(rtcId, signalId) {
     this.$rtc = new RtcClient(rtcId);
     const rtcEngine = this.$rtc.rtcEngine;
-    // rtcEngine.setLogFile("/Library/Caches/log.txt");
-    rtcEngine.setLogFile("./log.txt");
+    // We have no good resolution for log path temporarily.
+    // for mac
+    rtcEngine.setLogFile("/Library/Caches/log.txt");
+    // for win
+    // rtcEngine.setLogFile("./log.txt");
     
     this.$signal = new SignalingClient(signalId);
     this.$socket = {}
