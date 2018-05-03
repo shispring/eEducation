@@ -28,7 +28,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+"use strict";
 
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
@@ -36,13 +36,14 @@
     define([], factory);
   } else {
     // Browser globals
-    const lib = factory.call(root);
-    Object.keys(lib).forEach((key) => {
+    var lib = factory.call(root);
+    Object.keys(lib).forEach(function(key) {
       root[key] = lib[key];
     });
   }
 }(this, function () {
-  const topWindow = this;
+
+  var topWindow = this;
 
   /** @module webgl-utils */
 
@@ -77,11 +78,11 @@
    * @return {string} The html.
    */
   function makeFailHTML(msg) {
-    return `${'' +
+    return '' +
       '<table style="background-color: #8CE; width: 100%; height: 100%;"><tr>' +
       '<td align="center">' +
       '<div style="display: table-cell; vertical-align: middle;">' +
-      '<div style="">'}${msg}</div>` +
+      '<div style="">' + msg + '</div>' +
       '</div>' +
       '</td></tr></table>';
   }
@@ -90,7 +91,7 @@
    * Mesasge for getting a webgl browser
    * @type {string}
    */
-  const GET_A_WEBGL_BROWSER = '' +
+  var GET_A_WEBGL_BROWSER = '' +
     'This page requires a browser that supports WebGL.<br/>' +
     '<a href="http://get.webgl.org">Click here to upgrade your browser.</a>';
 
@@ -98,7 +99,7 @@
    * Mesasge for need better hardware
    * @type {string}
    */
-  const OTHER_PROBLEM = '' +
+  var OTHER_PROBLEM = '' +
     "It doesn't appear your computer can support WebGL.<br/>" +
     '<a href="http://get.webgl.org/troubleshooting/">Click here for more information.</a>';
 
@@ -110,9 +111,9 @@
    * @return {WebGLRenderingContext} The created context.
    */
   function create3DContext(canvas, opt_attribs) {
-    const names = ['webgl', 'experimental-webgl'];
-    let context = null;
-    for (let ii = 0; ii < names.length; ++ii) {
+    var names = ["webgl", "experimental-webgl"];
+    var context = null;
+    for (var ii = 0; ii < names.length; ++ii) {
       try {
         context = canvas.getContext(names[ii], opt_attribs);
       } catch(e) {}  // eslint-disable-line
@@ -136,7 +137,7 @@
    */
   function setupWebGL(canvas, opt_attribs) {
     function showLink(str) {
-      const container = canvas.parentNode;
+      var container = canvas.parentNode;
       if (container) {
         container.innerHTML = makeFailHTML(str);
       }
@@ -147,7 +148,7 @@
       return null;
     }
 
-    const context = create3DContext(canvas, opt_attribs);
+    var context = create3DContext(canvas, opt_attribs);
     if (!context) {
       showLink(OTHER_PROBLEM);
     }
@@ -156,7 +157,7 @@
 
   function updateCSSIfInIFrame() {
     if (isInIFrame()) {
-      document.body.className = 'iframe';
+      document.body.className = "iframe";
     }
   }
 
@@ -176,26 +177,26 @@
    * @memberOf module:webgl-utils
    */
   function getWebGLContext(canvas, opt_attribs, opt_options) {
-    const options = opt_options || {};
+    var options = opt_options || {};
 
     if (isInIFrame()) {
       updateCSSIfInIFrame();
 
       // make the canvas backing store the size it's displayed.
       if (!options.dontResize && options.resize !== false) {
-        const width = canvas.clientWidth;
-        const height = canvas.clientHeight;
+        var width = canvas.clientWidth;
+        var height = canvas.clientHeight;
         canvas.width = width;
         canvas.height = height;
       }
     } else if (!options.noTitle && options.title !== false) {
-      const title = document.title;
-      const h1 = document.createElement('h1');
+      var title = document.title;
+      var h1 = document.createElement("h1");
       h1.innerText = title;
       document.body.insertBefore(h1, document.body.children[0]);
     }
 
-    const gl = setupWebGL(canvas, opt_attribs);
+    var gl = setupWebGL(canvas, opt_attribs);
     return gl;
   }
 
@@ -216,9 +217,9 @@
    * @return {WebGLShader} The created shader.
    */
   function loadShader(gl, shaderSource, shaderType, opt_errorCallback) {
-    const errFn = opt_errorCallback || error;
+    var errFn = opt_errorCallback || error;
     // Create the shader object
-    const shader = gl.createShader(shaderType);
+    var shader = gl.createShader(shaderType);
 
     // Load the shader source
     gl.shaderSource(shader, shaderSource);
@@ -227,11 +228,11 @@
     gl.compileShader(shader);
 
     // Check the compile status
-    const compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+    var compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
     if (!compiled) {
       // Something went wrong during compilation; get the error
-      const lastError = gl.getShaderInfoLog(shader);
-      errFn(`*** Error compiling shader '${shader}':${lastError}`);
+      var lastError = gl.getShaderInfoLog(shader);
+      errFn("*** Error compiling shader '" + shader + "':" + lastError);
       gl.deleteShader(shader);
       return null;
     }
@@ -249,32 +250,32 @@
    *        on error. If you want something else pass an callback. It's passed an error message.
    * @memberOf module:webgl-utils
    */
-  function createProgram(gl, shaders, opt_attribs, opt_locations, opt_errorCallback) {
-    const errFn = opt_errorCallback || error;
-    const program = gl.createProgram();
-    shaders.forEach((shader) => {
+  function createProgram(
+      gl, shaders, opt_attribs, opt_locations, opt_errorCallback) {
+    var errFn = opt_errorCallback || error;
+    var program = gl.createProgram();
+    shaders.forEach(function(shader) {
       gl.attachShader(program, shader);
     });
     if (opt_attribs) {
-      obj_attrib.forEach((attrib, ndx) => {
+      obj_attrib.forEach(function(attrib, ndx) {
         gl.bindAttribLocation(
-          program,
-          opt_locations ? opt_locations[ndx] : ndx,
-          attrib
-        );
+            program,
+            opt_locations ? opt_locations[ndx] : ndx,
+            attrib);
       });
     }
     gl.linkProgram(program);
 
     // Check the link status
-    const linked = gl.getProgramParameter(program, gl.LINK_STATUS);
+    var linked = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!linked) {
-      // something went wrong with the link
-      const lastError = gl.getProgramInfoLog(program);
-      errFn(`Error in program linking:${lastError}`);
+        // something went wrong with the link
+        var lastError = gl.getProgramInfoLog(program);
+        errFn("Error in program linking:" + lastError);
 
-      gl.deleteProgram(program);
-      return null;
+        gl.deleteProgram(program);
+        return null;
     }
     return program;
   }
@@ -288,34 +289,34 @@
    * @param {module:webgl-utils.ErrorCallback} opt_errorCallback callback for errors.
    * @return {WebGLShader} The created shader.
    */
-  function createShaderFromScript(gl, scriptId, opt_shaderType, opt_errorCallback) {
-    let shaderSource = '';
-    let shaderType;
-    const shaderScript = document.getElementById(scriptId);
+  function createShaderFromScript(
+      gl, scriptId, opt_shaderType, opt_errorCallback) {
+    var shaderSource = "";
+    var shaderType;
+    var shaderScript = document.getElementById(scriptId);
     if (!shaderScript) {
-      throw (`*** Error: unknown script element${scriptId}`);
+      throw ("*** Error: unknown script element" + scriptId);
     }
     shaderSource = shaderScript.text;
 
     if (!opt_shaderType) {
-      if (shaderScript.type === 'x-shader/x-vertex') {
+      if (shaderScript.type === "x-shader/x-vertex") {
         shaderType = gl.VERTEX_SHADER;
-      } else if (shaderScript.type === 'x-shader/x-fragment') {
+      } else if (shaderScript.type === "x-shader/x-fragment") {
         shaderType = gl.FRAGMENT_SHADER;
       } else if (shaderType !== gl.VERTEX_SHADER && shaderType !== gl.FRAGMENT_SHADER) {
-        throw ('*** Error: unknown shader type');
+        throw ("*** Error: unknown shader type");
       }
     }
 
     return loadShader(
-      gl, shaderSource, opt_shaderType || shaderType,
-      opt_errorCallback
-    );
+        gl, shaderSource, opt_shaderType ? opt_shaderType : shaderType,
+        opt_errorCallback);
   }
 
-  const defaultShaderType = [
-    'VERTEX_SHADER',
-    'FRAGMENT_SHADER',
+  var defaultShaderType = [
+    "VERTEX_SHADER",
+    "FRAGMENT_SHADER",
   ];
 
   /**
@@ -333,10 +334,12 @@
    * @return {WebGLProgram} The created program.
    * @memberOf module:webgl-utils
    */
-  function createProgramFromScripts(gl, shaderScriptIds, opt_attribs, opt_locations, opt_errorCallback) {
-    const shaders = [];
-    for (let ii = 0; ii < shaderScriptIds.length; ++ii) {
-      shaders.push(createShaderFromScript(gl, shaderScriptIds[ii], gl[defaultShaderType[ii]], opt_errorCallback));
+  function createProgramFromScripts(
+      gl, shaderScriptIds, opt_attribs, opt_locations, opt_errorCallback) {
+    var shaders = [];
+    for (var ii = 0; ii < shaderScriptIds.length; ++ii) {
+      shaders.push(createShaderFromScript(
+          gl, shaderScriptIds[ii], gl[defaultShaderType[ii]], opt_errorCallback));
     }
     return createProgram(gl, shaders, opt_attribs, opt_locations, opt_errorCallback);
   }
@@ -356,10 +359,12 @@
    * @return {WebGLProgram} The created program.
    * @memberOf module:webgl-utils
    */
-  function createProgramFromSources(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback) {
-    const shaders = [];
-    for (let ii = 0; ii < shaderSources.length; ++ii) {
-      shaders.push(loadShader(gl, shaderSources[ii], gl[defaultShaderType[ii]], opt_errorCallback));
+  function createProgramFromSources(
+      gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback) {
+    var shaders = [];
+    for (var ii = 0; ii < shaderSources.length; ++ii) {
+      shaders.push(loadShader(
+          gl, shaderSources[ii], gl[defaultShaderType[ii]], opt_errorCallback));
     }
     return createProgram(gl, shaders, opt_attribs, opt_locations, opt_errorCallback);
   }
@@ -387,7 +392,7 @@
    * @memberOf module:webgl-utils
    */
   function createUniformSetters(gl, program) {
-    let textureUnit = 0;
+    var textureUnit = 0;
 
     /**
      * Creates a setter for a uniform of the given program with it's
@@ -397,136 +402,136 @@
      * @returns {function} the created setter.
      */
     function createUniformSetter(program, uniformInfo) {
-      const location = gl.getUniformLocation(program, uniformInfo.name);
-      const type = uniformInfo.type;
+      var location = gl.getUniformLocation(program, uniformInfo.name);
+      var type = uniformInfo.type;
       // Check if this uniform is an array
-      const isArray = (uniformInfo.size > 1 && uniformInfo.name.substr(-3) === '[0]');
+      var isArray = (uniformInfo.size > 1 && uniformInfo.name.substr(-3) === "[0]");
       if (type === gl.FLOAT && isArray) {
-        return function (v) {
+        return function(v) {
           gl.uniform1fv(location, v);
         };
       }
       if (type === gl.FLOAT) {
-        return function (v) {
+        return function(v) {
           gl.uniform1f(location, v);
         };
       }
       if (type === gl.FLOAT_VEC2) {
-        return function (v) {
+        return function(v) {
           gl.uniform2fv(location, v);
         };
       }
       if (type === gl.FLOAT_VEC3) {
-        return function (v) {
+        return function(v) {
           gl.uniform3fv(location, v);
         };
       }
       if (type === gl.FLOAT_VEC4) {
-        return function (v) {
+        return function(v) {
           gl.uniform4fv(location, v);
         };
       }
       if (type === gl.INT && isArray) {
-        return function (v) {
+        return function(v) {
           gl.uniform1iv(location, v);
         };
       }
       if (type === gl.INT) {
-        return function (v) {
+        return function(v) {
           gl.uniform1i(location, v);
         };
       }
       if (type === gl.INT_VEC2) {
-        return function (v) {
+        return function(v) {
           gl.uniform2iv(location, v);
         };
       }
       if (type === gl.INT_VEC3) {
-        return function (v) {
+        return function(v) {
           gl.uniform3iv(location, v);
         };
       }
       if (type === gl.INT_VEC4) {
-        return function (v) {
+        return function(v) {
           gl.uniform4iv(location, v);
         };
       }
       if (type === gl.BOOL) {
-        return function (v) {
+        return function(v) {
           gl.uniform1iv(location, v);
         };
       }
       if (type === gl.BOOL_VEC2) {
-        return function (v) {
+        return function(v) {
           gl.uniform2iv(location, v);
         };
       }
       if (type === gl.BOOL_VEC3) {
-        return function (v) {
+        return function(v) {
           gl.uniform3iv(location, v);
         };
       }
       if (type === gl.BOOL_VEC4) {
-        return function (v) {
-          gl.uniform4iv(location, v);
-        };
+        return function(v) {
+          gl.uniform4iv(location, v); }
+        ;
       }
       if (type === gl.FLOAT_MAT2) {
-        return function (v) {
+        return function(v) {
           gl.uniformMatrix2fv(location, false, v);
         };
       }
       if (type === gl.FLOAT_MAT3) {
-        return function (v) {
+        return function(v) {
           gl.uniformMatrix3fv(location, false, v);
         };
       }
       if (type === gl.FLOAT_MAT4) {
-        return function (v) {
+        return function(v) {
           gl.uniformMatrix4fv(location, false, v);
         };
       }
       if ((type === gl.SAMPLER_2D || type === gl.SAMPLER_CUBE) && isArray) {
-        const units = [];
-        for (let ii = 0; ii < info.size; ++ii) {
+        var units = [];
+        for (var ii = 0; ii < info.size; ++ii) {
           units.push(textureUnit++);
         }
-        return (function (bindPoint, units) {
-          return function (textures) {
+        return function(bindPoint, units) {
+          return function(textures) {
             gl.uniform1iv(location, units);
-            textures.forEach((texture, index) => {
+            textures.forEach(function(texture, index) {
               gl.activeTexture(gl.TEXTURE0 + units[index]);
               gl.bindTexture(bindPoint, texture);
             });
           };
-        }(getBindPointForSamplerType(gl, type), units));
+        }(getBindPointForSamplerType(gl, type), units);
       }
       if (type === gl.SAMPLER_2D || type === gl.SAMPLER_CUBE) {
-        return (function (bindPoint, unit) {
-          return function (texture) {
+        return function(bindPoint, unit) {
+          return function(texture) {
             gl.uniform1i(location, unit);
             gl.activeTexture(gl.TEXTURE0 + unit);
             gl.bindTexture(bindPoint, texture);
           };
-        }(getBindPointForSamplerType(gl, type), textureUnit++));
+        }(getBindPointForSamplerType(gl, type), textureUnit++);
       }
-      throw (`unknown type: 0x${type.toString(16)}`); // we should never get here.
+      throw ("unknown type: 0x" + type.toString(16)); // we should never get here.
     }
 
-    const uniformSetters = { };
-    const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+    var uniformSetters = { };
+    var numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 
-    for (let ii = 0; ii < numUniforms; ++ii) {
-      const uniformInfo = gl.getActiveUniform(program, ii);
+    for (var ii = 0; ii < numUniforms; ++ii) {
+      var uniformInfo = gl.getActiveUniform(program, ii);
       if (!uniformInfo) {
         break;
       }
-      let name = uniformInfo.name;
+      var name = uniformInfo.name;
       // remove the array suffix.
-      if (name.substr(-3) === '[0]') {
+      if (name.substr(-3) === "[0]") {
         name = name.substr(0, name.length - 3);
       }
-      const setter = createUniformSetter(program, uniformInfo);
+      var setter = createUniformSetter(program, uniformInfo);
       uniformSetters[name] = setter;
     }
     return uniformSetters;
@@ -611,8 +616,8 @@
    * @memberOf module:webgl-utils
    */
   function setUniforms(setters, values) {
-    Object.keys(values).forEach((name) => {
-      const setter = setters[name];
+    Object.keys(values).forEach(function(name) {
+      var setter = setters[name];
       if (setter) {
         setter(values[name]);
       }
@@ -629,24 +634,25 @@
    * @memberOf module:webgl-utils
    */
   function createAttributeSetters(gl, program) {
-    const attribSetters = {
+    var attribSetters = {
     };
 
     function createAttribSetter(index) {
-      return function (b) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
-        gl.enableVertexAttribArray(index);
-        gl.vertexAttribPointer(index, b.numComponents || b.size, b.type || gl.FLOAT, b.normalize || false, b.stride || 0, b.offset || 0);
-      };
+      return function(b) {
+          gl.bindBuffer(gl.ARRAY_BUFFER, b.buffer);
+          gl.enableVertexAttribArray(index);
+          gl.vertexAttribPointer(
+              index, b.numComponents || b.size, b.type || gl.FLOAT, b.normalize || false, b.stride || 0, b.offset || 0);
+        };
     }
 
-    const numAttribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
-    for (let ii = 0; ii < numAttribs; ++ii) {
-      const attribInfo = gl.getActiveAttrib(program, ii);
+    var numAttribs = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+    for (var ii = 0; ii < numAttribs; ++ii) {
+      var attribInfo = gl.getActiveAttrib(program, ii);
       if (!attribInfo) {
         break;
       }
-      const index = gl.getAttribLocation(program, attribInfo.name);
+      var index = gl.getAttribLocation(program, attribInfo.name);
       attribSetters[attribInfo.name] = createAttribSetter(index);
     }
 
@@ -707,8 +713,8 @@
    * @deprecated use {@link module:webgl-utils.setBuffersAndAttributes}
    */
   function setAttributes(setters, buffers) {
-    Object.keys(buffers).forEach((name) => {
-      const setter = setters[name];
+    Object.keys(buffers).forEach(function(name) {
+      var setter = setters[name];
       if (setter) {
         setter(buffers[name]);
       }
@@ -746,21 +752,22 @@
    * @return {module:webgl-utils.ProgramInfo} The created program.
    * @memberOf module:webgl-utils
    */
-  function createProgramInfo(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback) {
-    shaderSources = shaderSources.map((source) => {
-      const script = document.getElementById(source);
+  function createProgramInfo(
+      gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback) {
+    shaderSources = shaderSources.map(function(source) {
+      var script = document.getElementById(source);
       return script ? script.text : source;
     });
-    const program = createProgramFromSources(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback);
+    var program = createProgramFromSources(gl, shaderSources, opt_attribs, opt_locations, opt_errorCallback);
     if (!program) {
       return null;
     }
-    const uniformSetters = createUniformSetters(gl, program);
-    const attribSetters = createAttributeSetters(gl, program);
+    var uniformSetters = createUniformSetters(gl, program);
+    var attribSetters = createAttributeSetters(gl, program);
     return {
-      program,
-      uniformSetters,
-      attribSetters,
+      program: program,
+      uniformSetters: uniformSetters,
+      attribSetters: attribSetters,
     };
   }
 
@@ -808,11 +815,11 @@
   }
 
   // Add your prefix here.
-  const browserPrefixes = [
-    '',
-    'MOZ_',
-    'OP_',
-    'WEBKIT_',
+  var browserPrefixes = [
+    "",
+    "MOZ_",
+    "OP_",
+    "WEBKIT_",
   ];
 
   /**
@@ -825,9 +832,9 @@
    * @memberOf module:webgl-utils
    */
   function getExtensionWithKnownPrefixes(gl, name) {
-    for (let ii = 0; ii < browserPrefixes.length; ++ii) {
-      const prefixedName = browserPrefixes[ii] + name;
-      const ext = gl.getExtension(prefixedName);
+    for (var ii = 0; ii < browserPrefixes.length; ++ii) {
+      var prefixedName = browserPrefixes[ii] + name;
+      var ext = gl.getExtension(prefixedName);
       if (ext) {
         return ext;
       }
@@ -842,10 +849,10 @@
    */
   function resizeCanvasToDisplaySize(canvas, multiplier) {
     multiplier = multiplier || 1;
-    const width = canvas.clientWidth * multiplier;
-    const height = canvas.clientHeight * multiplier;
-    if (canvas.width !== width || canvas.height !== height) {
-      canvas.width = width;
+    var width  = canvas.clientWidth  * multiplier;
+    var height = canvas.clientHeight * multiplier;
+    if (canvas.width !== width ||  canvas.height !== height) {
+      canvas.width  = width;
       canvas.height = height;
       return true;
     }
@@ -862,9 +869,9 @@
     if (!isInIFrame(window)) {
       return;
     }
-    const iframes = window.parent.document.getElementsByTagName('iframe');
-    for (let ii = 0; ii < iframes.length; ++ii) {
-      const iframe = iframes[ii];
+    var iframes = window.parent.document.getElementsByTagName("iframe");
+    for (var ii = 0; ii < iframes.length; ++ii) {
+      var iframe = iframes[ii];
       if (iframe.contentDocument === window.document) {
         return iframe;  // eslint-disable-line
       }
@@ -879,18 +886,18 @@
    */
   function isFrameVisible(window) {
     try {
-      const iframe = getIFrameForWindow(window);
+      var iframe = getIFrameForWindow(window);
       if (!iframe) {
         return true;
       }
 
-      const bounds = iframe.getBoundingClientRect();
-      const isVisible = bounds.top < window.parent.innerHeight && bounds.bottom >= 0 &&
+      var bounds = iframe.getBoundingClientRect();
+      var isVisible = bounds.top < window.parent.innerHeight && bounds.bottom >= 0 &&
                       bounds.left < window.parent.innerWidth && bounds.right >= 0;
 
       return isVisible && isFrameVisible(window.parent);
     } catch (e) {
-      return true; // We got a security error?
+      return true;  // We got a security error?
     }
   }
 
@@ -900,10 +907,10 @@
    * @return {boolean} true if element is on screen.
    */
   function isOnScreen(element) {
-    let isVisible = true;
+    var isVisible = true;
 
     if (element) {
-      const bounds = element.getBoundingClientRect();
+      var bounds = element.getBoundingClientRect();
       isVisible = bounds.top < topWindow.innerHeight && bounds.bottom >= 0;
     }
 
@@ -911,16 +918,17 @@
   }
 
 
+
   // Add `push` to a typed array. It just keeps a 'cursor'
   // and allows use to `push` values into the array so we
   // don't have to manually compute offsets
   function augmentTypedArray(typedArray, numComponents) {
-    let cursor = 0;
-    typedArray.push = function () {
-      for (let ii = 0; ii < arguments.length; ++ii) {
-        const value = arguments[ii];
+    var cursor = 0;
+    typedArray.push = function() {
+      for (var ii = 0; ii < arguments.length; ++ii) {
+        var value = arguments[ii];
         if (value instanceof Array || (value.buffer && value.buffer instanceof ArrayBuffer)) {
-          for (let jj = 0; jj < value.length; ++jj) {
+          for (var jj = 0; jj < value.length; ++jj) {
             typedArray[cursor++] = value[jj];
           }
         } else {
@@ -928,12 +936,12 @@
         }
       }
     };
-    typedArray.reset = function (opt_index) {
+    typedArray.reset = function(opt_index) {
       cursor = opt_index || 0;
     };
     typedArray.numComponents = numComponents;
     Object.defineProperty(typedArray, 'numElements', {
-      get() {
+      get: function() {
         return this.length / this.numComponents | 0;
       },
     });
@@ -963,26 +971,26 @@
    * @memberOf module:webgl-utils
    */
   function createAugmentedTypedArray(numComponents, numElements, opt_type) {
-    const Type = opt_type || Float32Array;
+    var Type = opt_type || Float32Array;
     return augmentTypedArray(new Type(numComponents * numElements), numComponents);
   }
 
   function createBufferFromTypedArray(gl, array, type, drawType) {
     type = type || gl.ARRAY_BUFFER;
-    const buffer = gl.createBuffer();
+    var buffer = gl.createBuffer();
     gl.bindBuffer(type, buffer);
     gl.bufferData(type, array, drawType || gl.STATIC_DRAW);
     return buffer;
   }
 
   function allButIndices(name) {
-    return name !== 'indices';
+    return name !== "indices";
   }
 
   function createMapping(obj) {
-    const mapping = {};
-    Object.keys(obj).filter(allButIndices).forEach((key) => {
-      mapping[`a_${key}`] = key;
+    var mapping = {};
+    Object.keys(obj).filter(allButIndices).forEach(function(key) {
+      mapping["a_" + key] = key;
     });
     return mapping;
   }
@@ -995,7 +1003,7 @@
     if (typedArray instanceof Int32Array)   { return gl.INT; }             // eslint-disable-line
     if (typedArray instanceof Uint32Array)  { return gl.UNSIGNED_INT; }    // eslint-disable-line
     if (typedArray instanceof Float32Array) { return gl.FLOAT; }           // eslint-disable-line
-    throw 'unsupported typed array type';
+    throw "unsupported typed array type";
   }
 
   // This is really just a guess. Though I can't really imagine using
@@ -1011,17 +1019,17 @@
   }
 
   function guessNumComponentsFromName(name, length) {
-    let numComponents;
-    if (name.indexOf('coord') >= 0) {
+    var numComponents;
+    if (name.indexOf("coord") >= 0) {
       numComponents = 2;
-    } else if (name.indexOf('color') >= 0) {
+    } else if (name.indexOf("color") >= 0) {
       numComponents = 4;
     } else {
-      numComponents = 3; // position, normals, indices ...
+      numComponents = 3;  // position, normals, indices ...
     }
 
     if (length % numComponents > 0) {
-      throw 'can not guess numComponents. You should specify it.';
+      throw "can not guess numComponents. You should specify it.";
     }
 
     return numComponents;
@@ -1042,13 +1050,13 @@
       array.numComponents = guessNumComponentsFromName(name, array.length);
     }
 
-    let type = array.type;
+    var type = array.type;
     if (!type) {
-      if (name === 'indices') {
+      if (name === "indices") {
         type = Uint16Array;
       }
     }
-    const typedArray = createAugmentedTypedArray(array.numComponents, array.data.length / array.numComponents | 0, type);
+    var typedArray = createAugmentedTypedArray(array.numComponents, array.data.length / array.numComponents | 0, type);
     typedArray.push(array.data);
     return typedArray;
   }
@@ -1096,16 +1104,16 @@
    * @memberOf module:webgl-utils
    */
   function createAttribsFromArrays(gl, arrays, opt_mapping) {
-    const mapping = opt_mapping || createMapping(arrays);
-    const attribs = {};
-    Object.keys(mapping).forEach((attribName) => {
-      const bufferName = mapping[attribName];
-      const array = makeTypedArray(arrays[bufferName], bufferName);
+    var mapping = opt_mapping || createMapping(arrays);
+    var attribs = {};
+    Object.keys(mapping).forEach(function(attribName) {
+      var bufferName = mapping[attribName];
+      var array = makeTypedArray(arrays[bufferName], bufferName);
       attribs[attribName] = {
-        buffer: createBufferFromTypedArray(gl, array),
+        buffer:        createBufferFromTypedArray(gl, array),
         numComponents: array.numComponents || guessNumComponentsFromName(bufferName),
-        type: getGLTypeForTypedArray(gl, array),
-        normalize: getNormalizationForTypedArray(array),
+        type:          getGLTypeForTypedArray(gl, array),
+        normalize:     getNormalizationForTypedArray(array),
       };
     });
     return attribs;
@@ -1115,12 +1123,13 @@
    * tries to get the number of elements from a set of arrays.
    */
   function getNumElementsFromNonIndexedArrays(arrays) {
-    const key = Object.keys(arrays)[0];
-    const array = arrays[key];
+    var key = Object.keys(arrays)[0];
+    var array = arrays[key];
     if (isArrayBuffer(array)) {
       return array.numElements;
+    } else {
+      return array.data.length / array.numComponents;
     }
-    return array.data.length / array.numComponents;
   }
 
   /**
@@ -1254,12 +1263,12 @@
    * @memberOf module:webgl-utils
    */
   function createBufferInfoFromArrays(gl, arrays, opt_mapping) {
-    const bufferInfo = {
+    var bufferInfo = {
       attribs: createAttribsFromArrays(gl, arrays, opt_mapping),
     };
-    let indices = arrays.indices;
+    var indices = arrays.indices;
     if (indices) {
-      indices = makeTypedArray(indices, 'indices');
+      indices = makeTypedArray(indices, "indices");
       bufferInfo.indices = createBufferFromTypedArray(gl, indices, gl.ELEMENT_ARRAY_BUFFER);
       bufferInfo.numElements = indices.length;
     } else {
@@ -1294,10 +1303,10 @@
    * @memberOf module:webgl-utils
    */
   function createBuffersFromArrays(gl, arrays) {
-    const buffers = { };
-    Object.keys(arrays).forEach((key) => {
-      const type = key === 'indices' ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
-      const array = makeTypedArray(arrays[key], name);
+    var buffers = { };
+    Object.keys(arrays).forEach(function(key) {
+      var type = key === "indices" ? gl.ELEMENT_ARRAY_BUFFER : gl.ARRAY_BUFFER;
+      var array = makeTypedArray(arrays[key], name);
       buffers[key] = createBufferFromTypedArray(gl, array, type);
     });
 
@@ -1326,8 +1335,8 @@
    * @memberOf module:webgl-utils
    */
   function drawBufferInfo(gl, type, bufferInfo, count, offset) {
-    const indices = bufferInfo.indices;
-    const numElements = count === undefined ? bufferInfo.numElements : count;
+    var indices = bufferInfo.indices;
+    var numElements = count === undefined ? bufferInfo.numElements : count;
     offset = offset === undefined ? offset : 0;
     if (indices) {
       gl.drawElements(type, numElements, gl.UNSIGNED_SHORT, offset);
@@ -1351,13 +1360,13 @@
    * @memberOf module:webgl-utils
    */
   function drawObjectList(gl, objectsToDraw) {
-    let lastUsedProgramInfo = null;
-    let lastUsedBufferInfo = null;
+    var lastUsedProgramInfo = null;
+    var lastUsedBufferInfo = null;
 
-    objectsToDraw.forEach((object) => {
-      const programInfo = object.programInfo;
-      const bufferInfo = object.bufferInfo;
-      let bindBuffers = false;
+    objectsToDraw.forEach(function(object) {
+      var programInfo = object.programInfo;
+      var bufferInfo = object.bufferInfo;
+      var bindBuffers = false;
 
       if (programInfo !== lastUsedProgramInfo) {
         lastUsedProgramInfo = programInfo;
@@ -1380,25 +1389,26 @@
   }
 
   return {
-    createAugmentedTypedArray,
-    createAttribsFromArrays,
-    createBuffersFromArrays,
-    createBufferInfoFromArrays,
-    createAttributeSetters,
-    createProgram,
-    createProgramFromScripts,
-    createProgramFromSources,
-    createProgramInfo,
-    createUniformSetters,
-    drawBufferInfo,
-    drawObjectList,
-    getWebGLContext,
-    updateCSSIfInIFrame,
-    getExtensionWithKnownPrefixes,
-    resizeCanvasToDisplaySize,
-    setAttributes,
-    setBuffersAndAttributes,
-    setUniforms,
-    setupWebGL,
+    createAugmentedTypedArray: createAugmentedTypedArray,
+    createAttribsFromArrays: createAttribsFromArrays,
+    createBuffersFromArrays: createBuffersFromArrays,
+    createBufferInfoFromArrays: createBufferInfoFromArrays,
+    createAttributeSetters: createAttributeSetters,
+    createProgram: createProgram,
+    createProgramFromScripts: createProgramFromScripts,
+    createProgramFromSources: createProgramFromSources,
+    createProgramInfo: createProgramInfo,
+    createUniformSetters: createUniformSetters,
+    drawBufferInfo: drawBufferInfo,
+    drawObjectList: drawObjectList,
+    getWebGLContext: getWebGLContext,
+    updateCSSIfInIFrame: updateCSSIfInIFrame,
+    getExtensionWithKnownPrefixes: getExtensionWithKnownPrefixes,
+    resizeCanvasToDisplaySize: resizeCanvasToDisplaySize,
+    setAttributes: setAttributes,
+    setBuffersAndAttributes: setBuffersAndAttributes,
+    setUniforms: setUniforms,
+    setupWebGL: setupWebGL,
   };
+
 }));
