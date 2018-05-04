@@ -23,10 +23,10 @@ const path = require("path");
 class Client {
   init(rtcId, signalId) {
     this.$rtc = new RtcClient(rtcId);
-    const rtcEngine = this.$rtc.rtcEngine;
+    // const rtcEngine = this.$rtc.rtcEngine;
     // We have no good resolution for log path temporarily.
     // for mac
-    rtcEngine.setLogFile("/Library/Caches/log.txt");
+    // rtcEngine.setLogFile("/Library/Caches/log.txt");
     // for win
     // rtcEngine.setLogFile("./log.txt");
     
@@ -205,20 +205,23 @@ class Client {
     });
   }
 
-  leave() {
+  async leave() {
     this.log('leaving channel...');
     if (this.role === 'teacher') {
       this.$signal.channel.channelClearAttr();
     }
-    this.$signal.leave();
-    this.$signal.logout();
-    this.$rtc.leave();
     this.$rtc.rtcEngine.videoSourceRelease()
     this.$rtc.rtcEngine.videoSourceLeave()
+    await this.$signal.leave();
+    await this.$signal.logout();
+    await this.$rtc.leave();
     this.$socket.close();
     clearInterval(this.socketTimer);
     this.userInfoMap.clear();
     this.streams.clear();
+    this.$rtc = null;
+    this.$signal = null;
+    this.$socket = null;
   }
 
   /**
@@ -281,9 +284,10 @@ class Client {
     this.$signal.channelEmitter.on('onChannelAttrUpdated', (name, value, type) => {
       if (type === 'clear') {
         // teacher has left
-        this.leave();
-        message.info('Teacher has left the classroom!')
-        window.location.hash = '';
+        this.leave().then(() => {
+          message.info('Teacher has left the classroom!')
+          window.location.hash = '';
+        });
       }
       if (name === 'classInfo') {
         this.teacher = JSON.parse(value).teacher;
@@ -328,9 +332,10 @@ class Client {
     this.$socket.on('disconnect', () => {
       this.log('Socket server disconnected...')
       // if disconnect leave to 
-      this.leave();
-      message.info('Disconnect to socket server!')
-      window.location.hash = '';
+      this.leave().then(() => {
+        message.info('Disconnect to socket server!')
+        window.location.hash = '';
+      });
     });
 
     this.socketTimer = setInterval(() => {
@@ -357,9 +362,10 @@ class Client {
 
     })
     this.$socket.on('owner-disconnect', () => {
-      this.leave();
-      message.info('Teacher has left the classroom!')
-      window.location.hash = '';
+      this.leave().then(() => {
+        message.info('Teacher has left the classroom!')
+        window.location.hash = '';
+      });
     })
   }
 }

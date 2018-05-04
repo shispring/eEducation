@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Input, Tooltip, Spin } from 'antd'
+import { Button, Input, Tooltip, Spin, message } from 'antd'
 import { inject, observer } from 'mobx-react'
 import axios from 'axios'
 import {
@@ -217,8 +217,11 @@ class Classroom extends React.Component {
   }
 
   handleExit = () => {
-    this.$client.leave()
-    window.location.hash = ''
+    this.$client.leave().then(() => {
+      message.info('Left the classroom successfully!')
+      window.location.hash = ''
+    })
+
   }
 
   handleMin = () => {
