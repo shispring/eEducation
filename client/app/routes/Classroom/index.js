@@ -349,6 +349,8 @@ class Classroom extends React.Component {
       console.log(`video source appid: ${APP_ID}`);
       this.$rtc.videoSourceSetChannelProfile(1)
       this.$rtc.videoSourceSetVideoProfile(50, false)
+      // to adjust render dimension to optimize performance
+      this.$rtc.setVideoRenderDimension(3, 2, 1600, 900)
       this.$rtc.videoSourceJoin(null, this.$client.channel, null, 2)
     } else {
       this.startSharing()
