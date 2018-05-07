@@ -211,6 +211,8 @@ class Classroom extends React.Component {
       }).catch(err => {
         message.error('Left the classroom...')
       })
+    } catch (err) {
+      console.error(err)
     } finally {
       window.location.hash = ''
     }

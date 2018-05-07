@@ -250,7 +250,7 @@ class Client {
       this.$signal = null;
       this.$socket = null;
     } catch (err) {
-      throw new Error(JSON.stringify(err))
+      throw err
     } finally {
       clearInterval(this.socketTimer);
       this.userInfoMap.clear();
