@@ -59,6 +59,8 @@ app.on('ready', async () => {
     // await installExtensions();
   }
 
+  process.env['APP_PATH'] = app.getAppPath()
+
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,

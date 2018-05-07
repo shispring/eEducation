@@ -33,6 +33,8 @@ class Client {
     this.$signal = new SignalingClient(signalId);
     this.$socket = {}
     // init
+    this.platform = this.getPlatform()
+    this.appPath = process.env.APP_PATH
     this.username = '';
     this.role = '';
     this.channel = '';
@@ -42,6 +44,33 @@ class Client {
     // this.userList = observable(new Map()); // userlist from socket server
     this.userInfoMap = observable(new Map()); // user info hash map 
     this.isSharingStarted = false;
+    // set log
+    if (this.platform === 'mac') {
+      this.$rtc.rtcEngine.setLogFile("/Library/Caches/log-mac.txt");
+    } else if (this.platform === 'win') {
+      this.$rtc.rtcEngine.setLogFile("./log-win.txt");
+    } else {
+      console.error('Platform not supported.')
+    }
+  }
+
+  // get platform
+  getPlatform() {
+    let platform = (function() {
+      switch(process.platform) {
+        case 'win32':
+          return 'win'
+        default:
+        case 'darwin':
+          return 'mac'
+      }
+    }())
+    let result =  process.env.PLATFORM || platform
+    return result
+  }
+
+  isDev() {
+    return process.env.NODE_ENV === 'development'
   }
 
   // logger for this store

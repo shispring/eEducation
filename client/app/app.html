@@ -46,8 +46,8 @@
               return 'mac'
           }
         }())
-        platform = platform || process.env.PLATFORM
-        let dir = 'native-' + platform
+        let result =  process.env.PLATFORM || platform
+        let dir = 'native-' + result
 
         scripts.unshift(`./AgoraSDK/AgoraSig-1.2.1.3.js`);
         scripts.unshift(`./AgoraSDK/AgoraSdk.js`);

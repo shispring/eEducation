@@ -158,8 +158,13 @@ class DeviceTesting extends React.Component {
 
   playMusic = () => {
     if (!this._playMusic) {
-      let filepath = path.resolve(__dirname, './AgoraSDK/music.mp3')
-      // let filepath = '../AgoraSDK/music.mp3'
+      let filepath;
+      if (this.$client.isDev()) {
+        filepath = path.join(__dirname, 'AgoraSDK/music.mp3')
+      } else {
+        filepath = path.join(this.$client.appPath, '../app', 'AgoraSDK/music.mp3')
+      }
+      // let filepath = ''
       this.$rtc.startAudioPlaybackDeviceTest(filepath)
     } else {
       this.$rtc.stopAudioPlaybackDeviceTest()
