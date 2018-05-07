@@ -4,6 +4,8 @@ import { Form, Select, Button, Progress, Slider } from 'antd'
 import { inject, observer } from 'mobx-react'
 import path from 'path'
 
+import TitleBar from '../../components/TitleBar'
+
 import './index.scss'
 
 const FormItem = Form.Item
@@ -74,6 +76,9 @@ class DeviceTesting extends React.Component {
   render() {
     return (
       <div className="wrapper" id="deviceTesting">
+        <header className="title">
+          <TitleBar></TitleBar>
+        </header>
         <main className="main">
           <section className="content">
             <header>

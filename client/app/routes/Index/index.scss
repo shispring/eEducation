@@ -9,7 +9,15 @@
   min-width: 51rem;
   min-height: 33rem;
   position: relative;
-  
+  .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1.5rem;
+    padding: 10px;
+
+  }
   .mask {
     position: absolute;
     width: 100%;

@@ -207,21 +207,24 @@ class Client {
 
   async leave() {
     this.log('leaving channel...');
-    if (this.role === 'teacher') {
-      this.$signal.channel.channelClearAttr();
+    try {
+      if (this.role === 'teacher') {
+        this.$signal.channel.channelClearAttr();
+      }
+      this.$rtc.rtcEngine.videoSourceRelease()
+      this.$rtc.rtcEngine.videoSourceLeave()
+      await this.$signal.leave();
+      await this.$signal.logout();
+      await this.$rtc.leave();
+      this.$socket.close();
+      this.$rtc = null;
+      this.$signal = null;
+      this.$socket = null;
+    } finally {
+      clearInterval(this.socketTimer);
+      this.userInfoMap.clear();
+      this.streams.clear();
     }
-    this.$rtc.rtcEngine.videoSourceRelease()
-    this.$rtc.rtcEngine.videoSourceLeave()
-    await this.$signal.leave();
-    await this.$signal.logout();
-    await this.$rtc.leave();
-    this.$socket.close();
-    clearInterval(this.socketTimer);
-    this.userInfoMap.clear();
-    this.streams.clear();
-    this.$rtc = null;
-    this.$signal = null;
-    this.$socket = null;
   }
 
   /**

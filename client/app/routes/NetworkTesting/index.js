@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { Form, Button, Progress, Row, Col } from 'antd'
 import { inject, observer } from 'mobx-react'
 
+import TitleBar from '../../components/TitleBar'
+
 import './index.scss'
 
 const FormItem = Form.Item
@@ -45,6 +47,9 @@ class NetworkTesting extends React.Component {
   render() {
     return (
       <div className="wrapper" id="networkTesting">
+        <header className="title">
+          <TitleBar></TitleBar>
+        </header>
         <main className="main">
           <section className="content">
             <header>

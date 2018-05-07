@@ -8,7 +8,7 @@ import {
   APP_ID,
   SIGNAL_ID
 } from '../../agora.config';
-// import {sessionStorage} from '../../utils/storage'
+import TitleBar from '../../components/TitleBar'
 
 const FormItem = Form.Item
 const RadioGroup = Radio.Group
@@ -41,6 +41,9 @@ class Index extends React.Component {
     return (
       <div className="wrapper" id="index">
         {loading}
+        <header className="title">
+            <TitleBar></TitleBar>
+          </header>
         <main className="main">
           <section className="content">
             <header>

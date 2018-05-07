@@ -66,3 +66,24 @@ a:hover {
   text-decoration: none;
   cursor: pointer;
 }
+
+.btn-group {
+  float: right;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-group .btn {
+  -webkit-app-region: no-drag!important;
+  cursor: pointer;
+  margin-left: .5rem;
+  color: white;
+  border-radius: .3rem;
+  border: white solid 1px;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

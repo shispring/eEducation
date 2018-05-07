@@ -13,7 +13,6 @@
   grid-template-columns: 1fr 1fr 1fr 1fr;
   grid-gap: .5rem;
   .title {
-    -webkit-app-region: no-drag;
     grid-area: title;
     display: flex;
     justify-content: space-between;
@@ -31,32 +30,15 @@
         text-overflow: ellipsis;
       }
     }
-    .btn-group {
-      float: right;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      #recordBtn {
-        background-color: #FF4D89;
-        border-radius: .9rem;
-        padding: 0.2rem 1.5rem;
-        height: auto;
-        &.disabled {
-          color: #006EDF;
-          background-color: #E8F5FC;
-        }
-      }
-      .btn {
-        cursor: pointer;
-        margin-left: .5rem;
-        color: white;
-        border-radius: .3rem;
-        border: white solid 1px;
-        width: 1.1rem;
-        height: 1.1rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    #recordBtn {
+      -webkit-app-region: no-drag!important;
+      background-color: #FF4D89;
+      border-radius: .9rem;
+      padding: 0.2rem 1.5rem;
+      height: auto;
+      &.disabled {
+        color: #006EDF;
+        background-color: #E8F5FC;
       }
     }
   }

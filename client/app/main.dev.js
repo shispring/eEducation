@@ -96,5 +96,9 @@ app.on('ready', async () => {
   ipcMain.on('restore-window', () => {
     mainWindow.unmaximize()
   })
+
+  ipcMain.on('close-window', () => {
+    mainWindow.close()
+  })
 });
 

@@ -6,6 +6,7 @@ import {
   APP_ID,
   SERVER_URL
 } from '../../agora.config'
+import TitleBar from '../../components/TitleBar'
 
 const ipcRenderer = require('electron').ipcRenderer
 
@@ -154,18 +155,6 @@ class Classroom extends React.Component {
       )
     }
 
-    // max/shrink button
-    let maxBtn
-    if (this.state.isFullScreen) {
-      maxBtn = (
-        <Button className="btn" ghost icon="shrink" onClick={this.handleMax}></Button>   
-      )
-    } else {
-      maxBtn = (
-        <Button className="btn" ghost icon="arrows-alt" onClick={this.handleMax}></Button>   
-      )
-    }
-
     return (
       <div className="wrapper" id="classroom">
         <header className="title">
@@ -181,12 +170,11 @@ class Classroom extends React.Component {
             </Tooltip>
           </div>
 
-          <div className="btn-group">
+          <TitleBar>
             {RecordingButton}
-            {maxBtn}
-            <Button className="btn" ghost icon="minus" onClick={this.handleMin}></Button>
             <Button className="btn" ghost icon="logout" onClick={this.handleExit}></Button>
-          </div>
+          </TitleBar>
+
         </header>
         <section className="students-container">{students}</section>
         <section className="board-container">
@@ -220,26 +208,11 @@ class Classroom extends React.Component {
     this.$client.leave().then(() => {
       message.info('Left the classroom successfully!')
       window.location.hash = ''
+    }).catch(err => {
+      message.error('Left the classroom...')
+      window.location.hash = ''
     })
 
-  }
-
-  handleMin = () => {
-    ipcRenderer.send('hide-window')
-  }
-
-  handleMax = () => {
-    if (this.state.isFullScreen) {
-      ipcRenderer.send('restore-window')
-      this.setState({
-        isFullScreen: !this.state.isFullScreen
-      })
-    } else {
-      ipcRenderer.send('max-window')
-      this.setState({
-        isFullScreen: !this.state.isFullScreen
-      })
-    }
   }
 
   handleKeyPress = e => {
