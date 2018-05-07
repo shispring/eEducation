@@ -108,25 +108,25 @@ class NetworkTesting extends React.Component {
 function NetworkStatus(props) {
   const profile = {
     '0': {
-      text: 'UNKNOWN', color: '#000', bgColor: '#FFF'
+      text: 'unknown', color: '#000', bgColor: '#FFF'
     },
     '1': {
-      text: 'EXCELLENT', color: '', bgColor: ''
+      text: 'excellent', color: '', bgColor: ''
     },
     '2': {
-      text: 'GOOD', color: '#7ED321', bgColor: '#B8E986'
+      text: 'good', color: '#7ED321', bgColor: '#B8E986'
     },
     '3': {
-      text: 'POOR', color: '#F5A623', bgColor: '#F8E71C'
+      text: 'poor', color: '#F5A623', bgColor: '#F8E71C'
     },
     '4': {
-      text: 'BAD', color: '#FF4D89', bgColor: '#FF9EBF'
+      text: 'bad', color: '#FF4D89', bgColor: '#FF9EBF'
     },
     '5': {
-      text: 'VBAD', color: '', bgColor: ''
+      text: 'vbad', color: '', bgColor: ''
     },
     '6': {
-      text: 'DOWN', color: '#4A90E2', bgColor: '#86D9E9'
+      text: 'down', color: '#4A90E2', bgColor: '#86D9E9'
     }
   }
 
