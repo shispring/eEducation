@@ -249,6 +249,8 @@ class Client {
       this.$rtc = null;
       this.$signal = null;
       this.$socket = null;
+    } catch (err) {
+      throw new Error(JSON.stringify(err))
     } finally {
       clearInterval(this.socketTimer);
       this.userInfoMap.clear();
