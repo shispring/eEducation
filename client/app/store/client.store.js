@@ -216,7 +216,7 @@ class Client {
     rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
     rtcEngine.setParameters('{"che.video.lowBitRateStreamParameter":{"width":192,"height":108,"frameRate":15,"bitRate":100}}');
     rtcEngine.enableDualStreamMode(true);
-    rtcEngine.enableVideo(true);
+    rtcEngine.enableVideo();
     rtcEngine.enableLocalVideo(true);
     rtcEngine.setVideoProfile(videoProfile);
   }

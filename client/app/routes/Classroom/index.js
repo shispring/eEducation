@@ -205,13 +205,16 @@ class Classroom extends React.Component {
   }
 
   handleExit = () => {
-    this.$client.leave().then(() => {
-      message.info('Left the classroom successfully!')
+    try {
+      this.$client.leave().then(() => {
+        message.info('Left the classroom successfully!')
+      }).catch(err => {
+        message.error('Left the classroom...')
+      })
+    } finally {
       window.location.hash = ''
-    }).catch(err => {
-      message.error('Left the classroom...')
-      window.location.hash = ''
-    })
+    }
+
 
   }
 
