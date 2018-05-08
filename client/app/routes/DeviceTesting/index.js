@@ -131,7 +131,7 @@ class DeviceTesting extends React.Component {
             <div className="preview-window"></div>
             <div className="button-group">
               <Button size="large" id="nextBtn" type="primary">
-                <Link to="/network_testing">Next Step -></Link>
+                <Link to="/classroom">Next Step -></Link>
               </Button>
             </div>
           </section>
