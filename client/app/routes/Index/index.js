@@ -4,10 +4,6 @@ import { Form, Input, Radio, Button, Spin, message } from 'antd'
 import { inject, observer } from 'mobx-react'
 
 import './index.scss'
-import {
-  APP_ID,
-  SIGNAL_ID
-} from '../../agora.config';
 import TitleBar from '../../components/TitleBar'
 
 const FormItem = Form.Item
@@ -26,7 +22,7 @@ class Index extends React.Component {
   }
 
   componentDidMount() {
-    this.$client.init( APP_ID, SIGNAL_ID )
+    this.$client.init()
   }
 
   render() {

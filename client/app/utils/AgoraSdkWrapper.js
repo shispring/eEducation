@@ -64,8 +64,9 @@ class SignalingClient {
    */
   logout() {
     return new Promise((resolve, reject) => {
-      this.session.logout();
+      this.session && this.session.logout();
       this.sessionEmitter.on('onLogout', (...args) => {
+        this.sessionEmitter.removeAllListeners()
         resolve(...args);
       });
     });
@@ -113,8 +114,9 @@ class SignalingClient {
    */
   leave() {
     return new Promise((resolve, reject) => {
-      this.channel.channelLeave();
+      this.channel && this.channel.channelLeave();
       this.channelEmitter.on('onChannelLeaved', (...args) => {
+        this.channelEmitter.removeAllListeners()
         resolve(...args);
       });
     });
@@ -180,8 +182,9 @@ class RtcClient {
 
   leave() {
     return new Promise((resolve, reject) => {
-      this.rtcEngine.leaveChannel();
+      this.rtcEngine && this.rtcEngine.leaveChannel();
       this.rtcEngine.on('leavechannel', (...args) => {
+        this.rtcEngine.removeAllListeners();
         resolve(...args);
       });
     });

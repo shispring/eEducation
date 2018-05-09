@@ -21,8 +21,17 @@ const path = require("path");
  * @description client for this demo
  */
 class Client {
-  init(rtcId, signalId) {
+
+  constructor (rtcId, signalId) {
     this.$rtc = new RtcClient(rtcId);
+    this.$signal = new SignalingClient(signalId);
+    // init
+    this.platform = this.getPlatform()
+    this.appPath = process.env.APP_PATH
+  }
+
+  init() {
+    
     // const rtcEngine = this.$rtc.rtcEngine;
     // We have no good resolution for log path temporarily.
     // for mac
@@ -30,11 +39,7 @@ class Client {
     // for win
     // rtcEngine.setLogFile("./log.txt");
     
-    this.$signal = new SignalingClient(signalId);
     this.$socket = {}
-    // init
-    this.platform = this.getPlatform()
-    this.appPath = process.env.APP_PATH
     this.username = '';
     this.role = '';
     this.channel = '';
@@ -44,6 +49,7 @@ class Client {
     // this.userList = observable(new Map()); // userlist from socket server
     this.userInfoMap = observable(new Map()); // user info hash map 
     this.isSharingStarted = false;
+    this.isLeaving = false;
     // set log
     if (this.platform === 'mac') {
       this.$rtc.rtcEngine.setLogFile("/Library/Caches/log-mac.txt");
@@ -236,26 +242,18 @@ class Client {
 
   async leave() {
     this.log('leaving channel...');
-    try {
-      if (this.role === 'teacher') {
-        this.$signal.channel.channelClearAttr();
-      }
-      this.$rtc.rtcEngine.videoSourceRelease()
-      this.$rtc.rtcEngine.videoSourceLeave()
-      await this.$signal.leave();
-      await this.$signal.logout();
-      await this.$rtc.leave();
-      this.$socket.close();
-      this.$rtc = null;
-      this.$signal = null;
-      this.$socket = null;
-    } catch (err) {
-      throw err
-    } finally {
-      clearInterval(this.socketTimer);
-      this.userInfoMap.clear();
-      this.streams.clear();
+    if (this.role === 'teacher') {
+      this.$signal.channel.channelClearAttr();
     }
+    this.$rtc.rtcEngine.videoSourceRelease()
+    this.$rtc.rtcEngine.videoSourceLeave()
+    await this.$signal.leave();
+    await this.$signal.logout();
+    await this.$rtc.leave();
+    this.$socket.close();
+    clearInterval(this.socketTimer);
+    this.userInfoMap.clear();
+    this.streams.clear();
   }
 
   /**
@@ -318,6 +316,9 @@ class Client {
     this.$signal.channelEmitter.on('onChannelAttrUpdated', (name, value, type) => {
       if (type === 'clear') {
         // teacher has left
+        if (this.isLeaving) {
+          return
+        }
         this.leave().then(() => {
           message.info('Teacher has left the classroom!')
           window.location.hash = '';
@@ -366,6 +367,9 @@ class Client {
     this.$socket.on('disconnect', () => {
       this.log('Socket server disconnected...')
       // if disconnect leave to 
+      if (this.isLeaving) {
+        return
+      }
       this.leave().then(() => {
         message.info('Disconnect to socket server!')
         window.location.hash = '';
@@ -396,6 +400,9 @@ class Client {
 
     })
     this.$socket.on('owner-disconnect', () => {
+      if (this.isLeaving) {
+        return
+      }
       this.leave().then(() => {
         message.info('Teacher has left the classroom!')
         window.location.hash = '';
@@ -404,4 +411,4 @@ class Client {
   }
 }
 
-export default new Client();
+export default new Client( APP_ID, SIGNAL_ID );
