@@ -19,7 +19,8 @@ npm run package-mac
 npm run package-win
 ```
 
-*Most of your development should be under /app*
+*Most of your development should be under /app*  
+
 ***If you are a Windows developer, remember to install a 32-bit electron***
 
 ```bash
