@@ -20,6 +20,11 @@ npm run package-win
 ```
 
 *Most of your development should be under /app*
+***If you are a Windows developer, remember to install a 32-bit electron***
+
+```bash
+  npm install -D --arch=32 electron
+```
 
 ## Feature
 - Use Sass and disable css-modules
