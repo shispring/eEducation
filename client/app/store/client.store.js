@@ -241,6 +241,7 @@ class Client {
   }
 
   async leave() {
+    this.isLeaving = true
     this.log('leaving channel...');
     if (this.role === 'teacher') {
       this.$signal.channel.channelClearAttr();
@@ -254,6 +255,7 @@ class Client {
     clearInterval(this.socketTimer);
     this.userInfoMap.clear();
     this.streams.clear();
+    this.isLeaving = false
   }
 
   /**
