@@ -41,6 +41,7 @@ app/renderer.prod.js
 app/renderer.prod.js.map
 app/style.css
 app/style.css.map
+
 dist
 dll
 main.js
@@ -49,8 +50,12 @@ main.js.map
 .idea
 npm-debug.log.*
 
-/app/**/*.txt
+app/**/*.txt
+log-win.txt
 
 .vscode
 
 agora.config.local.js
+flow-typed/
+
+.gitignore
