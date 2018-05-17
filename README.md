@@ -7,6 +7,9 @@
 - for 1-N small classes (1 teacher and at most 16 students)
 - Easy to build and extend
 
+## Quick Start
+- You can [download](https://github.com/AgoraIO/ARD-eEducation-with-Electron/releases) installation package(both mac and windows) to have a try.
+
 ## Feature 
 
 - Two Roles and at most 17 people online at the same time
@@ -15,7 +18,7 @@
 - Screen Sharing
 - Recording (need server to integrate [Agora Recording SDK](https://docs.agora.io/cn/2.1.1/addons/Recording/Quickstart%20Guides/recording_c++?platform=C%2B%2B))
 
-## Sturcture
+## Structure
 - Client  
   Client-side demo by React and Electron, dynamic import AgoraSDK for different platform.
 - Server  
