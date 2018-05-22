@@ -12,6 +12,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import MenuBuilder from './menu';
 
+app.commandLine.appendSwitch('inspect', '5858')
+
 let mainWindow = null;
 
 if (process.env.NODE_ENV === 'production') {
