@@ -26,7 +26,7 @@ npm run package-win
 ***If you are a Windows developer, remember to install a 32-bit electron***
 
 ```bash
-  npm install -D --arch=32 electron
+  npm install -D --arch=ia32 electron
 ```
 
 ## Feature
