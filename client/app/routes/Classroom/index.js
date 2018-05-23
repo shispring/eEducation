@@ -7,6 +7,7 @@ import {
   SERVER_URL
 } from '../../agora.config'
 import TitleBar from '../../components/TitleBar'
+import path from 'path'
 
 const ipcRenderer = require('electron').ipcRenderer
 
@@ -49,6 +50,10 @@ class Classroom extends React.Component {
           board.innerHTML = ''
         }
       }
+
+      // play effect
+      // const filePath = path.join(__dirname, 'AgoraSDK/music.mp3')
+      // this.$rtc.playEffect(0, filePath, -1, 1.0, 0, 100, true)
 
     } catch (err) {
       console.log(err)
