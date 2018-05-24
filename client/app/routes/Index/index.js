@@ -128,40 +128,6 @@ class Index extends React.Component {
       const errInfo = err.response.data.err;
       message.error(`Error: ${errInfo}`);
     });
-
-    // this.$client.login(username, channel, role).then(() => {
-    //   let signalClient = this.$client.$signal
-    //   if (role === 'teacher') {
-    //     // if teacher, query if there has already been a teacher
-    //     signalClient.session.invoke('io.agora.signal.channel_query_num', { 'name': channel }, (err, val) => {
-    //       this.setState({
-    //         isLogining: false
-    //       })
-    //       // only there is another one in class, he must be teacher?
-    //       // depend on signaling client's stability
-    //       if (val.num > 1) {
-    //         signalClient.logout()
-    //         message.error('Classroom occupied!')
-    //       } else {
-    //         window.location.hash = 'device_testing'
-    //       }
-    //     })
-    //   } else {
-    //     // if student, check if teacher has entered the channel
-    //     signalClient.session.invoke('io.agora.signal.channel_query_num', { 'name': channel }, (err, val) => {
-    //       this.setState({
-    //         isLogining: false
-    //       })
-    //       // only the student himself
-    //       if (val.num === 1) {
-    //         signalClient.logout()
-    //         message.error('Classroom not existed!')
-    //       } else {
-    //         window.location.hash = 'device_testing'
-    //       }
-    //     })
-    //   }
-    // })
   }
 }
 
