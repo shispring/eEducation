@@ -19,21 +19,22 @@ npm run package-mac
 npm run package-win
 ```
 
-*[yarn](https://github.com/yarnpkg/yarn) maybe better.
+## Warning
+1. Before customizing configuration for this project, you can find more info from [electron-react-boilerplate](https://github.com/chentsulin/electron-react-boilerplate) and [electron-builder](https://github.com/electron-userland/electron-builder).
 
-*Most of your development should be under /app*  
+2. *Most of your development should be under /app*  
 
-***If you are a Windows developer, remember to install a 32-bit electron***
+3. ***If you are a Windows developer, remember to install a 32-bit electron***
 
 ```bash
   npm install -D --arch=ia32 electron
 ```
+
+4. If you have trouble during install npm dependencies, go to [Installation Debugging Solutions](https://github.com/chentsulin/electron-react-boilerplate/issues/400) for information.
 
 ## Feature
 - Use Sass and disable css-modules
 - Use mobx to maintain data flow
 - Two package.json structure
 
-## What's more
-Before customizing configuration for this project, you can find more info from [electron-react-boilerplate](https://github.com/chentsulin/electron-react-boilerplate) and [electron-builder](https://github.com/electron-userland/electron-builder).
 
