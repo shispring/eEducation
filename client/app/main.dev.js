@@ -10,9 +10,8 @@
  *
  */
 import { app, BrowserWindow, ipcMain } from 'electron';
-import MenuBuilder from './menu';
 
-app.commandLine.appendSwitch('inspect', '5858')
+app.commandLine.appendSwitch('inspect', '5858');
 
 let mainWindow = null;
 
@@ -60,7 +59,7 @@ app.on('ready', async () => {
     // await installExtensions();
   }
 
-  process.env['APP_PATH'] = app.getAppPath()
+  process.env.APP_PATH = app.getAppPath();
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -85,23 +84,20 @@ app.on('ready', async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
-
   ipcMain.on('hide-window', () => {
-    mainWindow.minimize()
-  })
+    mainWindow.minimize();
+  });
 
   ipcMain.on('max-window', () => {
-    mainWindow.maximize()
-  })
+    mainWindow.maximize();
+  });
 
   ipcMain.on('restore-window', () => {
-    mainWindow.unmaximize()
-  })
+    mainWindow.unmaximize();
+  });
 
   ipcMain.on('close-window', () => {
-    mainWindow.close()
-  })
+    mainWindow.close();
+  });
 });
 

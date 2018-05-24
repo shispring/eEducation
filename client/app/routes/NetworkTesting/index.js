@@ -1,54 +1,54 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import { Form, Button, Progress, Row, Col } from 'antd'
-import { inject, observer } from 'mobx-react'
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Form, Button, Progress, Row, Col } from 'antd';
+import { inject, observer } from 'mobx-react';
 
-import TitleBar from '../../components/TitleBar'
+import TitleBar from '../../components/TitleBar';
 
-import './index.scss'
+import './index.scss';
 
-const FormItem = Form.Item
+const FormItem = Form.Item;
 
 @inject('ClientStore')
 @observer
 class NetworkTesting extends React.Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       networkQuality: 2
-    }
+    };
     try {
-      this.$rtc = props.ClientStore.$rtc.rtcEngine
+      this.$rtc = props.ClientStore.$rtc.rtcEngine;
     } catch (err) {
-      console.error(err)
-      window.location.hash = ''
+      console.error(err);
+      window.location.hash = '';
     }
   }
 
   componentDidMount() {
-    this.$rtc.on('lastmilequality',(quality) => {
+    this.$rtc.on('lastmilequality', (quality) => {
       // console.log(quality)
       this.setState({
         networkQuality: quality
-      })
-    })
-    this.$rtc.enableLastmileTest()
+      });
+    });
+    this.$rtc.enableLastmileTest();
   }
 
-  componentWillUnmount () {
-    this.$rtc.disableLastmileTest()
+  componentWillUnmount() {
+    this.$rtc.disableLastmileTest();
   }
 
-  componentDidCatch (err, info) {
-    console.error(err)
-    window.location.hash = ''
+  componentDidCatch(err, info) {
+    console.error(err);
+    window.location.hash = '';
   }
 
   render() {
     return (
       <div className="wrapper" id="networkTesting">
         <header className="title">
-          <TitleBar></TitleBar>
+          <TitleBar />
         </header>
         <main className="main">
           <section className="content">
@@ -57,10 +57,15 @@ class NetworkTesting extends React.Component {
             </header>
             <main>
               <Form>
-                <FormItem label={(
-                  <img style={{ 'width': '24px' }} src={require('../../assets/images/connection.png')} alt="" />
-                )} labelCol={{ span: 4 }} wrapperCol={{ span: 20 }} colon={false}>
-                  <Progress percent={30} showInfo={false}></Progress>
+                <FormItem
+                  label={(
+                    <img style={{ width: '24px' }} src={require('../../assets/images/connection.png')} alt="" />
+                )}
+                  labelCol={{ span: 4 }}
+                  wrapperCol={{ span: 20 }}
+                  colon={false}
+                >
+                  <Progress percent={30} showInfo={false} />
                 </FormItem>
               </Form>
               <Row>
@@ -83,7 +88,7 @@ class NetworkTesting extends React.Component {
                       Good
                     </div>
                   </main> */}
-                  <NetworkStatus quality={this.state.networkQuality}></NetworkStatus>
+                  <NetworkStatus quality={this.state.networkQuality} />
                 </Col>
               </Row>
             </main>
@@ -99,68 +104,69 @@ class NetworkTesting extends React.Component {
           </section>
         </main>
       </div>
-    )
+    );
   }
-
-
 }
 
 function NetworkStatus(props) {
   const profile = {
-    '0': {
+    0: {
       text: 'unknown', color: '#000', bgColor: '#FFF'
     },
-    '1': {
+    1: {
       text: 'excellent', color: '', bgColor: ''
     },
-    '2': {
+    2: {
       text: 'good', color: '#7ED321', bgColor: '#B8E986'
     },
-    '3': {
+    3: {
       text: 'poor', color: '#F5A623', bgColor: '#F8E71C'
     },
-    '4': {
+    4: {
       text: 'bad', color: '#FF4D89', bgColor: '#FF9EBF'
     },
-    '5': {
+    5: {
       text: 'vbad', color: '', bgColor: ''
     },
-    '6': {
+    6: {
       text: 'down', color: '#4A90E2', bgColor: '#86D9E9'
     }
-  }
+  };
 
-  let quality = (function() {
+  const quality = (function () {
     switch (props.quality) {
       default:
       case 0:
-        return profile[0]
+        return profile[0];
       case 1:
       case 2:
-        return profile[2]
+        return profile[2];
       case 3:
-        return profile[3]
+        return profile[3];
       case 4:
       case 5:
-        return profile[4]
+        return profile[4];
       case 6:
-        return profile[6]
+        return profile[6];
     }
-  })()
+  }());
 
   return (
     <section>
       <header className="stats-title">Network Status</header>
       <main className="stats-body">
-        <div className="network-status" style={{
-          'color': quality.color,
-          'backgroudColor': quality.bgColor
-        }}>
+        <div
+          className="network-status"
+          style={{
+          color: quality.color,
+          backgroudColor: quality.bgColor
+        }}
+        >
           { quality.text }
         </div>
       </main>
     </section>
-  )
+  );
 }
 
-export default NetworkTesting
+export default NetworkTesting;

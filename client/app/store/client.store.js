@@ -14,32 +14,31 @@ import {
   SignalingClient,
   RtcClient
 } from '../utils/AgoraSdkWrapper';
-const path = require("path");
+
+const path = require('path');
 
 
 /**
  * @description client for this demo
  */
 class Client {
-
-  constructor (rtcId, signalId) {
+  constructor(rtcId, signalId) {
     this.$rtc = new RtcClient(rtcId);
     this.$signal = new SignalingClient(signalId);
     // init
-    this.platform = this.getPlatform()
-    this.appPath = process.env.APP_PATH
+    this.platform = this.getPlatform();
+    this.appPath = process.env.APP_PATH;
   }
 
   init() {
-    
     // const rtcEngine = this.$rtc.rtcEngine;
     // We have no good resolution for log path temporarily.
     // for mac
     // rtcEngine.setLogFile("/Library/Caches/log.txt");
     // for win
     // rtcEngine.setLogFile("./log.txt");
-    
-    this.$socket = {}
+
+    this.$socket = {};
     this.username = '';
     this.role = '';
     this.channel = '';
@@ -47,36 +46,36 @@ class Client {
     this.sid = -1;
     this.clientId = ''; // clientId: role+username
     // this.userList = observable(new Map()); // userlist from socket server
-    this.userInfoMap = observable(new Map()); // user info hash map 
+    this.userInfoMap = observable(new Map()); // user info hash map
     this.isSharingStarted = false;
     this.isLeaving = false;
     // set log
     if (this.platform === 'mac') {
-      this.$rtc.rtcEngine.setLogFile("/Library/Caches/log-mac.txt");
+      this.$rtc.rtcEngine.setLogFile('/Library/Caches/log-mac.txt');
     } else if (this.platform === 'win') {
-      this.$rtc.rtcEngine.setLogFile("./log-win.txt");
+      this.$rtc.rtcEngine.setLogFile('./log-win.txt');
     } else {
-      console.error('Platform not supported.')
+      console.error('Platform not supported.');
     }
   }
 
   // get platform
   getPlatform() {
-    let platform = (function() {
-      switch(process.platform) {
+    const platform = (function () {
+      switch (process.platform) {
         case 'win32':
-          return 'win'
+          return 'win';
         default:
         case 'darwin':
-          return 'mac'
+          return 'mac';
       }
-    }())
-    let result =  process.env.PLATFORM || platform
-    return result
+    }());
+    const result = process.env.PLATFORM || platform;
+    return result;
   }
 
   isDev() {
-    return process.env.NODE_ENV === 'development'
+    return process.env.NODE_ENV === 'development';
   }
 
   // logger for this store
@@ -86,25 +85,23 @@ class Client {
 
   // equal
   equal(newMap, oldMap) {
-    let [ newJson, oldJson ] = [ newMap.toJSON(), oldMap.toJSON() ]
+    const [newJson, oldJson] = [newMap.toJSON(), oldMap.toJSON()];
     const _equal = (newObj, oldObj) => {
       if (newObj instanceof Object) {
         Object.keys(newObj).map(key => {
           if (newObj.hasOwnProperty(key)) {
             if (!oldObj.hasOwnProperty(key)) {
-              return false
-            } else {
-              return _equal(newObj[key], oldObj[key])
+              return false;
             }
+            return _equal(newObj[key], oldObj[key]);
           }
-        })
+        });
       } else {
-        return newObj === oldObj
+        return newObj === oldObj;
       }
+    };
 
-    }
-    
-    return _equal(newJson, oldJson)
+    return _equal(newJson, oldJson);
   }
 
   // parseInfo
@@ -149,7 +146,7 @@ class Client {
         this.sid = sid;
         if (role === 'teacher') {
           // clear channel attr first.
-          this.$signal.session.invoke('io.agora.signal.channel_clear_attr', channel)
+          this.$signal.session.invoke('io.agora.signal.channel_clear_attr', channel);
           this.initTeacherEvents();
         } else if (role === 'student') {
           this.initStudentEvents();
@@ -176,7 +173,7 @@ class Client {
     this.sid = -1;
     this.clientId = ''; // clientId: role+username
     this.userList = []; // userlist from socket server
-    // 
+    //
     const ts = new Date().getTime();
     // generate user id
     this.uid = Number((`${ts}`).slice(7));
@@ -184,29 +181,29 @@ class Client {
     this.channel = channel;
     this.role = role;
     this.clientId = `${this.role}-${this.username}-${this.uid}`;
-    let roleNo
+    let roleNo;
     if (role === 'teacher') {
-      roleNo = 0
+      roleNo = 0;
     } else if (role === 'student') {
-      roleNo = 1
+      roleNo = 1;
     } else {
-      throw TypeError('Invaild role!')
+      throw TypeError('Invaild role!');
     }
     return new Promise((resolve, reject) => {
-      axios.post(SERVER_URL + '/v1/room/join', {
+      axios.post(`${SERVER_URL}/v1/room/join`, {
         appid: APP_ID,
-        channel: channel,
+        channel,
         name: username,
-        token: token,
+        token,
         role: roleNo
       }).then(res => {
-        this.$socket = io(`${SERVER_URL}/?appid=${APP_ID}&channel=${channel}&name=${username}`)
-        this.subscribeSocketEvents()
-        resolve()
+        this.$socket = io(`${SERVER_URL}/?appid=${APP_ID}&channel=${channel}&name=${username}`);
+        this.subscribeSocketEvents();
+        resolve();
       }).catch(err => {
-        reject(err)
-      })
-    })
+        reject(err);
+      });
+    });
   }
 
   /**
@@ -241,13 +238,13 @@ class Client {
   }
 
   async leave() {
-    this.isLeaving = true
+    this.isLeaving = true;
     this.log('leaving channel...');
     if (this.role === 'teacher') {
       this.$signal.channel.channelClearAttr();
     }
-    this.$rtc.rtcEngine.videoSourceRelease()
-    this.$rtc.rtcEngine.videoSourceLeave()
+    this.$rtc.rtcEngine.videoSourceRelease();
+    this.$rtc.rtcEngine.videoSourceLeave();
     await this.$signal.leave();
     await this.$signal.logout();
     await this.$rtc.leave();
@@ -255,7 +252,7 @@ class Client {
     clearInterval(this.socketTimer);
     this.userInfoMap.clear();
     this.streams.clear();
-    this.isLeaving = false
+    this.isLeaving = false;
   }
 
   /**
@@ -319,10 +316,10 @@ class Client {
       if (type === 'clear') {
         // teacher has left
         if (this.isLeaving) {
-          return
+          return;
         }
         this.leave().then(() => {
-          message.info('Teacher has left the classroom!')
+          message.info('Teacher has left the classroom!');
           window.location.hash = '';
         });
       }
@@ -333,12 +330,12 @@ class Client {
     });
     this.$signal.channelEmitter.once('onChannelAttrUpdated', (name, value, type) => {
       if (name === 'sharingEvent' && type === 'update') {
-        switch(value) {
+        switch (value) {
           case 'StartSharing':
-            this.isSharingStarted = true
+            this.isSharingStarted = true;
             break;
           case 'StopSharing':
-            this.isSharingStarted = false
+            this.isSharingStarted = false;
             break;
           default:
             break;
@@ -349,68 +346,67 @@ class Client {
 
   isUserListEqual(newUserList) {
     if (this.userList.length !== newUserList.length) {
-      return false
+      return false;
     }
-    for (let user of this.userList) {
+    for (const user of this.userList) {
       if (newUserList.indexOf(user) === -1) {
-        return false
+        return false;
       }
     }
-    return true
+    return true;
   }
   /**
    * subscribe events for socket to maintain classroom
    */
   subscribeSocketEvents() {
     this.$socket.on('connect', () => {
-      this.log('Socket server connected...')
+      this.log('Socket server connected...');
     });
 
     this.$socket.on('disconnect', () => {
-      this.log('Socket server disconnected...')
-      // if disconnect leave to 
+      this.log('Socket server disconnected...');
+      // if disconnect leave to
       if (this.isLeaving) {
-        return
+        return;
       }
       this.leave().then(() => {
-        message.info('Disconnect to socket server!')
+        message.info('Disconnect to socket server!');
         window.location.hash = '';
       });
     });
 
     this.socketTimer = setInterval(() => {
-      this.$socket.emit('agora-ping')
-    }, 3000)
+      this.$socket.emit('agora-ping');
+    }, 3000);
 
     this.$socket.on('agora-pong', ({
       users
     }) => {
-      this.log('User List gotten from socket: ' + JSON.stringify(users))
+      this.log(`User List gotten from socket: ${JSON.stringify(users)}`);
       // fiter hashmap with userlist to generate local streams list
-      let temp = observable(new Map())
+      const temp = observable(new Map());
 
-      for (let username of users) {
-        let value = this.userInfoMap.get(username)
+      for (const username of users) {
+        const value = this.userInfoMap.get(username);
         if (value) {
-          temp.set(username, this.userInfoMap.get(username))
+          temp.set(username, this.userInfoMap.get(username));
         }
       }
 
       if (!this.equal(temp, this.streams)) {
-        this.streams.replace(temp)
+        this.streams.replace(temp);
       }
-
-    })
+    });
     this.$socket.on('owner-disconnect', () => {
       if (this.isLeaving) {
-        return
+        return;
       }
       this.leave().then(() => {
-        message.info('Teacher has left the classroom!')
+        message.info('Teacher has left the classroom!');
         window.location.hash = '';
       });
-    })
+    });
   }
 }
 
-export default new Client( APP_ID, SIGNAL_ID );
+export default new Client(APP_ID, SIGNAL_ID);

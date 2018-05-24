@@ -1,45 +1,45 @@
-import React from 'react'
+import React from 'react';
 // import { Link } from 'react-router-dom'
-import { Form, Input, Radio, Button, Spin, message } from 'antd'
-import { inject, observer } from 'mobx-react'
+import { Form, Input, Radio, Button, Spin, message } from 'antd';
+import { inject, observer } from 'mobx-react';
 
-import './index.scss'
-import TitleBar from '../../components/TitleBar'
+import './index.scss';
+import TitleBar from '../../components/TitleBar';
 
-const FormItem = Form.Item
-const RadioGroup = Radio.Group
+const FormItem = Form.Item;
+const RadioGroup = Radio.Group;
 
 @inject('ClientStore')
 @observer
 class Index extends React.Component {
   constructor(props) {
-    super(props)
-    this.$client = props.ClientStore
+    super(props);
+    this.$client = props.ClientStore;
     this.state = {
       role: 'student',
       isLogining: false
-    }
+    };
   }
 
   componentDidMount() {
-    this.$client.init()
+    this.$client.init();
   }
 
   render() {
-    let loading
+    let loading;
     if (this.state.isLogining) {
       loading = (
         <div className="mask">
-          <Spin size="large" ></Spin>
+          <Spin size="large" />
         </div>
-      )
+      );
     }
     return (
       <div className="wrapper" id="index">
         {loading}
         <header className="title">
-            <TitleBar></TitleBar>
-          </header>
+          <TitleBar />
+        </header>
         <main className="main">
           <section className="content">
             <header>
@@ -48,10 +48,10 @@ class Index extends React.Component {
             <main>
               <Form onSubmit={this.handleSubmit}>
                 <FormItem label="Classroom Name" colon={false}>
-                  <Input id="channel"></Input>
+                  <Input id="channel" />
                 </FormItem>
                 <FormItem label="Your Name" colon={false}>
-                  <Input id="username"></Input>
+                  <Input id="username" />
                 </FormItem>
                 <FormItem>
                   <RadioGroup onChange={this.handleRole} id="role" defaultValue="student">
@@ -67,67 +67,67 @@ class Index extends React.Component {
               </Form>
             </main>
           </section>
-          <section className="illustration"></section>
+          <section className="illustration" />
           <img className="bubble-1" src={require('../../assets/images/monster-blue.png')} alt="" />
           <img className="bubble-2" src={require('../../assets/images/monster-yellow.png')} alt="" />
         </main>
       </div>
-    )
+    );
   }
 
   handleRole = (e) => {
     this.setState({
-      'role': e.target.value
-    })
+      role: e.target.value
+    });
   }
 
   handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     let channel = document.querySelector('#channel').value,
       username = document.querySelector('#username').value,
-      role = this.state.role
+      role = this.state.role;
 
     if (!/^[0-9a-zA-Z]+$/.test(username)) {
-      return message.error('Username can only consist a-z | A-Z | 0-9!')
+      return message.error('Username can only consist a-z | A-Z | 0-9!');
     }
 
     if (/^2$/.test(username)) {
-      return message.error('Username can not be 2!')
+      return message.error('Username can not be 2!');
     }
 
     if (!/^[0-9a-zA-Z]+$/.test(channel)) {
-      return message.error('Channel can only consist a-z | A-Z | 0-9!')
+      return message.error('Channel can only consist a-z | A-Z | 0-9!');
     }
 
     if (/^null$/.test(channel)) {
-      return message.error('Channel can not be "null"!')
+      return message.error('Channel can not be "null"!');
     }
 
     if (username.length > 8 || channel.length > 8) {
-      return message.error('The length of Channel/Username should be no longer than 8!')
+      return message.error('The length of Channel/Username should be no longer than 8!');
     }
 
     this.setState({
       isLogining: true
-    })
+    });
 
     this.$client.socketJoin(username, channel, role).then(() => {
       this.$client.login(username, channel, role).then(() => {
-        window.location.hash = 'device_testing'
+        window.location.hash = 'device_testing';
         this.setState({
           isLogining: false
-        })
+        });
       }).catch(err => {
-        message.error('Failed to login Signaling Server, Error: '+ err)
-      })
+        message.error(`Failed to login Signaling Server, Error: ${err}`);
+      });
     }).catch(err => {
       this.setState({
         isLogining: false
-      })
-      let errInfo = err.response.data.err
-      message.error('Error: ' + errInfo)
-    })
+      });
+      const errInfo = err.response.data.err;
+      message.error(`Error: ${errInfo}`);
+    });
 
     // this.$client.login(username, channel, role).then(() => {
     //   let signalClient = this.$client.$signal
@@ -137,7 +137,7 @@ class Index extends React.Component {
     //       this.setState({
     //         isLogining: false
     //       })
-    //       // only there is another one in class, he must be teacher? 
+    //       // only there is another one in class, he must be teacher?
     //       // depend on signaling client's stability
     //       if (val.num > 1) {
     //         signalClient.logout()
@@ -165,4 +165,4 @@ class Index extends React.Component {
   }
 }
 
-export default Index
+export default Index;

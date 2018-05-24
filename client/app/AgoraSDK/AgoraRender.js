@@ -107,9 +107,9 @@ function AgoraRender() {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
     that.renderImageCount += 1;
 
-    if(!that.firstFrameRender){
+    if (!that.firstFrameRender) {
       that.firstFrameRender = true;
-      that.event.emit("ready");
+      that.event.emit('ready');
     }
   };
 
@@ -216,7 +216,7 @@ function AgoraRender() {
     that.container.appendChild(that.canvas);
     try {
       // Try to grab the standard context. If it fails, fallback to experimental.
-      gl = that.canvas.getContext('webgl', { preserveDrawingBuffer: true}) || that.canvas.getContext('experimental-webgl');
+      gl = that.canvas.getContext('webgl', { preserveDrawingBuffer: true }) || that.canvas.getContext('experimental-webgl');
     } catch (e) {
       console.log(e);
     }
@@ -311,19 +311,17 @@ function AgoraRender() {
             that.canvas.style.zoom = that.clientWidth / width;
           }
         }
-      } else {
-        if (rotation === 0 || rotation === 180) {
-          if (that.clientWidth / that.clientHeight > width / height) {
-            that.canvas.style.zoom = that.clientHeight / height;
-          } else if (that.clientWidth / that.clientHeight < width / height) {
-            that.canvas.style.zoom = that.clientWidth / width;
-          }
-        } else { // 90, 270
-          if (that.clientHeight / that.clientWidth > width / height) {
-            that.canvas.style.zoom = that.clientWidth / width;
-          } else if (that.clientHeight / that.clientWidth < width / height) {
-            that.canvas.style.zoom = that.clientHeight / height;
-          }
+      } else if (rotation === 0 || rotation === 180) {
+        if (that.clientWidth / that.clientHeight > width / height) {
+          that.canvas.style.zoom = that.clientHeight / height;
+        } else if (that.clientWidth / that.clientHeight < width / height) {
+          that.canvas.style.zoom = that.clientWidth / width;
+        }
+      } else { // 90, 270
+        if (that.clientHeight / that.clientWidth > width / height) {
+          that.canvas.style.zoom = that.clientWidth / width;
+        } else if (that.clientHeight / that.clientWidth < width / height) {
+          that.canvas.style.zoom = that.clientHeight / height;
         }
       }
     } catch (e) {
