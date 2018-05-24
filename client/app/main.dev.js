@@ -9,7 +9,7 @@
  * `./app/main.prod.js` using webpack. This gives us some performance wins.
  *
  */
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 
 app.commandLine.appendSwitch('inspect', '5858');
 
@@ -79,6 +79,20 @@ app.on('ready', async () => {
     mainWindow.show();
     mainWindow.focus();
   });
+
+  mainWindow.webContents.on('crashed', () => {
+    const options = {
+      type: 'info',
+      title: 'Renderer Process Crashed',
+      message: 'This process has crashed.',
+      buttons: ['Reload', 'Close']
+    }
+
+    dialog.showMessageBox(options, (index) => {
+      if (index === 0) mainWindow.reload()
+      else mainWindow.close()
+    })
+  })
 
   mainWindow.on('closed', () => {
     mainWindow = null;

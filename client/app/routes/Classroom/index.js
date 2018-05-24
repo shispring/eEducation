@@ -50,7 +50,7 @@ class Classroom extends React.Component {
         }
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
       window.location.hash = '';
     }
   }
@@ -221,7 +221,11 @@ class Classroom extends React.Component {
   }
 
   handleSendInstructions = (key, value) => {
-    this.$signal.channel.channelSetAttr(key, value);
+    try {
+      this.$signal.channel.channelSetAttr(key, value);
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   subscribeRTCEvents = () => {
