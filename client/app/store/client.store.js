@@ -245,14 +245,17 @@ class Client {
     }
     this.$rtc.rtcEngine.videoSourceRelease();
     this.$rtc.rtcEngine.videoSourceLeave();
-    await this.$signal.leave();
-    await this.$signal.logout();
-    await this.$rtc.leave();
-    this.$socket.close();
-    clearInterval(this.socketTimer);
-    this.userInfoMap.clear();
-    this.streams.clear();
-    this.isLeaving = false;
+    try {
+      await this.$signal.leave();
+      await this.$signal.logout();
+      await this.$rtc.leave();
+    } finally {
+      this.$socket.close();
+      clearInterval(this.socketTimer);
+      this.userInfoMap.clear();
+      this.streams.clear();
+      this.isLeaving = false;
+    }
   }
 
   /**
