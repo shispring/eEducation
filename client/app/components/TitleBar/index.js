@@ -11,6 +11,28 @@ class TitleBar extends React.Component {
     };
   }
 
+  handleMin = () => {
+    ipcRenderer.send('hide-window');
+  }
+
+  handleMax = () => {
+    if (this.state.isFullScreen) {
+      ipcRenderer.send('restore-window');
+      this.setState({
+        isFullScreen: !this.state.isFullScreen
+      });
+    } else {
+      ipcRenderer.send('max-window');
+      this.setState({
+        isFullScreen: !this.state.isFullScreen
+      });
+    }
+  }
+
+  handleClose = () => {
+    ipcRenderer.send('close-window');
+  }
+
   render() {
     // max/shrink button
     let maxBtn;
@@ -32,28 +54,6 @@ class TitleBar extends React.Component {
         <Button className="btn" ghost icon="close" onClick={this.handleClose} />
       </div>
     );
-  }
-
-  handleMin = () => {
-    ipcRenderer.send('hide-window');
-  }
-
-  handleMax = () => {
-    if (this.state.isFullScreen) {
-      ipcRenderer.send('restore-window');
-      this.setState({
-        isFullScreen: !this.state.isFullScreen
-      });
-    } else {
-      ipcRenderer.send('max-window');
-      this.setState({
-        isFullScreen: !this.state.isFullScreen
-      });
-    }
-  }
-
-  handleClose = () => {
-    ipcRenderer.send('close-window');
   }
 }
 export default TitleBar;

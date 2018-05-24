@@ -6,7 +6,7 @@ import Index from './Index';
 import DeviceTesting from './DeviceTesting';
 import NetworkTesting from './NetworkTesting';
 import Classroom from './Classroom';
-import ClientStore from '../store/client.store.js';
+import ClientStore from '../store/client.store';
 
 class App extends Component {
   state = {
