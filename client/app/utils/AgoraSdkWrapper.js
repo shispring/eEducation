@@ -20,7 +20,7 @@ class SignalingClient {
 
 
   /**
-   * 
+   *
    */
   init() {
     this.channelEmitter = new EventEmitter();
@@ -37,7 +37,7 @@ class SignalingClient {
    * @returns {Promise}
    */
   login(account, token = '_no_need_token') {
-    this.init()
+    this.init();
     return new Promise((resolve, reject) => {
       this.session = this.signal.login(account, token);
       // proxy callback on session to sessionEmitter
@@ -66,7 +66,7 @@ class SignalingClient {
     return new Promise((resolve, reject) => {
       this.session && this.session.logout();
       this.sessionEmitter.on('onLogout', (...args) => {
-        this.sessionEmitter.removeAllListeners()
+        this.sessionEmitter.removeAllListeners();
         resolve(...args);
       });
     });
@@ -81,7 +81,7 @@ class SignalingClient {
   join(channel) {
     return new Promise((resolve, reject) => {
       if (!this.session) {
-        throw new Error('"session" must be initialized before joining channel')
+        throw new Error('"session" must be initialized before joining channel');
       }
       this.channel = this.session.channelJoin(channel);
       // proxy callback on channel to channelEmitter
@@ -116,7 +116,7 @@ class SignalingClient {
     return new Promise((resolve, reject) => {
       this.channel && this.channel.channelLeave();
       this.channelEmitter.on('onChannelLeaved', (...args) => {
-        this.channelEmitter.removeAllListeners()
+        this.channelEmitter.removeAllListeners();
         resolve(...args);
       });
     });

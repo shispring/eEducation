@@ -9,10 +9,9 @@
  * `./app/main.prod.js` using webpack. This gives us some performance wins.
  *
  */
-import { app, BrowserWindow, ipcMain } from 'electron';
-import MenuBuilder from './menu';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 
-app.commandLine.appendSwitch('inspect', '5858')
+app.commandLine.appendSwitch('inspect', '5858');
 
 let mainWindow = null;
 
@@ -28,18 +27,18 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')
   require('module').globalPaths.push(p);
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = [
-    'REACT_DEVELOPER_TOOLS',
-    'REDUX_DEVTOOLS'
-  ];
+// const installExtensions = async () => {
+//   const installer = require('electron-devtools-installer');
+//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+//   const extensions = [
+//     'REACT_DEVELOPER_TOOLS',
+//     'REDUX_DEVTOOLS'
+//   ];
 
-  return Promise
-    .all(extensions.map(name => installer.default(installer[name], forceDownload)))
-    .catch(console.log);
-};
+//   return Promise
+//     .all(extensions.map(name => installer.default(installer[name], forceDownload)))
+//     .catch(console.log);
+// };
 
 
 /**
@@ -60,7 +59,7 @@ app.on('ready', async () => {
     // await installExtensions();
   }
 
-  process.env['APP_PATH'] = app.getAppPath()
+  process.env.APP_PATH = app.getAppPath();
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -81,27 +80,38 @@ app.on('ready', async () => {
     mainWindow.focus();
   });
 
+  mainWindow.webContents.on('crashed', () => {
+    const options = {
+      type: 'info',
+      title: 'Renderer Process Crashed',
+      message: 'This process has crashed.',
+      buttons: ['Reload', 'Close']
+    }
+
+    dialog.showMessageBox(options, (index) => {
+      if (index === 0) mainWindow.reload()
+      else mainWindow.close()
+    })
+  })
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
-
   ipcMain.on('hide-window', () => {
-    mainWindow.minimize()
-  })
+    mainWindow.minimize();
+  });
 
   ipcMain.on('max-window', () => {
-    mainWindow.maximize()
-  })
+    mainWindow.maximize();
+  });
 
   ipcMain.on('restore-window', () => {
-    mainWindow.unmaximize()
-  })
+    mainWindow.unmaximize();
+  });
 
   ipcMain.on('close-window', () => {
-    mainWindow.close()
-  })
+    mainWindow.close();
+  });
 });
 
