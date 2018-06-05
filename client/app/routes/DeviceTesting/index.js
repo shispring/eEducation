@@ -35,6 +35,15 @@ class DeviceTesting extends React.Component {
   }
 
   componentDidMount() {
+    console.info('videoDevices')
+    console.info(this.state.videoDevices)
+    console.info('audioDevices')
+
+    console.info(this.state.audioDevices)
+    console.info('audioPlaybackDevices')
+
+    console.info(this.state.audioPlaybackDevices)
+
     this.$client.initProfile();
     this.$rtc.setupLocalVideo(document.querySelector('.preview-window'));
     this.$rtc.startPreview();
@@ -147,14 +156,20 @@ class DeviceTesting extends React.Component {
   }
 
   handleAudioDeviceChange = (val) => {
-    this.$rtc.setAudioRecordingDevice(this.state.videoDevices[val].deviceid);
+    console.info('setAudioRecordingDevice')
+    console.info(val)
+    this.$rtc.setAudioRecordingDevice(this.state.audioDevices[val].deviceid);
   }
 
   handleVideoDeviceChange = (val) => {
-    this.$rtc.setVideoDevice(this.state.audioDevices[val].deviceid);
+    console.info('setVideoDevice')
+    console.info(val)
+    this.$rtc.setVideoDevice(this.state.videoDevices[val].deviceid);
   }
 
   handlePlaybackDeviceChange = (val) => {
+    console.info('setAudioPlaybackDevice')
+    console.info(val)
     this.$rtc.setAudioPlaybackDevice(this.state.audioPlaybackDevices[val].deviceid);
   }
 
