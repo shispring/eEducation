@@ -111,7 +111,7 @@ app.on('ready', async () => {
   });
 
   ipcMain.on('close-window', () => {
-    mainWindow.close();
+    app.quit();
   });
 });
 
