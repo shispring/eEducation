@@ -119,8 +119,7 @@ class SignalingClient {
   leave() {
     return new Promise((resolve, reject) => {
       try {
-        this.channel.channelLeave();
-        this.channelEmitter.on('onChannelLeaved', (...args) => {
+        this.channel.channelLeave((...args)=> {
           this.channelEmitter.removeAllListeners();
           resolve(...args);
         });
