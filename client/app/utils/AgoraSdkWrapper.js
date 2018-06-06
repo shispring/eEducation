@@ -64,11 +64,15 @@ class SignalingClient {
    */
   logout() {
     return new Promise((resolve, reject) => {
-      this.session && this.session.logout();
-      this.sessionEmitter.on('onLogout', (...args) => {
-        this.sessionEmitter.removeAllListeners();
-        resolve(...args);
-      });
+      try {
+        this.session.logout();
+        this.sessionEmitter.on('onLogout', (...args) => {
+          this.sessionEmitter.removeAllListeners();
+          resolve(...args);
+        });
+      } catch(err) {
+        reject(err)
+      }
     });
   }
 
@@ -114,11 +118,16 @@ class SignalingClient {
    */
   leave() {
     return new Promise((resolve, reject) => {
-      this.channel && this.channel.channelLeave();
-      this.channelEmitter.on('onChannelLeaved', (...args) => {
-        this.channelEmitter.removeAllListeners();
-        resolve(...args);
-      });
+      try {
+        this.channel.channelLeave();
+        this.channelEmitter.on('onChannelLeaved', (...args) => {
+          this.channelEmitter.removeAllListeners();
+          resolve(...args);
+        });
+      } catch(err) {
+        reject(err)
+      }
+
     });
   }
 
@@ -182,11 +191,15 @@ class RtcClient {
 
   leave() {
     return new Promise((resolve, reject) => {
-      this.rtcEngine && this.rtcEngine.leaveChannel();
-      this.rtcEngine.on('leavechannel', (...args) => {
-        this.rtcEngine.removeAllListeners();
-        resolve(...args);
-      });
+      try {
+        this.rtcEngine.leaveChannel();
+        this.rtcEngine.on('leavechannel', (...args) => {
+          this.rtcEngine.removeAllListeners();
+          resolve(...args);
+        });
+      } catch (err) {
+        reject(err)
+      }
     });
   }
 }
