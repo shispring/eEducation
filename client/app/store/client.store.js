@@ -217,6 +217,7 @@ class Client {
     rtcEngine.setClientRole(isAudience ? 2 : 1);
     rtcEngine.setAudioProfile(0, 1);
     rtcEngine.setParameters('{"che.audio.live_for_comm":true}');
+    rtcEngine.setParameters('{"che.audio.enable.agc":false}');
     rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
     rtcEngine.setParameters('{"che.video.lowBitRateStreamParameter":{"width":192,"height":108,"frameRate":15,"bitRate":100}}');
     rtcEngine.enableDualStreamMode(true);
