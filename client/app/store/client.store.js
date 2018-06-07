@@ -248,9 +248,11 @@ class Client {
     this.$rtc.rtcEngine.videoSourceRelease();
     this.$rtc.rtcEngine.videoSourceLeave();
     try {
-      await this.$signal.leave();
-      await this.$signal.logout();
+      this.$signal.leave();
+      this.$signal.logout();
       await this.$rtc.leave();
+    } catch(err){
+      throw new Error(err)
     } finally {
       this.$socket.close();
       clearInterval(this.socketTimer);
