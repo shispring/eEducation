@@ -68,6 +68,8 @@ app.on('ready', async () => {
     frame: false
   });
 
+  // mainWindow.webContents.openDevTools()
+
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
   // @TODO: Use 'ready-to-show' event

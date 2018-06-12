@@ -60,6 +60,13 @@ class DeviceTesting extends React.Component {
         videoDevices: this.$rtc.getVideoDevices()
       });
     });
+    this.$rtc.on('audiodevicevolumechanged', (device, volume, muted) => {
+      console.log(JSON.stringify({
+        device,
+        volume,
+        muted
+      }))
+    })
     // this.$rtc.startEchoTest()
   }
 
