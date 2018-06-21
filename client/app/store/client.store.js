@@ -211,7 +211,7 @@ class Client {
    * @param {Integer} videoProfile
    * @param {Boolean} isAudience
    */
-  initProfile(videoProfile = 43, isAudience = false) {
+  initProfile(videoProfile = 43, isAudience = false, swapWidthAndHeight = false) {
     const rtcEngine = this.$rtc.rtcEngine;
     const audience = this.role !== 'teacher' && this.role !== 'student';
     rtcEngine.setClientRole(isAudience ? 2 : 1);
@@ -223,7 +223,7 @@ class Client {
     rtcEngine.enableDualStreamMode(true);
     rtcEngine.enableVideo();
     rtcEngine.enableLocalVideo(true);
-    rtcEngine.setVideoProfile(videoProfile);
+    rtcEngine.setVideoProfile(videoProfile, swapWidthAndHeight);
   }
 
   /**
