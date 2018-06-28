@@ -216,6 +216,7 @@ class Client {
     const audience = this.role !== 'teacher' && this.role !== 'student';
     rtcEngine.setClientRole(isAudience ? 2 : 1);
     rtcEngine.setAudioProfile(0, 1);
+    rtcEngine.enableWebSdkInteroperability(true)
     rtcEngine.setParameters('{"che.audio.live_for_comm":true}');
     // rtcEngine.setParameters('{"che.audio.enable.agc":false}');
     rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
