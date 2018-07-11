@@ -1,30 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Form, Select, Button, Progress, Slider } from 'antd';
-import { inject, observer } from 'mobx-react';
 import path from 'path';
 
 import TitleBar from '../../components/TitleBar';
-
 import './index.scss';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
 
-@inject('ClientStore')
-@observer
 class DeviceTesting extends React.Component {
   constructor(props) {
     super(props);
-
-    try {
-      this.$client = props.ClientStore;
-      this.$rtc = props.ClientStore.$rtc.rtcEngine;
-    } catch (err) {
-      console.error(err);
-      window.location.hash = '';
-    }
-
+    this.$client = props.barrel
+    this.$rtc = this.$client.rtcEngine
     this.outputVolume = this.$rtc.getAudioPlaybackVolume();
     this.state = {
       inputVolume: 0,
@@ -35,19 +24,14 @@ class DeviceTesting extends React.Component {
   }
 
   componentDidMount() {
-    console.info('videoDevices')
-    console.info(this.state.videoDevices)
-    console.info('audioDevices')
+    // console log devices
+    console.info('videoDevices', this.state.videoDevices)
+    console.info('audioDevices', this.state.audioDevices)
+    console.info('audioPlaybackDevices', this.state.audioPlaybackDevices)
 
-    console.info(this.state.audioDevices)
-    console.info('audioPlaybackDevices')
-
-    console.info(this.state.audioPlaybackDevices)
-
-    this.$client.initProfile();
     this.$rtc.setupLocalVideo(document.querySelector('.preview-window'));
     this.$rtc.startPreview();
-    console.log(this.$rtc.startAudioRecordingDeviceTest(100));
+    this.$rtc.startAudioRecordingDeviceTest(100);
     this.$rtc.on('audiovolumeindication', (...args) => this.inputVolumeIndicate(...args));
     this.$rtc.on('audiodevicestatechanged', (...args) => {
       this.setState({
@@ -187,12 +171,11 @@ class DeviceTesting extends React.Component {
   playMusic = () => {
     if (!this._playMusic) {
       let filepath;
-      if (this.$client.isDev()) {
+      if (process.env.NODE_ENV === 'development') {
         filepath = path.join(__dirname, 'AgoraSDK/music.mp3');
       } else {
-        filepath = path.join(this.$client.appPath, '../app', 'AgoraSDK/music.mp3');
+        filepath = path.join(process.env.APP_PATH, '../app', 'AgoraSDK/music.mp3');
       }
-      // let filepath = ''
       this.$rtc.startAudioPlaybackDeviceTest(filepath);
     } else {
       this.$rtc.stopAudioPlaybackDeviceTest();

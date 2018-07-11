@@ -1,39 +1,24 @@
 import React from 'react';
-// import { Link } from 'react-router-dom'
 import { Form, Input, Radio, Button, Spin, message } from 'antd';
-import { inject, observer } from 'mobx-react';
 
 import './index.scss';
 import TitleBar from '../../components/TitleBar';
+import { localStorage } from '../../utils/storage'
 
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 
-@inject('ClientStore')
-@observer
 class Index extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.ClientStore;
+    this.$client = props.barrel;
     this.state = {
       role: 'student',
-      isLogining: false
     };
-  }
-
-  componentDidMount() {
-    this.$client.init();
   }
 
   render() {
     let loading;
-    if (this.state.isLogining) {
-      loading = (
-        <div className="mask">
-          <Spin size="large" />
-        </div>
-      );
-    }
     return (
       <div className="wrapper" id="index">
         {loading}
@@ -108,26 +93,15 @@ class Index extends React.Component {
       return message.error('The length of Channel/Username should be no longer than 8!');
     }
 
-    this.setState({
-      isLogining: true
-    });
-
-    this.$client.socketJoin(username, channel, role).then(() => {
-      this.$client.login(username, channel, role).then(() => {
-        window.location.hash = 'device_testing';
-        this.setState({
-          isLogining: false
-        });
-      }).catch(err => {
-        message.error(`Failed to login Signaling Server, Error: ${err}`);
-      });
-    }).catch(err => {
-      this.setState({
-        isLogining: false
-      });
-      const errInfo = err.response.data.err;
-      message.error(`Error: ${errInfo}`);
-    });
+    // check if client can login
+    let result = this.$client.login({username, role}, channel)
+    if (result.result) {
+      this.$client.initProfile()
+      window.location.hash = 'device_testing';
+    } else {
+      message.error(result.message)
+    }
+    
   }
 }
 

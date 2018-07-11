@@ -1,69 +1,239 @@
 import React from 'react';
 import { Button, Input, Tooltip, Spin, message } from 'antd';
-import { inject, observer } from 'mobx-react';
-import axios from 'axios';
+import axios from 'axios'
+import ipcRenderer from 'electron';
+
 import {
-  APP_ID,
-  SERVER_URL
+  APP_ID
 } from '../../agora.config';
 import TitleBar from '../../components/TitleBar';
-
+import { localStorage } from '../../utils/storage'
 import './index.scss';
 
-const ipcRenderer = require('electron').ipcRenderer;
-
-@inject('ClientStore')
-@observer
 class Classroom extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.ClientStore;
+    this.$client = props.barrel;
+    this.$rtc = this.$client.rtcEngine;
+    this.subscribeRTCEvents();
     this.state = {
-      activated: false,
       networkQuality: 2,
       isRecording: false,
       recordBtnLoading: false,
-      isFullScreen: false
+      teacherList: [],
+      studentList: [],
+      messageList: []
     };
     this.isSharing = false;
   }
 
   componentDidMount() {
-    // join rtc and signal channel
-    try {
-      this.$rtc = this.$client.$rtc.rtcEngine;
-      this.$signal = this.$client.$signal;
-      this.subscribeRTCEvents();
-      this.$client.join();
-      const board = document.querySelector('.board');
-      if (board) {
-        if (this.$client.isSharingStarted) {
-          if (this.$client.role === 'teacher') {
-            this.$rtc.setupLocalVideoSource(board);
-          } else {
-            this.$rtc.subscribe(2, board);
-          }
-          this.$rtc.setupViewContentMode('videosource', 1);
-          this.$rtc.setupViewContentMode('2', 1);
-        } else {
-          board.innerHTML = '';
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      window.location.hash = '';
-    }
+    this.$client.join().then(() => {
+      this.$client.initDataTunnel()
+    })
+    this.$client.prepareSharing()
+    this.subscribeClientEvents()
   }
 
   componentWillUnmount() {
-    this.stopSharing();
-    this.$rtc.videoSourceLeave();
-    this.$rtc.videoSourceRelease();
+    this.$client.stopSharing()
+    this.$client.destructSharing()
+    this.$client.leave()
   }
 
   componentDidCatch(err, info) {
     console.error(err);
     window.location.hash = '';
+  }
+
+  addStream = (uid, info, streamId) => {
+    if(info.role === 'teacher') {
+      let temp = [...this.state.teacherList]
+      temp.push({
+        uid, info, streamId
+      })
+      this.setState({
+        teacherList: temp
+      })
+    } else {
+      let temp = [...this.state.studentList]
+      temp.push({
+        uid, info, streamId
+      })
+      this.setState({
+        studentList: temp
+      })
+    }
+
+  }
+
+  removeStream = (uid, role) => {
+    let spliceIndex = undefined
+    if(role === 'teacher') {
+      this.state.teacherList.some((item, index) => {
+        if(item.uid === uid) {
+          spliceIndex = index
+          return true
+        }
+        return false
+      })
+      if(spliceIndex) {
+        let temp = [...this.state.teacherList]
+        temp.splice(spliceIndex, 1)
+        this.setState({
+          teacherList: temp
+        })
+      }
+    } else {
+      this.state.studentList.some((item, index) => {
+        if(item.uid === uid) {
+          spliceIndex = index
+          return true
+        }
+        return false
+      })
+      if(spliceIndex) {
+        let temp = [...this.state.studentList]
+        temp.splice(spliceIndex, 1)
+        this.setState({
+          studentList: temp
+        })
+      }
+    }
+  }
+
+  subscribeClientEvents =   () => {
+    this.$client.on('teacher-added', (uid, info, streamId) => {
+      this.addStream(uid, info, streamId)
+    })
+    this.$client.on('student-added', (uid, info, streamId) => {
+      this.addStream(uid, info, streamId)
+    })
+    this.$client.on('teacher-removed', (uid) => {
+      this.removeStream(uid, 'teacher')
+    })
+    this.$client.on('student-removed', (uid) => {
+      this.removeStream(uid, 'student')
+    })
+    this.$client.on('sharing-start', (shareId, sharerUid) => {
+      let board = document.querySelector('.board');
+      if (board) {
+        if(sharerUid === this.$client.uid) {
+          this.$rtc.setupLocalVideoSource(board);
+        } else {
+          this.$rtc.subscribe(2, board);
+        }
+      }
+    })
+    this.$client.on('sharing-ended', (shareId, sharerUid) => {
+      let board = document.querySelector('.board');
+      if(board) {
+        board.innerHTML = '';
+      }
+    })
+    this.$client.on('channel-message', (message, uid, userInfo, ts) => {
+      let temp = [...this.state.messageList]
+      temp.push({
+        message, uid, 
+        info: userInfo, 
+        ts,
+        local: uid === this.$client.uid
+      })
+      this.setState({
+        messageList: temp
+      })
+    })
+  }
+
+  handleExit = () => {
+    this.$client.leave().then(() => {
+      message.info('Left the classroom successfully!');
+      window.location.hash = '';
+    }).catch(err => {
+      message.error('Left the classroom...');
+      window.location.hash = '';
+    });
+  }
+
+  handleKeyPress = e => {
+    if (e.key === 'Enter') {
+      this.handleSendMsg();
+    }
+  }
+
+  subscribeRTCEvents = () => {
+    this.$rtc.on('error', (err, msg) => {
+      console.error(`RtcEngine throw an error: ${err}`);
+    });
+    this.$rtc.on('lastmilequality', (quality) => {
+      // console.log(quality)
+      this.setState({
+        networkQuality: quality
+      });
+    });
+  }
+
+  handleSendMsg = () => {
+    const msg = document.querySelector('#channelMsg').value;
+    if (!msg) {
+      return;
+    }
+    this.$client.broadcastMessage(msg);
+    document.querySelector('#channelMsg').value = '';
+  }
+
+  handleShareScreen = () => {
+    if (!this.isSharing) {
+      this.$client.startSharing();
+    } else {
+      this.$client.stopSharing();
+    }
+    this.isSharing = !this.isSharing;
+  }
+
+
+  handleStartRecording = () => {
+    console.log('Start Recording...');
+    this.setState({
+      recordBtnLoading: true
+    });
+    axios.post(`${SERVER_URL}/v1/recording/start`, {
+      appid: APP_ID,
+      channel: this.$client.channel,
+      uid: this.$client.uid
+    }).then(res => {
+      this.setState({
+        recordBtnLoading: false,
+        isRecording: true
+      });
+    }).catch(err => {
+      console.error(err);
+      this.setState({
+        recordBtnLoading: false
+      });
+    });
+  }
+
+  handleStopRecording = () => {
+    console.log('Stop Recording...');
+    this.setState({
+      recordBtnLoading: true
+    });
+    axios.post(`${SERVER_URL}/v1/recording/stop`, {
+      appid: APP_ID,
+      channel: this.$client.channel,
+      uid: this.$client.uid
+    }).then(res => {
+      this.setState({
+        recordBtnLoading: false,
+        isRecording: false
+      });
+    }).catch(err => {
+      console.error(err);
+      this.setState({
+        recordBtnLoading: false
+      });
+    });
   }
 
   render() {
@@ -110,23 +280,31 @@ class Classroom extends React.Component {
       }
     })();
 
-    let students = [],
-      teacher;
-    if (this.state.activated) {
-      for (const item of this.$client.streams.values()) {
-        if (item.role === 'student') {
-          students.push(<Window key={item.uid} uid={item.uid} username={item.username} role={item.role} />);
-        } else if (item.role === 'teacher') {
-          teacher = (<Window uid={item.uid} username={item.username} role={item.role} />);
-        } else {
-          // do nothing for now
-        }
-      }
-    }
+    const teacher = this.state.teacherList.map(item => {
+      return (
+        <Window 
+          key={item.streamId} 
+          uid={item.streamId}
+          barrel={this.props.barrel}
+          username={item.info.username} 
+          role={item.info.role} />
+      )
+    })
+
+    const students = this.state.studentList.map(item => {
+      return (
+        <Window 
+          key={item.streamId} 
+          uid={item.streamId}
+          barrel={this.props.barrel}
+          username={item.info.username} 
+          role={item.info.role} />
+      )
+    })
 
     // recording Button
     let RecordingButton;
-    if (this.$client.role === 'teacher') {
+    if (this.$client.info && this.$client.info.role === 'teacher') {
       let id,
         content,
         func;
@@ -146,7 +324,7 @@ class Classroom extends React.Component {
 
     // screen share btn
     let ScreenSharingBtn;
-    if (this.$client.role === 'teacher') {
+    if (this.$client.info && this.$client.info.role === 'teacher') {
       ScreenSharingBtn = (
         <div onClick={this.handleShareScreen} className="btn board-bar">
           <div>
@@ -168,7 +346,12 @@ class Classroom extends React.Component {
               <span>Classroom: {this.$client.channel}</span>
             </Tooltip>
             <Tooltip title={`Teacher: ${this.$client.teacher}`}>
-              <span>Teacher: {this.$client.teacher}</span>
+              <span>
+                Teacher: {
+                  this.state.teacherList.length && 
+                  this.state.teacherList[0].info.username
+                }
+              </span>
             </Tooltip>
           </div>
 
@@ -189,7 +372,7 @@ class Classroom extends React.Component {
         <section className="channel-container">
           <div className="channel">
             <header className="channel-header">Chatroom</header>
-            <MessageBox />
+            <MessageBox messageList={this.state.messageList} />
             <footer className="channel-input">
 
               <Input id="channelMsg" placeholder="Input messages..." onKeyPress={this.handleKeyPress} />
@@ -203,237 +386,38 @@ class Classroom extends React.Component {
 
     );
   }
-
-  handleExit = () => {
-    this.$client.leave().then(() => {
-      message.info('Left the classroom successfully!');
-      window.location.hash = '';
-    }).catch(err => {
-      message.error('Left the classroom...');
-      window.location.hash = '';
-    });
-  }
-
-  handleKeyPress = e => {
-    if (e.key === 'Enter') {
-      this.handleSendMsg();
-    }
-  }
-
-  handleSendInstructions = (key, value) => {
-    try {
-      this.$signal.channel.channelSetAttr(key, value);
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  subscribeRTCEvents = () => {
-    this.$rtc.on('joinedchannel', (channel, uid, elapsed) => {
-      this.setState({
-        activated: true
-      });
-    });
-    this.$rtc.on('rejoinchannel', (channel, uid, elapsed) => {
-      this.setState({
-        activated: true
-      });
-    });
-    this.$rtc.on('leavechannel', () => {
-      this.setState({
-        activated: false
-      });
-    });
-    this.$rtc.on('error', (err, msg) => {
-      console.error(`RtcEngine throw an error: ${err}`);
-    });
-    this.$rtc.on('lastmilequality', (quality) => {
-      // console.log(quality)
-      this.setState({
-        networkQuality: quality
-      });
-    });
-    // receive instructions
-    this.$signal.channelEmitter.on('onChannelAttrUpdated', (name, value, type) => {
-      if (name === 'sharingEvent' && type === 'update') {
-        // receive instructions from teacher
-        const board = document.querySelector('.board');
-        if (board) {
-          switch (value) {
-            case 'StartSharing':
-              if (this.$client.role === 'teacher') {
-                this.$rtc.setupLocalVideoSource(board);
-              } else {
-                this.$rtc.subscribe(2, board);
-              }
-              this.$rtc.setupViewContentMode('videosource', 1);
-              this.$rtc.setupViewContentMode('2', 1);
-              break;
-            case 'StopSharing':
-              board.innerHTML = '';
-              break;
-            default:
-              break;
-          }
-        }
-      }
-    });
-    this.$rtc.on('userjoined', (uid, elapsed) => {
-      // only teacher should use high stream
-      const teacher = this.$client.streams.get(this.$client.teacher);
-      if (uid === teacher.uid) {
-        this.$rtc.setRemoteVideoStreamType(uid, 0);
-      } else {
-        this.$rtc.setRemoteVideoStreamType(uid, 1);
-      }
-
-      // sharing stream come in
-      // let board = document.querySelector('.board')
-      // if (uid === 2) {
-      //   if (this.$client.role === 'teacher') {
-      //     this.$rtc.setupLocalVideoSource(board)
-      //   } else {
-      //     this.$rtc.subscribe(2, board)
-      //   }
-      // }
-    });
-  }
-
-  handleSendMsg = () => {
-    const msg = document.querySelector('#channelMsg').value;
-    if (!msg) {
-      return;
-    }
-    this.$signal.broadcastMessage(msg);
-    document.querySelector('#channelMsg').value = '';
-  }
-
-  handleShareScreen = () => {
-    if (!this.isSharing) {
-      this.prepareSharing();
-    } else {
-      this.stopSharing();
-    }
-    this.isSharing = !this.isSharing;
-  }
-
-  prepareSharing = () => {
-    if (!this._sharingPrepared) {
-      this.$rtc.on('videosourcejoinedsuccess', uid => {
-        console.log('Screen Share Source joined success');
-        this.startSharing();
-        this._sharingPrepared = true;
-      });
-      this.$rtc.videoSourceInitialize(APP_ID);
-      console.log(`video source appid: ${APP_ID}`);
-      this.$rtc.videoSourceSetChannelProfile(1);
-      this.$rtc.videoSourceEnableWebSdkInteroperability(true)
-      this.$rtc.videoSourceSetVideoProfile(50, false);
-      // to adjust render dimension to optimize performance
-      this.$rtc.setVideoRenderDimension(3, 2, 1600, 900);
-      this.$rtc.videoSourceJoin(null, this.$client.channel, null, 2);
-    } else {
-      this.startSharing();
-    }
-  }
-
-  startSharing = () => {
-    console.log('Start Sharing...');
-    // this.$rtc.setupLocalVideoSource(document.querySelector('.board'))
-    this.handleSendInstructions('sharingEvent', 'StartSharing');
-    this.$rtc.startScreenCapture2(0, 15, {
-      top: 0, left: 0, right: 0, bottom: 0
-    }, 0);
-    this.$rtc.startScreenCapturePreview();
-  }
-
-  stopSharing = () => {
-    console.log('Stop Sharing...');
-    this.handleSendInstructions('sharingEvent', 'StopSharing');
-    this.$rtc.stopScreenCapture2();
-    this.$rtc.stopScreenCapturePreview();
-  }
-
-  handleStartRecording = () => {
-    console.log('Start Recording...');
-    this.setState({
-      recordBtnLoading: true
-    });
-    // setTimeout(() => {
-    //   this.setState({
-    //     recordBtnLoading: false,
-    //     isRecording: true
-    //   })
-    // }, 1500)
-    axios.post(`${SERVER_URL}/v1/recording/start`, {
-      appid: APP_ID,
-      channel: this.$client.channel,
-      uid: this.$client.uid
-    }).then(res => {
-      this.setState({
-        recordBtnLoading: false,
-        isRecording: true
-      });
-    }).catch(err => {
-      console.error(err);
-      this.setState({
-        recordBtnLoading: false
-      });
-    });
-  }
-
-  handleStopRecording = () => {
-    console.log('Stop Recording...');
-    this.setState({
-      recordBtnLoading: true
-    });
-    // setTimeout(() => {
-    //   this.setState({
-    //     recordBtnLoading: false,
-    //     isRecording: false
-    //   })
-    // }, 1500)
-    axios.post(`${SERVER_URL}/v1/recording/stop`, {
-      appid: APP_ID,
-      channel: this.$client.channel,
-      uid: this.$client.uid
-    }).then(res => {
-      this.setState({
-        recordBtnLoading: false,
-        isRecording: false
-      });
-    }).catch(err => {
-      console.error(err);
-      this.setState({
-        recordBtnLoading: false
-      });
-    });
-  }
 }
 
-@inject('ClientStore')
-@observer
 class Window extends React.Component {
-  state = {
-    loading: true
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: true
+    };
+    this.$rtc = props.barrel.rtcEngine
   }
+
   componentDidMount() {
     const dom = document.querySelector(`#video-${this.props.uid}`);
-    if (this.props.uid === this.props.ClientStore.uid) {
+    if (this.props.uid === this.props.barrel.uid) {
       // local stream
       console.log(`Setup local: ${this.props.uid}`);
-      this.props.ClientStore.$rtc.rtcEngine.setupLocalVideo(dom);
+      this.$rtc.setupLocalVideo(dom);
     } else {
       // remote stream
       console.log(`Setup remote: ${this.props.uid}`);
-      this.props.ClientStore.$rtc.rtcEngine.subscribe(this.props.uid, dom);
+      this.$rtc.subscribe(this.props.uid, dom);
     }
 
     let name = this.props.uid;
-    name = this.props.uid === this.props.ClientStore.uid ? 'local' : name;
+    name = this.props.uid === this.$rtc.uid ? 'local' : name;
+    
+    /**
+     * Warning. Here we assume sharing streamID to be 2
+     */
     name = this.props.uid === 2 ? 'videosource' : name;
 
-    const render = this.props.ClientStore.$rtc.rtcEngine.streams[name];
+    const render = this.$rtc.streams[name];
     if (render) {
       if (render.firstFrameRender) {
         this.setState({ loading: false });
@@ -469,43 +453,21 @@ class Window extends React.Component {
   }
 }
 
-@inject('ClientStore')
-@observer
+
 class MessageBox extends React.Component {
-  state = {
-    messages: []
-  }
-
-  componentDidMount() {
-    try {
-      this.$signal = this.props.ClientStore.$signal;
-      this.$signal.channelEmitter.on('onMessageChannelReceive', (clientId, sid, msg) => {
-        const temp = JSON.parse(msg);
-        // do nothing when it was a instructions
-        if (!temp.type) {
-          const arr = [...this.state.messages];
-          arr.push({
-            clientId, content: temp, self: clientId === this.props.ClientStore.clientId
-          });
-          this.setState({
-            messages: arr
-          });
-        }
-      });
-    } catch (err) {
-      console.log(err);
-      window.location.hash = '';
-    }
-  }
-
   componentDidUpdate() {
     const box = document.querySelector('.channel-box');
     box.scrollTop = box.scrollHeight - box.clientHeight;
   }
 
   render() {
-    const messages = this.state.messages.map((item, index) => (
-      <MessageItem key={index} clientId={item.clientId} content={item.content} self={item.self} />
+    const messages = this.props.messageList.map(item => (
+      <MessageItem 
+        key={item.ts} 
+        message={item.message}
+        username={item.info.username}
+        role={item.info.role}
+        local={item.local} />
     ));
 
     return (
@@ -517,16 +479,14 @@ class MessageBox extends React.Component {
 }
 
 function MessageItem(props) {
-  const align = props.self ? 'right' : 'left';
-  const info = props.clientId.split('-');
-  const speaker = info[1];
+  const align = props.local ? 'right' : 'left';
   return (
-    <div className={props.self ? 'message-item right' : 'message-item left'}>
+    <div className={`message-item ${align}`}>
       <div className="arrow" style={{ float: align }} />
       <div className="message-content" style={{ textAlign: align, float: align }}>
-        {props.content}
+        {props.message}
       </div>
-      <div className="message-sender" style={{ textAlign: align }}>{speaker}</div>
+      <div className="message-sender" style={{ textAlign: align }}>{props.username}</div>
     </div>
   );
 }

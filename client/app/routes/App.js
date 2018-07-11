@@ -7,11 +7,17 @@ import DeviceTesting from './DeviceTesting';
 import NetworkTesting from './NetworkTesting';
 import Classroom from './Classroom';
 import ClientStore from '../store/client.store';
+import BarrelClient from '../utils/Barrel'
 
 class App extends Component {
-  state = {
-    style: { visibility: 'hidden' }
+  constructor() {
+    super()
+    this.client = new BarrelClient('aab8b8f5a8cd4469a63042fcfafe7063')
+    this.state = {
+      style: { visibility: 'hidden' }
+    }
   }
+
 
   componentDidMount() {
     setTimeout(() => {
@@ -26,10 +32,10 @@ class App extends Component {
       <Provider ClientStore={ClientStore}>
         <Router>
           <div className="full" style={this.state.style}>
-            <Route exact path="/" component={Index} />
-            <Route path="/device_testing" component={DeviceTesting} />
-            <Route path="/network_testing" component={NetworkTesting} />
-            <Route path="/classroom" component={Classroom} />
+            <Route exact path="/" render={() => <Index barrel={this.client} />} />
+            <Route path="/device_testing" render={() => <DeviceTesting barrel={this.client} />} />
+            {/* <Route path="/network_testing" component=(<NetworkTesting barrel={this.client} />) /> */}
+            <Route path="/classroom" render={() => <Classroom barrel={this.client} />} />
           </div>
         </Router>
       </Provider>

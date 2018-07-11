@@ -1,28 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Form, Button, Progress, Row, Col } from 'antd';
-import { inject, observer } from 'mobx-react';
 
 import TitleBar from '../../components/TitleBar';
-
 import './index.scss';
 
 const FormItem = Form.Item;
 
-@inject('ClientStore')
-@observer
 class NetworkTesting extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       networkQuality: 2
     };
-    try {
-      this.$rtc = props.ClientStore.$rtc.rtcEngine;
-    } catch (err) {
-      console.error(err);
-      window.location.hash = '';
-    }
+    this.$rtc = props.barrel.$rtc;
+
   }
 
   componentDidMount() {
