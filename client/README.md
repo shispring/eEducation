@@ -4,8 +4,8 @@ Mainly based on this boilerplate: [electron-react-boilerplate](https://github.co
 ## Development
 
 First, create a developer account at [Agora.io](https://dashboard.agora.io/signin/), and obtain an App ID.
-Update 'agora.config.js' under './app/'.
-
+Update 'agora.config.js' under './app/'.  
+**Recommend to use yarn!**
 
 ```bash
 # install dependency
