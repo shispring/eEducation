@@ -294,6 +294,9 @@ export default class BarrelClient extends EventEmitter {
    */
   leave(timeout = 10000) {
     return new Promise((resolve, reject) => {
+      if(this.userList.length === 1) {
+        this.gun.get('channels').get(this.channel).put(null)
+      }
       let timer = setTimeout(() => {
         reject(new Error('Timeout'))
       }, timeout)
