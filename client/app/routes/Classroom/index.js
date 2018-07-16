@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Input, Tooltip, Spin, message } from 'antd';
+import { isEqual } from 'lodash';
 import axios from 'axios'
 import ipcRenderer from 'electron';
 
@@ -17,11 +18,12 @@ class Classroom extends React.Component {
     this.$rtc = this.$client.rtcEngine;
     this.subscribeRTCEvents();
     this.state = {
+      teacher: '',
       networkQuality: 2,
       isRecording: false,
       recordBtnLoading: false,
-      teacherList: [],
-      studentList: [],
+      teacherList: new Map(),
+      studentList: new Map(),
       messageList: []
     };
     this.isSharing = false;
@@ -48,20 +50,18 @@ class Classroom extends React.Component {
 
   addStream = (uid, info, streamId) => {
     if(info.role === 'teacher') {
-      let temp = [...this.state.teacherList]
-      temp.push({
+      this.state.teacherList.set(uid, {
         uid, info, streamId
       })
       this.setState({
-        teacherList: temp
+        teacherList: this.state.teacherList
       })
     } else {
-      let temp = [...this.state.studentList]
-      temp.push({
+      this.state.studentList.set(uid, {
         uid, info, streamId
       })
       this.setState({
-        studentList: temp
+        studentList: this.state.studentList
       })
     }
 
@@ -70,40 +70,23 @@ class Classroom extends React.Component {
   removeStream = (uid, role) => {
     let spliceIndex = undefined
     if(role === 'teacher') {
-      this.state.teacherList.some((item, index) => {
-        if(item.uid === uid) {
-          spliceIndex = index
-          return true
-        }
-        return false
+      this.state.teacherList.delete(uid)
+      this.setState({
+        teacherList: this.state.teacherList
       })
-      if(spliceIndex) {
-        let temp = [...this.state.teacherList]
-        temp.splice(spliceIndex, 1)
-        this.setState({
-          teacherList: temp
-        })
-      }
     } else {
-      this.state.studentList.some((item, index) => {
-        if(item.uid === uid) {
-          spliceIndex = index
-          return true
-        }
-        return false
+      this.state.studentList.delete(uid)
+      this.setState({
+        studentList: this.state.studentList
       })
-      if(spliceIndex) {
-        let temp = [...this.state.studentList]
-        temp.splice(spliceIndex, 1)
-        this.setState({
-          studentList: temp
-        })
-      }
     }
   }
 
   subscribeClientEvents =   () => {
     this.$client.on('teacher-added', (uid, info, streamId) => {
+      this.setState({
+        teacher: info.username
+      })
       this.addStream(uid, info, streamId)
     })
     this.$client.on('student-added', (uid, info, streamId) => {
@@ -280,27 +263,35 @@ class Classroom extends React.Component {
       }
     })();
 
-    const teacher = this.state.teacherList.map(item => {
-      return (
-        <Window 
-          key={item.streamId} 
-          uid={item.streamId}
-          barrel={this.props.barrel}
-          username={item.info.username} 
-          role={item.info.role} />
-      )
-    })
+    const teacher = (() => {
+      let result = []
+      this.state.teacherList.forEach(item => {
+        result.push((
+          <Window 
+            key={item.streamId} 
+            uid={item.streamId}
+            barrel={this.props.barrel}
+            username={item.info.username} 
+            role={item.info.role} />
+        ))
+      })
+      return result
+    })();
 
-    const students = this.state.studentList.map(item => {
-      return (
-        <Window 
-          key={item.streamId} 
-          uid={item.streamId}
-          barrel={this.props.barrel}
-          username={item.info.username} 
-          role={item.info.role} />
-      )
-    })
+    const students = (() => {
+      let result = []
+      this.state.studentList.forEach(item => {
+        result.push((
+          <Window 
+            key={item.streamId} 
+            uid={item.streamId}
+            barrel={this.props.barrel}
+            username={item.info.username} 
+            role={item.info.role} />
+        ))
+      })
+      return result
+    })();
 
     // recording Button
     let RecordingButton;
@@ -345,11 +336,12 @@ class Classroom extends React.Component {
             <Tooltip title={`Classroom: ${this.$client.channel}`}>
               <span>Classroom: {this.$client.channel}</span>
             </Tooltip>
-            <Tooltip title={`Teacher: ${this.$client.teacher}`}>
+            <Tooltip title={
+              `Teacher: ${this.state.teacher}`
+            }>
               <span>
                 Teacher: {
-                  this.state.teacherList.length && 
-                  this.state.teacherList[0].info.username
+                  this.state.teacher
                 }
               </span>
             </Tooltip>
@@ -395,6 +387,14 @@ class Window extends React.Component {
       loading: true
     };
     this.$rtc = props.barrel.rtcEngine
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    // always return false in temp
+    if(this.state.loading = nextState.loading) {
+      return false
+    }
+    return true
   }
 
   componentDidMount() {

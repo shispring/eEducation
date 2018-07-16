@@ -25,6 +25,8 @@ export default class BarrelClient extends EventEmitter {
     // 
     this.appId = appId
     this.serverUrl = serverUrl
+    // init profile
+    this.initProfile()
   }
 
   /**
@@ -58,9 +60,9 @@ export default class BarrelClient extends EventEmitter {
     this.info = info
     this.channel = channel
     // init data channel
-    this.ChannelStatus = this.gun.get('channels/' + channel + '/status')
-    this.Users = this.gun.get('channels/' + channel + '/users')
-    this.Messages = this.gun.get('channels/' + channel + '/messages')
+    this.ChannelStatus = this.gun.get(this.appId + '/' + channel + '/status')
+    this.Users = this.gun.get(this.appId + '/' + channel + '/users')
+    this.Messages = this.gun.get(this.appId + '/' + channel + '/messages')
     // do validate
     if (validation) {
       return validation(this.uid, info, this.Users, this.ChannelStatus)
@@ -72,7 +74,7 @@ export default class BarrelClient extends EventEmitter {
   defaultValidation(uid, info, Users, ChannelStatus) {
     let distincted = true
     let hasTeacher = false
-    ChannelStatus.once((v, k) => {
+    ChannelStatus.map().once((v, k) => {
       if (k === 'teacher') {
         hasTeacher = (v !== null)
       }
@@ -93,9 +95,9 @@ export default class BarrelClient extends EventEmitter {
       }
       return {result: true, message:''}
     } else if (info.role === 'student') {
-      if(!hasTeacher) {
-        return {result: false, message: 'Teacher for that class not ready yet'}
-      }
+      // if(!hasTeacher) {
+      //   return {result: false, message: 'Teacher for that class not ready yet'}
+      // }
       if(!distincted) {
         return {result: false, message: 'Username exists'}
       }
@@ -200,7 +202,7 @@ export default class BarrelClient extends EventEmitter {
         this.addUser(uid, info, undefined)
       }
     })
-    this.ChannelStatus.on((v, k) => {
+    this.ChannelStatus.map().on((v, k) => {
       console.info('ChannelStatus:', k, v)
       if(k === 'sharing') {
         if(v !== null) {
@@ -297,6 +299,11 @@ export default class BarrelClient extends EventEmitter {
       if(this.userList.length === 1) {
         this.gun.get('channels').get(this.channel).put(null)
       }
+      this.closeDataTunnel()
+      this.Users.get(this.uid).put(null);
+      if(this.info.role === 'teacher') {
+        this.ChannelStatus.get('teacher').put(null)
+      }
       let timer = setTimeout(() => {
         reject(new Error('Timeout'))
       }, timeout)
@@ -309,11 +316,6 @@ export default class BarrelClient extends EventEmitter {
       this.rtcEngine.on('leavechannel', (...args) => {
         clearTimeout(timer);
         this.rtcEngine.removeAllListeners();
-        this.closeDataTunnel()
-        this.Users.get(this.uid).put(null);
-        if(this.info.role === 'teacher') {
-          this.ChannelStatus.get('teacher').put(null)
-        }
         resolve(...args);
       });
     });

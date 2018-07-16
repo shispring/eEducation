@@ -96,7 +96,6 @@ class Index extends React.Component {
     // check if client can login
     let result = this.$client.login({username, role}, channel)
     if (result.result) {
-      this.$client.initProfile()
       window.location.hash = 'device_testing';
     } else {
       message.error(result.message)
