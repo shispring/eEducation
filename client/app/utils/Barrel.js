@@ -12,25 +12,44 @@ import {
 const sharingStreamId = 2
 
 export default class BarrelClient extends EventEmitter {
-  constructor(appId, serverUrl = ['http://localhost:8888/gun']) {
+  /**
+   * @description constructor for client
+   * @param {string} appId App ID get from agora.io
+   * @param {array} serverUrl Target servers you use to sync data with
+   * @param {object} config some extra config
+   */
+  constructor(appId, serverUrl = ['http://localhost:8888/gun'], config = {
+    defaultProfile: true
+  }) {
     super()
-    if (!appId) {
-      throw new Error('appId is required!')
+    if (!appId || !serverUrl.length) {
+      throw new Error('Required App ID and at least one server url!')
     }
+    // initialize gun for dataTunnel and rtcEngine for rtcTunnel
     this.gun = new Gun(serverUrl)
     this.rtcEngine = new AgoraRtcEngine()
     this.rtcEngine.initialize(appId)
-    // init map
+    // init user map
     this.userList = {}
-    // 
+    // utils 
     this.appId = appId
     this.serverUrl = serverUrl
+    this.sharingPrepared = false
+    this.uid = undefined
+    this.info = undefined
+    this.channel = undefined
+    // declare data tunnels
+    this.ChannelStatus = undefined
+    this.Users = undefined
+    this.Messages = undefined
     // init profile
-    this.initProfile()
+    if(defaultProfile) {
+      this.initProfile()
+    }
   }
 
   /**
-   * 
+   * @description Encapsulation regular profile you need to set
    * @param {boolean} audience if user is an audience
    * @param {number} videoProfile videoProfile 
    * @param {boolean} swapWidthAndHeight if swap width and height
@@ -51,6 +70,12 @@ export default class BarrelClient extends EventEmitter {
     rtcEngine.setVideoProfile(videoProfile, swapWidthAndHeight);
   }
 
+  /**
+   * @description login and open data tunnel with validation
+   * @param {object} info in temp role and username
+   * @param {string} channel channel name
+   * @param {function} validation custom validation, will use default validation if not set
+   */
   login(info = {
     username,
     role
@@ -71,10 +96,17 @@ export default class BarrelClient extends EventEmitter {
     }
   }
 
+  /**
+   * @description default validation for login
+   * @param {number} uid 
+   * @param {object} info 
+   * @param {DataTunnel} Users 
+   * @param {DataTunnel} ChannelStatus 
+   */
   defaultValidation(uid, info, Users, ChannelStatus) {
     let distincted = true
     let hasTeacher = false
-    ChannelStatus.map().once((v, k) => {
+    ChannelStatus.once((v, k) => {
       if (k === 'teacher') {
         hasTeacher = (v !== null)
       }
@@ -111,7 +143,7 @@ export default class BarrelClient extends EventEmitter {
    * Channel Related
    */
 
-  userAdded(uid, info, stream) {
+  handleUserAdded = (uid, info, stream) => {
     if (info.role === 'teacher') {
       this.emit('teacher-added', uid, info, stream)
     } else if (info.role === 'student') {
@@ -122,54 +154,18 @@ export default class BarrelClient extends EventEmitter {
   }
 
   /**
-   * @description add user to userlist, only when both info and stream are set will userAdded be emit
+   * @description add user to userlist
    * @param {number} uid 
    * @param {object} info 
    * @param {object} stream 
    */
-  addUser(uid, info, stream) {
-    let self = this
+  addUser = (uid, info, stream) => {
     // if not exist, create one
-    if (!self.userList.hasOwnProperty(uid)) {
-      self.userList[uid] = {
-        uid: uid,
-        hasInfo: false,
-        hasStream: false
-      }
-      let target = self.userList[uid]
-      Object.defineProperties(target, {
-        info: {
-          set: function (val) {
-            this.accessInfo = val
-            if (val) {
-              this.hasInfo = true
-              if (this.hasStream) {
-                self.userAdded(this.uid, this.info, this.stream)
-              }
-            }
-          },
-          get: function () {
-            return this.accessInfo
-          }
-        },
-        stream: {
-          set: function (val) {
-            this.accessStream = val
-            if (val) {
-              this.hasStream = true
-              if (this.hasInfo) {
-                self.userAdded(this.uid, this.info, this.stream)
-              }
-            }
-          },
-          get: function () {
-            return this.accessStream
-          }
-        }
-      })
+    if (!this.userList.hasOwnProperty(uid)) {
+      this.userList[uid] = this.newUser(uid, this.handleUserAdded)
     }
     // if exist
-    let target = self.userList[uid]
+    let target = this.userList[uid]
     if (info) {
       target.info = info
     }
@@ -178,6 +174,54 @@ export default class BarrelClient extends EventEmitter {
     }
   }
 
+  /**
+   * @description new a object only when both info and stream are set will callback be emit
+   * @param {number} uid 
+   * @param {function} callback 
+   */
+  newUser(uid, callback) {
+    let target = {
+      uid,
+      hasInfo: false,
+      hasStream: false
+    }
+    Object.defineProperties(target, {
+      info: {
+        set: function (val) {
+          this.accessInfo = val
+          if (val) {
+            this.hasInfo = true
+            if (this.hasStream) {
+              callback(this.uid, this.info, this.stream)
+            }
+          }
+        },
+        get: function () {
+          return this.accessInfo
+        }
+      },
+      stream: {
+        set: function (val) {
+          this.accessStream = val
+          if (val) {
+            this.hasStream = true
+            if (this.hasInfo) {
+              callback(this.uid, this.info, this.stream)
+            }
+          }
+        },
+        get: function () {
+          return this.accessStream
+        }
+      }
+    })
+    return target
+  }
+
+  /**
+   * @description remove user from userList and trigger related event
+   * @param {number} uid 
+   */
   removeUser(uid) {
     if(this.userList.hasOwnProperty(uid)) {
       let role = this.userList[uid].info.role
@@ -208,9 +252,11 @@ export default class BarrelClient extends EventEmitter {
         if(v !== null) {
           this.rtcEngine.setupViewContentMode('videosource', 1);
           this.rtcEngine.setupViewContentMode(String(sharingStreamId), 1);
-          this.emit('sharing-start', sharingStreamId, v.sharer)
+          if(v.sharer !== this.uid) {
+            this.emit('sharing-start', sharingStreamId, v.sharer)
+          }
         } else {
-          this.emit('sharing-ended', sharingStreamId, v.sharer)
+          this.emit('sharing-ended', sharingStreamId)
         }
       }
     })
@@ -232,7 +278,7 @@ export default class BarrelClient extends EventEmitter {
 
   subRtcEvents() {
     this.rtcEngine.on('useroffline', (uid, reason) => {
-      this.removeUser(uid)
+      this.Users.get(uid).put(null)
     });
     this.rtcEngine.on('userjoined', (uid, elpased) => {
       this.addUser(uid, undefined, uid)
@@ -337,6 +383,7 @@ export default class BarrelClient extends EventEmitter {
       }, timeout)
       this.rtcEngine.on('videosourcejoinedsuccess', uid => {
         clearTimeout(timer)
+        this.sharingPrepared = true
         resolve()
       });
       try {
@@ -354,22 +401,27 @@ export default class BarrelClient extends EventEmitter {
     })
   }
 
-  startSharing() {
+  startSharing = () => {
+    if(!this.sharingPrepared) {
+      console.error('Sharing not prepared yet.')
+      return false
+    }
     this.ChannelStatus.get('sharing').put({
-      status: true,
       sharer: this.uid
+    }, (ack) => {
+      if(ack.err){
+        throw new Error(ack.err)
+      }
+      this.rtcEngine.startScreenCapture2(0, 15, {
+        top: 0, left: 0, right: 0, bottom: 0
+      }, 0);
+      this.rtcEngine.startScreenCapturePreview();
+      this.emit('sharing-start', sharingStreamId, this.uid)
     })
-    this.rtcEngine.startScreenCapture2(0, 15, {
-      top: 0, left: 0, right: 0, bottom: 0
-    }, 0);
-    this.rtcEngine.startScreenCapturePreview();
   }
 
   stopSharing() {
-    this.ChannelStatus.get('sharing').put({
-      status: false,
-      sharer: null
-    })
+    this.ChannelStatus.get('sharing').put(null)
     this.rtcEngine.stopScreenCapture2();
     this.rtcEngine.stopScreenCapturePreview();
   }

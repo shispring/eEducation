@@ -99,8 +99,9 @@ class Classroom extends React.Component {
       this.removeStream(uid, 'student')
     })
     this.$client.on('sharing-start', (shareId, sharerUid) => {
+      console.log('Sharing Start...')
       let board = document.querySelector('.board');
-      if (board) {
+      if (board && this.isSharing) {
         if(sharerUid === this.$client.uid) {
           this.$rtc.setupLocalVideoSource(board);
         } else {
@@ -108,7 +109,7 @@ class Classroom extends React.Component {
         }
       }
     })
-    this.$client.on('sharing-ended', (shareId, sharerUid) => {
+    this.$client.on('sharing-ended', (shareId) => {
       let board = document.querySelector('.board');
       if(board) {
         board.innerHTML = '';
