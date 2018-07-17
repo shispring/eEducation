@@ -10,6 +10,8 @@
     "postinstall": "npm run electron-rebuild"
   },
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "agora-electron-sdk": "^2.2.1-rc.1"
+  },
   "devDependencies": {}
 }

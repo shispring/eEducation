@@ -40,7 +40,7 @@
       "main.prod.js",
       "main.prod.js.map",
       "package.json",
-      "AgoraSDK"
+      "static"
     ],
     "dmg": {
       "contents": [
@@ -178,8 +178,6 @@
     "font-awesome": "^4.7.0",
     "gun": "^0.9.9993",
     "history": "^4.7.2",
-    "mobx": "^4.1.0",
-    "mobx-react": "^5.0.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-hot-loader": "^4.0.0",

@@ -4,7 +4,7 @@
  * Easier to use and extend since `Serverless` & `NoDB`
  */
 import Gun from 'gun/gun';
-// import AgoraRtcEngine from 'agora-electron-sdk';
+import AgoraRtcEngine from 'agora-electron-sdk';
 import {
   EventEmitter
 } from 'events';
@@ -43,7 +43,7 @@ export default class BarrelClient extends EventEmitter {
     this.Users = undefined
     this.Messages = undefined
     // init profile
-    if(defaultProfile) {
+    if(config.defaultProfile) {
       this.initProfile()
     }
   }

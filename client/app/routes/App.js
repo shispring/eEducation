@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import { HashRouter as Router, Route } from 'react-router-dom';
-import { Provider } from 'mobx-react';
 
 import Index from './Index';
 import DeviceTesting from './DeviceTesting';
 import NetworkTesting from './NetworkTesting';
 import Classroom from './Classroom';
-import ClientStore from '../store/client.store';
 import BarrelClient from '../utils/Barrel'
 
 class App extends Component {
@@ -29,16 +27,14 @@ class App extends Component {
 
   render() {
     return (
-      <Provider ClientStore={ClientStore}>
-        <Router>
-          <div className="full" style={this.state.style}>
-            <Route exact path="/" render={() => <Index barrel={this.client} />} />
-            <Route path="/device_testing" render={() => <DeviceTesting barrel={this.client} />} />
-            {/* <Route path="/network_testing" component=(<NetworkTesting barrel={this.client} />) /> */}
-            <Route path="/classroom" render={() => <Classroom barrel={this.client} />} />
-          </div>
-        </Router>
-      </Provider>
+      <Router>
+        <div className="full" style={this.state.style}>
+          <Route exact path="/" render={() => <Index barrel={this.client} />} />
+          <Route path="/device_testing" render={() => <DeviceTesting barrel={this.client} />} />
+          {/* <Route path="/network_testing" component=(<NetworkTesting barrel={this.client} />) /> */}
+          <Route path="/classroom" render={() => <Classroom barrel={this.client} />} />
+        </div>
+      </Router>
     );
   }
 }

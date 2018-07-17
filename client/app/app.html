@@ -36,8 +36,6 @@
             : './dist/renderer.prod.js'
         );
 
-        scripts.unshift(`./AgoraSDK/AgoraSig-1.2.1.3.js`);
-        document.write('<script defer> var AgoraRtcEngine = require(".\/AgoraSDK\/AgoraSdk") <\/script>');
         document.write(
           scripts
             .map(script => '<script defer src="' + script + '"><\/script>')
