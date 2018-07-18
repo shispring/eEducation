@@ -236,6 +236,9 @@ export default class BarrelClient extends EventEmitter {
     }
   }
 
+  /**
+   * @description trigger local state change when dataTunnel emit sth
+   */
   initDataTunnel() {
     this.Users.map().on((info, uid) => {
       console.info('User', uid, info)
@@ -306,7 +309,7 @@ export default class BarrelClient extends EventEmitter {
    * @param {number} timeout duration before timeout
    * @param {object} extraInfo any extra info
    */
-  join(token = null, info = '', timeout = 10000) {
+  join(token = null, info = '', timeout = 30000) {
     if (!this.channel || !this.uid) {
       throw new Error('params required!')
     }
@@ -340,7 +343,7 @@ export default class BarrelClient extends EventEmitter {
    * 
    * @param {number} timeout duration before timeout
    */
-  leave(timeout = 10000) {
+  leave(timeout = 30000) {
     return new Promise((resolve, reject) => {
       if(this.userList.length === 1) {
         this.gun.get('channels').get(this.channel).put(null)
@@ -376,7 +379,7 @@ export default class BarrelClient extends EventEmitter {
    * @method destructSharing when you will no longer use sharing anymore
    */
 
-  prepareSharing(token = null, info = '', timeout = 10000) {
+  prepareSharing(token = null, info = '', timeout = 30000) {
     return new Promise((resolve, reject) => {
       let timer = setTimeout(() => {
         reject(new Error('Timeout'))
