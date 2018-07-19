@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, Tooltip, Spin, message } from 'antd';
+import { Button, Icon, Input, Spin, Tooltip, message } from 'antd';
 import { isEqual } from 'lodash';
 import axios from 'axios'
 import ipcRenderer from 'electron';
@@ -33,7 +33,7 @@ class Classroom extends React.Component {
     this.$client.join().then(() => {
       this.$client.initDataTunnel()
     })
-    this.$client.prepareSharing()
+    // this.$client.prepareSharing()
     this.subscribeClientEvents()
   }
 
@@ -82,7 +82,7 @@ class Classroom extends React.Component {
     }
   }
 
-  subscribeClientEvents =   () => {
+  subscribeClientEvents = () => {
     this.$client.on('teacher-added', (uid, info, streamId) => {
       this.setState({
         teacher: info.username
@@ -327,6 +327,16 @@ class Classroom extends React.Component {
       );
     }
 
+    let Toolbar = (
+      <div className="board-bar">
+        <Button onClick={this.handleShareScreen} style={{margin: '0 8px'}} icon="laptop">Share Screen</Button>
+        <div className="board-bar--toolbar">
+          <Button style={{margin: '0 8px'}} type="dashed" shape="circle" icon="video-camera"></Button>
+          <Button style={{margin: '0 8px'}} type="primary" shape="circle" icon="sound"></Button>
+        </div>
+      </div>
+    )
+
     return (
       <div className="wrapper" id="classroom">
         <header className="title">
@@ -357,7 +367,7 @@ class Classroom extends React.Component {
         <section className="students-container">{students}</section>
         <section className="board-container">
           <div className="board" />
-          {ScreenSharingBtn}
+          {Toolbar}
         </section>
         <section className="teacher-container">
           {teacher}

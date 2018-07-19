@@ -10,5 +10,5 @@ app.use(Gun.serve);
 app.use(express.static(__dirname));
 
 const server = app.listen(port);
-Gun({ file: "data.json", web: server });
+Gun({ web: server, localStorage: false });
 console.log("Server started on port " + port + " with /gun");
