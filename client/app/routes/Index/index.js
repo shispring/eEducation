@@ -14,11 +14,19 @@ class Index extends React.Component {
     this.$client = props.barrel;
     this.state = {
       role: 'student',
+      isLogining: false
     };
   }
 
   render() {
     let loading;
+    if (this.state.isLogining) {
+      loading = (
+        <div className="mask">
+          <Spin size="large" />
+        </div>
+      );
+    }
     return (
       <div className="wrapper" id="index">
         {loading}
@@ -93,13 +101,21 @@ class Index extends React.Component {
       return message.error('The length of Channel/Username should be no longer than 8!');
     }
 
-    // check if client can login
-    let result = this.$client.login({username, role}, channel)
-    if (result.result) {
+    // try to connect
+    this.setState({
+      isLogining: true
+    })
+    this.$client.connect(channel, {username, role}).then(_ => {
+      this.setState({
+        isLogining: false
+      })
       window.location.hash = 'device_testing';
-    } else {
-      message.error(result.message)
-    }
+    }).catch(err => {
+      this.setState({
+        isLogining: false
+      })
+      message.error('Failed to connect data provider', err)
+    })
     
   }
 }

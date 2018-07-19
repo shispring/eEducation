@@ -30,22 +30,15 @@ class Classroom extends React.Component {
   }
 
   componentDidMount() {
-    this.$client.join().then(() => {
-      this.$client.initDataTunnel()
-    })
-    // this.$client.prepareSharing()
+    this.$client.join()
+    this.$client.prepareScreenShare()
     this.subscribeClientEvents()
   }
 
   componentWillUnmount() {
-    this.$client.stopSharing()
-    this.$client.destructSharing()
+    this.$client.stopScreenShare()
+    this.$client.destructScreenShare()
     this.$client.leave()
-  }
-
-  componentDidCatch(err, info) {
-    console.error(err);
-    window.location.hash = '';
   }
 
   addStream = (uid, info, streamId) => {
@@ -98,30 +91,32 @@ class Classroom extends React.Component {
     this.$client.on('student-removed', (uid) => {
       this.removeStream(uid, 'student')
     })
-    this.$client.on('sharing-start', (shareId, sharerUid) => {
+    this.$client.on('screen-share-start', evt => {
       console.log('Sharing Start...')
       let board = document.querySelector('.board');
       if (board && this.isSharing) {
-        if(sharerUid === this.$client.uid) {
+        if(evt.sharer.uid === this.$client.user.uid) {
           this.$rtc.setupLocalVideoSource(board);
         } else {
-          this.$rtc.subscribe(2, board);
+          this.$rtc.subscribe(evt.shareId, board);
         }
       }
     })
-    this.$client.on('sharing-ended', (shareId) => {
+    this.$client.on('screen-share-stop', _ => {
       let board = document.querySelector('.board');
       if(board) {
         board.innerHTML = '';
       }
     })
-    this.$client.on('channel-message', (message, uid, userInfo, ts) => {
+    this.$client.on('channel-message', evt => {
       let temp = [...this.state.messageList]
       temp.push({
-        message, uid, 
-        info: userInfo, 
-        ts,
-        local: uid === this.$client.uid
+        message: evt.detail,message,
+        uid: evt.detail.uid, 
+        role: evt.detail.role, 
+        username: evt.detail.username
+        ts: evt.detail.ts,
+        local: evt.detail.uid === this.$client.user.uid
       })
       this.setState({
         messageList: temp
@@ -130,13 +125,9 @@ class Classroom extends React.Component {
   }
 
   handleExit = () => {
-    this.$client.leave().then(() => {
-      message.info('Left the classroom successfully!');
-      window.location.hash = '';
-    }).catch(err => {
-      message.error('Left the classroom...');
-      window.location.hash = '';
-    });
+    this.$client.leave()
+    message.info('Left the classroom...');
+    window.location.hash = ''
   }
 
   handleKeyPress = e => {
@@ -150,7 +141,6 @@ class Classroom extends React.Component {
       console.error(`RtcEngine throw an error: ${err}`);
     });
     this.$rtc.on('lastmilequality', (quality) => {
-      // console.log(quality)
       this.setState({
         networkQuality: quality
       });
@@ -168,9 +158,9 @@ class Classroom extends React.Component {
 
   handleShareScreen = () => {
     if (!this.isSharing) {
-      this.$client.startSharing();
+      this.$client.startScreenShare();
     } else {
-      this.$client.stopSharing();
+      this.$client.stopScreenShare();
     }
     this.isSharing = !this.isSharing;
   }
@@ -286,6 +276,7 @@ class Classroom extends React.Component {
           <Window 
             key={item.streamId} 
             uid={item.streamId}
+            isLocal={item.streamId === this.$client.user.uid}
             barrel={this.props.barrel}
             username={item.info.username} 
             role={item.info.role} />
@@ -314,18 +305,18 @@ class Classroom extends React.Component {
       );
     }
 
-    // screen share btn
-    let ScreenSharingBtn;
-    if (this.$client.info && this.$client.info.role === 'teacher') {
-      ScreenSharingBtn = (
-        <div onClick={this.handleShareScreen} className="btn board-bar">
-          <div>
-            <img src={require('../../assets/images/screen share.png')} alt="" />
-          </div>
-          <div>Screen Share</div>
-        </div>
-      );
-    }
+    // // screen share btn
+    // let ScreenSharingBtn;
+    // if (this.$client.info && this.$client.info.role === 'teacher') {
+    //   ScreenSharingBtn = (
+    //     <div onClick={this.handleShareScreen} className="btn board-bar">
+    //       <div>
+    //         <img src={require('../../assets/images/screen share.png')} alt="" />
+    //       </div>
+    //       <div>Screen Share</div>
+    //     </div>
+    //   );
+    // }
 
     let Toolbar = (
       <div className="board-bar">
@@ -410,7 +401,7 @@ class Window extends React.Component {
 
   componentDidMount() {
     const dom = document.querySelector(`#video-${this.props.uid}`);
-    if (this.props.uid === this.props.barrel.uid) {
+    if (this.props.isLocal) {
       // local stream
       console.log(`Setup local: ${this.props.uid}`);
       this.$rtc.setupLocalVideo(dom);
@@ -421,12 +412,7 @@ class Window extends React.Component {
     }
 
     let name = this.props.uid;
-    name = this.props.uid === this.$rtc.uid ? 'local' : name;
-    
-    /**
-     * Warning. Here we assume sharing streamID to be 2
-     */
-    name = this.props.uid === 2 ? 'videosource' : name;
+    name = this.props.isLocal ? 'local' : name;
 
     const render = this.$rtc.streams[name];
     if (render) {

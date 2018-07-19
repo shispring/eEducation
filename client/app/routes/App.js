@@ -5,7 +5,7 @@ import Index from './Index';
 import DeviceTesting from './DeviceTesting';
 import NetworkTesting from './NetworkTesting';
 import Classroom from './Classroom';
-import BarrelClient from '../utils/Barrel'
+import BarrelClient from '../utils/Barrel_new'
 
 class App extends Component {
   constructor() {

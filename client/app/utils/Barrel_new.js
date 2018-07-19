@@ -11,33 +11,26 @@ const SHARE_ID = 2
 /**
  * BarrelClient
  */
-class BarrelClient {
+export default class BarrelClient {
   /**
-   * @param {Object} config constructor params
-   * @param {string} config.appId Agora Appid
-   * @param {string} config.channel channel
-   * @param {Object} config.user username, role, uid
-   * @param {boolean} config.defaultProfile whether to use default profile
+   * 
+   * @param {string} appId Agora Appid
+   * @param {Object} config constructor config
+   * @param {boolean} config.defaultProfile whehter to use default profile
    */
-  constructor({
-    appId, channel, user = {uid, username, role},
-    defaultProfile = false
+  constructor(appId, {
+    defaultProfile = true
   }) {
     this.rtcEngine = new AgoraRtcEngine()
     this.rtcEngine.initialize(appId)
     // init user map
     this.userList = {}
-    // utils 
+    // utils
     this.appId = appId
-    this.channel = channel
-    this.user = user
     // init profile
     if(defaultProfile) {
       this.initProfile()
     }
-    // init data provider
-    this.DataProvider = new DefaultDataProvider()
-    this.subDataProviderEvents()
   }
 
   /**
@@ -64,20 +57,39 @@ class BarrelClient {
 
   /**
    * connect to server through data provider
+   * 
+   * @param {string} config.channel channel
+   * @param {Object} config.user username, role, uid
    */
-  connect() {
+  connect(channel, user = {uid, username, role}) {
     // init local user info
-    if(!this.user.uid) {
-      this.user.uid = Number(String(new Date().getTime()).slice(7))
+    if(user.uid) {
+      user.uid = Number(String(new Date().getTime()).slice(7))
     }
-    this.DataProvider.dispatch({
-      type: 'connect',
-      payload: {
-        appId: this.appId, 
-        channelId: this.channel, 
-        user: this.user
-      }
+    // local info
+    this.channel = channel
+    this.user = user
+    return new Promise((resolve, reject) => {
+      // init data provider
+      this.DataProvider = new DefaultDataProvider();
+      this.subDataProviderEvents();
+
+      this.DataProvider.dispatch({
+        type: 'connect',
+        payload: {
+          appId: this.appId, 
+          channelId: this.channel, 
+          user: this.user
+        }
+      });
+      this.once('connect-success', _ => {
+        resolve()
+      });
+      this.once('connect-failed', err => {
+        reject(err)
+      })
     })
+
 
   }
 
@@ -161,13 +173,12 @@ class BarrelClient {
       top: 0, left: 0, right: 0, bottom: 0
     }, 0);
     this.rtcEngine.startScreenCapturePreview();
-    this.emit('screenShareStart', SHARE_ID, this.user)
   }
 
   /**
    * stop screen share
    */
-  stopSharing() {
+  stopScreenShare() {
     this.DataProvider.dispatch({
       type: 'stopScreenShare',
       payload: {
