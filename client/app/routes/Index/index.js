@@ -114,7 +114,7 @@ class Index extends React.Component {
       this.setState({
         isLogining: false
       })
-      message.error('Failed to connect data provider', err)
+      message.error('Failed to connect data provider'+JSON.stringify(err))
     })
     
   }

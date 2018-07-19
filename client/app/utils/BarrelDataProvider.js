@@ -39,14 +39,14 @@ DataProvider.prototype.constructor = DataProvider
  */
 DataProvider.prototype.connect = function(agoraAppId, channelId, serverUrl = GUN_SERVICE) {
   this.gun = new Gun(serverUrl);
-  this.baseTunnel = this.gun.get(agoraAppId + '/' + channelId, (ack) => {
+  this.baseTunnel = this.gun.get(agoraAppId + '/' + channelId);
+  this.userTunnel = this.baseTunnel.get('users', (ack) => {
     if(ack.err){
       this.emit('error', ack.err)
     } else {
       this.emit('connected')
     }
   });
-  this.userTunnel = this.baseTunnel.get('users');
   this.channelStatusTunnel = this.baseTunnel.get('channelStatus');
   this.messageTunnel = this.baseTunnel.get('messages');
   // register event
@@ -100,7 +100,8 @@ DataProvider.prototype.disconnect = function() {
 DataProvider.prototype.dispatch = function(action) {
   // for example
   if (action.type === 'connect') {
-    this.handleConnect(...action.payload)
+    const {appId, channelId, user} = action.payload
+    this.handleConnect(appId, channelId, user)
   } else if (action.type === 'leave') {
     this.handleLeave(...action.payload)
   } else if (action.type === 'startScreenShare') {
@@ -128,7 +129,7 @@ DataProvider.prototype.handleConnect = function(
   appId, channelId, 
   user = {uid, username, role}
 ) {
-  this.connect(appId, channelId, serverUrl)
+  this.connect(appId, channelId)
   // default validation
   this.once('connected', _ => {
     let distincted = true;
@@ -139,8 +140,10 @@ DataProvider.prototype.handleConnect = function(
       }
     });
     this.userTunnel.once((v, k) => {
-      if(user.username === v.username && user.role === v.role) {
-        distincted = false
+      if(k === String(user.uid)) {
+        if(user.username === v.username && user.role === v.role) {
+          distincted = false
+        }
       }
     })
     if (user.role === 'teacher') {

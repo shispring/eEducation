@@ -5,13 +5,14 @@
  */
 import AgoraRtcEngine from 'agora-electron-sdk';
 import DefaultDataProvider from './BarrelDataProvider';
+import EventEmitter from 'events';
 
 const SHARE_ID = 2
 
 /**
  * BarrelClient
  */
-export default class BarrelClient {
+export default class BarrelClient extends EventEmitter {
   /**
    * 
    * @param {string} appId Agora Appid
@@ -21,6 +22,7 @@ export default class BarrelClient {
   constructor(appId, config = {
     defaultProfile: true
   }) {
+    super()
     this.rtcEngine = new AgoraRtcEngine()
     this.rtcEngine.initialize(appId)
     // init user map
@@ -63,7 +65,7 @@ export default class BarrelClient {
    */
   connect(channel, user = {uid, username, role}) {
     // init local user info
-    if(user.uid) {
+    if(!user.uid) {
       user.uid = Number(String(new Date().getTime()).slice(7))
     }
     // local info
