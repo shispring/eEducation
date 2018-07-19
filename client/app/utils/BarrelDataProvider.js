@@ -63,7 +63,7 @@ DataProvider.prototype.connect = function(agoraAppId, channelId, serverUrl = GUN
         this.emit('screenShareStop')
       } else {
         this.emit('screenShareStart', {
-          sharer: value.sharer
+          sharer: value.sharer,
           shareId: value.shareId
         })
       }
@@ -108,7 +108,7 @@ DataProvider.prototype.dispatch = function(action) {
   } else if (action.type === 'stopScreenShare') {
     this.handleStopScreenShare(...action.payload)
   } else if (action.type === 'broadcastMessage') {
-    this.handleBroadcastMessage(..action.payload)
+    this.handleBroadcastMessage(...action.payload)
   } else {
     // your can define your own action
   }
@@ -246,9 +246,9 @@ DataProvider.prototype.handleBroadcastMessage = function(message, user = {
   this.messageTunnel.get(ts).put({
     message,
     ts,
-    uid: user.uid
-    username: user.username
-    role: user.role
+    uid: user.uid,
+    username: user.username,
+    role: user.role,
   })
 }
 

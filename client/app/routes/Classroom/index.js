@@ -114,7 +114,7 @@ class Classroom extends React.Component {
         message: evt.detail,message,
         uid: evt.detail.uid, 
         role: evt.detail.role, 
-        username: evt.detail.username
+        username: evt.detail.username,
         ts: evt.detail.ts,
         local: evt.detail.uid === this.$client.user.uid
       })

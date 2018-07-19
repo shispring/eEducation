@@ -18,8 +18,8 @@ export default class BarrelClient {
    * @param {Object} config constructor config
    * @param {boolean} config.defaultProfile whehter to use default profile
    */
-  constructor(appId, {
-    defaultProfile = true
+  constructor(appId, config = {
+    defaultProfile: true
   }) {
     this.rtcEngine = new AgoraRtcEngine()
     this.rtcEngine.initialize(appId)
@@ -28,7 +28,7 @@ export default class BarrelClient {
     // utils
     this.appId = appId
     // init profile
-    if(defaultProfile) {
+    if(config.defaultProfile) {
       this.initProfile()
     }
   }
@@ -341,10 +341,10 @@ export default class BarrelClient {
     this.DataProvider.on('error', err => {
       console.error(err)
     });
-    this.DataProvider.on('userInfoRemoved', {uid} => {
+    this.DataProvider.on('userInfoRemoved', ({uid}) => {
       this.removeUser(uid)
     });
-    this.DataProvider.on('userInfoAdded', {uid, info} => {
+    this.DataProvider.on('userInfoAdded', ({uid, info}) => {
       this.addUser(uid, info, null)
     });
     this.DataProvider.on('connectChannelFailed', err => {
@@ -353,7 +353,7 @@ export default class BarrelClient {
     this.DataProvider.on('connectChannelSuccess', _ => {
       this.emit('connect-success')
     });
-    this.DataProvider.on('screenShareStart', {sharer, shareId} => {
+    this.DataProvider.on('screenShareStart', ({sharer, shareId}) => {
       this.rtcEngine.setupViewContentMode('videosource', 1);
       this.rtcEngine.setupViewContentMode(String(shareId), 1);
       this.emit('screen-share-start', {sharer, shareId})
@@ -361,9 +361,9 @@ export default class BarrelClient {
     this.DataProvider.on('screenShareStop', _ => {
       this.emit('screen-share-stop')
     })
-    this.DataProvider.on('messageAdded', {id, detail = {
+    this.DataProvider.on('messageAdded', ({id, detail = {
       message, ts, uid, username, role
-    }} => {
+    }}) => {
       this.emit('channel-message', {id, detail})
     })
   }
