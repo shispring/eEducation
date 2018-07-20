@@ -105,16 +105,19 @@ class Index extends React.Component {
     this.setState({
       isLogining: true
     })
-    this.$client.connect(channel, {username, role}).then(_ => {
+    this.$client.doConnect(channel, {username, role}).then(_ => {
       this.setState({
         isLogining: false
+      }, () => {
+        window.location.hash = 'device_testing';
       })
-      window.location.hash = 'device_testing';
     }).catch(err => {
       this.setState({
         isLogining: false
+      }, () => {
+        console.error(err)
+        message.error('Failed to connect data provider: '+String(err))
       })
-      message.error('Failed to connect data provider'+JSON.stringify(err))
     })
     
   }

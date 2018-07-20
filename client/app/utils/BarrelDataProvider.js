@@ -1,3 +1,5 @@
+import { resolve } from 'dns';
+
 /**
  * DataProvider is for data exchange and you can transform
  * or realize it by yourself. By default, we use gun(a realtime
@@ -5,7 +7,7 @@
  */
 
 const EventEmitter = require('events').EventEmitter;
-const Gun = require('gun');
+const Gun = require('gun/gun');
 const GUN_SERVICE = ['http://123.155.153.85:8888/gun']
 
 /**
@@ -39,43 +41,69 @@ DataProvider.prototype.constructor = DataProvider
  */
 DataProvider.prototype.connect = function(agoraAppId, channelId, serverUrl = GUN_SERVICE) {
   this.gun = new Gun(serverUrl);
-  this.baseTunnel = this.gun.get(agoraAppId + '/' + channelId);
-  this.userTunnel = this.baseTunnel.get('users', (ack) => {
-    if(ack.err){
-      this.emit('error', ack.err)
-    } else {
-      this.emit('connected')
-    }
-  });
-  this.channelStatusTunnel = this.baseTunnel.get('channelStatus');
-  this.messageTunnel = this.baseTunnel.get('messages');
-  // register event
-  this.userTunnel.map().on((info, uid) => {
-    if(info === null) {
-      this.emit('userInfoRemoved', {uid})
-    } else {
-      this.emit('userInfoAdded', {uid, info})
-    }
-  })
-  this.channelStatusTunnel.map().on((value, key) => {
-    if(key === 'sharing') {
-      if(value === null) {
-        this.emit('screenShareStop')
+  let userPromise = new Promise((resolve, reject) => {
+    this.userTunnel = this.gun.get(agoraAppId + '/' + channelId + '/users', ack => {
+      if(ack.err){
+        reject(ack.err);
       } else {
-        this.emit('screenShareStart', {
-          sharer: value.sharer,
-          shareId: value.shareId
-        })
+        resolve();
       }
-    }
+    });
+  });
+  let channelStatusPromise = new Promise((resolve, reject) => {
+    this.channelStatusTunnel = this.gun.get(agoraAppId + '/' + channelId + '/channelStatus', ack => {
+      if(ack.err){
+        reject(ack.err);
+      } else {
+        resolve();
+      }
+    });
+  });
+  let messagePromise = new Promise((resolve, reject) => {
+    this.messageTunnel = this.gun.get(agoraAppId + '/' + channelId + '/messages', ack => {
+      if(ack.err){
+        reject(ack.err);
+      } else {
+        resolve();
+      }
+    });
+  });
+  Promise.all([userPromise, channelStatusPromise, messagePromise]).then( _ => {
+    // register event
+    this.userTunnel.map().on((info, uid) => {
+      console.info('[Data Provider]:', '[Users]', uid, info)
+      if(info === null) {
+        this.emit('userInfoRemoved', {uid})
+      } else {
+        this.emit('userInfoAdded', {uid, info})
+      }
+    })
+    this.channelStatusTunnel.map().on((value, key) => {
+      console.info('[Data Provider]:', '[Channel Status]', key, value)
+      if(key === 'sharing') {
+        if(value === null) {
+          this.emit('screenShareStop')
+        } else {
+          this.emit('screenShareStart', {
+            sharer: value.sharer,
+            shareId: value.shareId
+          })
+        }
+      }
+    })
+    this.messageTunnel.map().on((detail, id) => {
+      console.info('[Data Provider]:', '[Messages]', id, detail)
+      if(detail === null) {
+        // it seem it will never happen
+      } else {
+        this.emit('messageAdded', {id, detail})
+      }
+    })
+    this.emit('connected')
+  }).catch(err => {
+    this.emit('error', err)
   })
-  this.messageTunnel.map().on((detail, id) => {
-    if(detail === null) {
-      // it seem it will never happen
-    } else {
-      this.emit('messageAdded', {id, detail})
-    }
-  })
+
 }
 
 /**
@@ -103,13 +131,16 @@ DataProvider.prototype.dispatch = function(action) {
     const {appId, channelId, user} = action.payload
     this.handleConnect(appId, channelId, user)
   } else if (action.type === 'leave') {
-    this.handleLeave(...action.payload)
+    const user = {...action.payload}
+    this.handleLeave(user)
   } else if (action.type === 'startScreenShare') {
-    this.handleStartScreenShare(...action.payload)
+    const {shareId, sharer} = {...action.payload}
+    this.handleStartScreenShare(shareId, sharer)
   } else if (action.type === 'stopScreenShare') {
-    this.handleStopScreenShare(...action.payload)
+    this.handleStopScreenShare()
   } else if (action.type === 'broadcastMessage') {
-    this.handleBroadcastMessage(...action.payload)
+    const {message, user} = {...action.payload}
+    this.handleBroadcastMessage(message, user)
   } else {
     // your can define your own action
   }
@@ -125,11 +156,11 @@ DataProvider.prototype.dispatch = function(action) {
  * @param {string} user.username
  * @param {'teacher'|'student'} user.role
  */
-DataProvider.prototype.handleConnect = function(
-  appId, channelId, 
-  user = {uid, username, role}
-) {
-  this.connect(appId, channelId)
+DataProvider.prototype.handleConnect = function(appId, channelId, user = {uid, username, role}) {
+  // set time out
+  setTimeout(() => {
+    this.emit('connectChannelFailed', 'Timeout!')
+  }, 12000)
   // default validation
   this.once('connected', _ => {
     let distincted = true;
@@ -158,6 +189,7 @@ DataProvider.prototype.handleConnect = function(
         }, ack => {
           if(ack.error) {
             this.emit('error', ack.error)
+            this.emit('connectChannelFailed', ack.err)
           } else {
             this.emit('connectChannelSuccess')
           }
@@ -179,6 +211,7 @@ DataProvider.prototype.handleConnect = function(
         }, ack => {
           if(ack.error) {
             this.emit('error', ack.error)
+            this.emit('connectChannelFailed', ack.err)
           } else {
             this.emit('connectChannelSuccess')
           }
@@ -188,6 +221,8 @@ DataProvider.prototype.handleConnect = function(
       this.emit('error', 'unknown role for uid: '+ user.uid )
     }
   })
+  // do connect
+  this.connect(appId, channelId)
 }
 
 /**
@@ -207,13 +242,11 @@ DataProvider.prototype.handleLeave = function({uid, username, role}) {
 /**
  * @private
  * @param {*} shareId 
- * @param {*} user 
+ * @param {*} sharer 
  */
-DataProvider.prototype.handleStartScreenShare = function(shareId, user = {
-  uid, role, username
-}) {
+DataProvider.prototype.handleStartScreenShare = function(shareId, sharer) {
   this.channelStatusTunnel.get('sharing').put({
-    sharer: user,
+    sharer,
     shareId
   }, ack => {
     if(ack.err) {
@@ -227,9 +260,7 @@ DataProvider.prototype.handleStartScreenShare = function(shareId, user = {
  * @param {*} shareId 
  * @param {*} user 
  */
-DataProvider.prototype.handleStopScreenShare = function(shareId, user = {
-  uid, role, username
-}) {
+DataProvider.prototype.handleStopScreenShare = function() {
   this.channelStatusTunnel.get('sharing').put(null, ack => {
     if(ack.err) {
       this.emit('error', ack.err)
@@ -245,7 +276,7 @@ DataProvider.prototype.handleStopScreenShare = function(shareId, user = {
 DataProvider.prototype.handleBroadcastMessage = function(message, user = {
   username, role, uid
 }) {
-  let ts = Number(String(new Date().getTime()).slice(7))
+  let ts = String(new Date().getTime()).slice(7)
   this.messageTunnel.get(ts).put({
     message,
     ts,

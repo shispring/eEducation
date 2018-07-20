@@ -63,7 +63,7 @@ export default class BarrelClient extends EventEmitter {
    * @param {string} config.channel channel
    * @param {Object} config.user username, role, uid
    */
-  connect(channel, user = {uid, username, role}) {
+  doConnect(channel, user = {uid, username, role}) {
     // init local user info
     if(!user.uid) {
       user.uid = Number(String(new Date().getTime()).slice(7))
@@ -85,6 +85,7 @@ export default class BarrelClient extends EventEmitter {
         }
       });
       this.once('connect-success', _ => {
+        this.addUser(user.uid, {username: user.username, role: user.role}, null)
         resolve()
       });
       this.once('connect-failed', err => {
@@ -138,8 +139,8 @@ export default class BarrelClient extends EventEmitter {
         this.rtcEngine.videoSourceEnableWebSdkInteroperability(true)
         this.rtcEngine.videoSourceSetVideoProfile(50, false);
         // to adjust render dimension to optimize performance
-        this.rtcEngine.setVideoRenderDimension(3, sharingStreamId, 1600, 900);
-        this.rtcEngine.videoSourceJoin(token, this.channel, info, sharingStreamId);
+        this.rtcEngine.setVideoRenderDimension(3, SHARE_ID, 1600, 900);
+        this.rtcEngine.videoSourceJoin(token, this.channel, info, SHARE_ID);
       } catch(err) {
         clearTimeout(timer)
         reject(err)
@@ -162,19 +163,18 @@ export default class BarrelClient extends EventEmitter {
     if(!this.sharingPrepared) {
       console.error('Sharing not prepared yet.')
       return false
-    }
-    this.DataProvider.dispatch({
-      type: 'startScreenShare',
-      payload: {
-        shareId: SHARE_ID,
-        sharer: this.user
-      }
-    })
-
+    };
     this.rtcEngine.startScreenCapture2(0, 15, {
       top: 0, left: 0, right: 0, bottom: 0
     }, 0);
     this.rtcEngine.startScreenCapturePreview();
+    this.DataProvider.dispatch({
+      type: 'startScreenShare',
+      payload: {
+        shareId: SHARE_ID,
+        sharer: this.user.uid
+      }
+    });
   }
 
   /**
@@ -190,6 +190,20 @@ export default class BarrelClient extends EventEmitter {
     })
     this.rtcEngine.stopScreenCapture2();
     this.rtcEngine.stopScreenCapturePreview();
+  }
+
+  /**
+   * muteLocalVideoStream
+   */
+  muteLocalVideoStream(mute = true) {
+    this.rtcEngine.muteLocalVideoStream(mute)
+  }
+
+  /**
+   * muteLocalAudioStream
+   */
+  muteLocalAudioStream(mute = true) {
+    this.rtcEngine.muteLocalAudioStream(mute)
   }
 
   /**
@@ -336,7 +350,6 @@ export default class BarrelClient extends EventEmitter {
   }
 
   /**
-   * @private
    * sub event of data provider (which you can customize)
    */
   subDataProviderEvents() {
@@ -356,8 +369,6 @@ export default class BarrelClient extends EventEmitter {
       this.emit('connect-success')
     });
     this.DataProvider.on('screenShareStart', ({sharer, shareId}) => {
-      this.rtcEngine.setupViewContentMode('videosource', 1);
-      this.rtcEngine.setupViewContentMode(String(shareId), 1);
       this.emit('screen-share-start', {sharer, shareId})
     });
     this.DataProvider.on('screenShareStop', _ => {

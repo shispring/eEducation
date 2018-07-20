@@ -24,21 +24,25 @@ class Classroom extends React.Component {
       recordBtnLoading: false,
       teacherList: new Map(),
       studentList: new Map(),
-      messageList: []
+      messageList: [],
+      isSharing: false,
+      enableVideo: true,
+      enableAudio: true,
+      waitSharing: false,
     };
-    this.isSharing = false;
   }
 
   componentDidMount() {
     this.$client.join()
-    this.$client.prepareScreenShare()
+    if(this.$client.user.role === 'teacher') {
+      this.$client.prepareScreenShare()
+    }
     this.subscribeClientEvents()
   }
 
   componentWillUnmount() {
     this.$client.stopScreenShare()
     this.$client.destructScreenShare()
-    this.$client.leave()
   }
 
   addStream = (uid, info, streamId) => {
@@ -94,24 +98,27 @@ class Classroom extends React.Component {
     this.$client.on('screen-share-start', evt => {
       console.log('Sharing Start...')
       let board = document.querySelector('.board');
-      if (board && this.isSharing) {
-        if(evt.sharer.uid === this.$client.user.uid) {
+      if (board) {
+        if(evt.sharer === this.$client.user.uid) {
           this.$rtc.setupLocalVideoSource(board);
         } else {
           this.$rtc.subscribe(evt.shareId, board);
         }
-      }
+        // transfer to fit mode
+        this.$rtc.setupViewContentMode('videosource', 1);
+        this.$rtc.setupViewContentMode(String(evt.shareId), 1);
+      };
     })
     this.$client.on('screen-share-stop', _ => {
       let board = document.querySelector('.board');
       if(board) {
         board.innerHTML = '';
-      }
+      };
     })
     this.$client.on('channel-message', evt => {
       let temp = [...this.state.messageList]
       temp.push({
-        message: evt.detail,message,
+        message: evt.detail.message,
         uid: evt.detail.uid, 
         role: evt.detail.role, 
         username: evt.detail.username,
@@ -157,12 +164,20 @@ class Classroom extends React.Component {
   }
 
   handleShareScreen = () => {
-    if (!this.isSharing) {
+    if (!this.state.isSharing) {
       this.$client.startScreenShare();
     } else {
       this.$client.stopScreenShare();
     }
-    this.isSharing = !this.isSharing;
+    this.setState({
+      waitSharing: true,
+      isSharing: !this.state.isSharing
+    })
+    setTimeout(() => {
+      this.setState({
+        waitSharing: false
+      })
+    }, 300)
   }
 
 
@@ -174,7 +189,7 @@ class Classroom extends React.Component {
     axios.post(`${SERVER_URL}/v1/recording/start`, {
       appid: APP_ID,
       channel: this.$client.channel,
-      uid: this.$client.uid
+      uid: this.$client.user.uid
     }).then(res => {
       this.setState({
         recordBtnLoading: false,
@@ -196,7 +211,7 @@ class Classroom extends React.Component {
     axios.post(`${SERVER_URL}/v1/recording/stop`, {
       appid: APP_ID,
       channel: this.$client.channel,
-      uid: this.$client.uid
+      uid: this.$client.user.uid
     }).then(res => {
       this.setState({
         recordBtnLoading: false,
@@ -208,6 +223,22 @@ class Classroom extends React.Component {
         recordBtnLoading: false
       });
     });
+  }
+
+  handleToggleVideo = () => {
+    this.setState({
+      enableVideo: !this.state.enableVideo
+    }, () => {
+      this.$client.muteLocalVideoStream(!this.state.enableVideo)
+    })
+  }
+
+  handleToggleAudio = () => {
+    this.setState({
+      enableAudio: !this.state.enableAudio
+    }, () => {
+      this.$client.muteLocalAudioStream(!this.state.enableAudio)
+    })
   }
 
   render() {
@@ -261,6 +292,7 @@ class Classroom extends React.Component {
           <Window 
             key={item.streamId} 
             uid={item.streamId}
+            isLocal={item.streamId === this.$client.user.uid}
             barrel={this.props.barrel}
             username={item.info.username} 
             role={item.info.role} />
@@ -287,7 +319,7 @@ class Classroom extends React.Component {
 
     // recording Button
     let RecordingButton;
-    if (this.$client.info && this.$client.info.role === 'teacher') {
+    if (this.$client.user.role === 'teacher') {
       let id,
         content,
         func;
@@ -320,10 +352,10 @@ class Classroom extends React.Component {
 
     let Toolbar = (
       <div className="board-bar">
-        <Button onClick={this.handleShareScreen} style={{margin: '0 8px'}} icon="laptop">Share Screen</Button>
+        <Button loading={this.state.waitSharing} onClick={this.handleShareScreen} type={this.state.isSharing ? "primary" : "default"} style={{margin: '0 8px'}} icon="laptop">Share Screen</Button>
         <div className="board-bar--toolbar">
-          <Button style={{margin: '0 8px'}} type="dashed" shape="circle" icon="video-camera"></Button>
-          <Button style={{margin: '0 8px'}} type="primary" shape="circle" icon="sound"></Button>
+          <Button onClick={this.handleToggleVideo} style={{margin: '0 8px'}} type={this.state.enableVideo?'primary':'default'} shape="circle" icon="video-camera"></Button>
+          <Button onClick={this.handleToggleAudio} style={{margin: '0 8px'}} type={this.state.enableAudio?'primary':'default'} shape="circle" icon="sound"></Button>
         </div>
       </div>
     )
@@ -462,8 +494,9 @@ class MessageBox extends React.Component {
       <MessageItem 
         key={item.ts} 
         message={item.message}
-        username={item.info.username}
-        role={item.info.role}
+        username={item.username}
+        role={item.role}
+        ts={item.ts}
         local={item.local} />
     ));
 
