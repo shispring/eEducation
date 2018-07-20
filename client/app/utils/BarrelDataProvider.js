@@ -165,12 +165,12 @@ DataProvider.prototype.handleConnect = function(appId, channelId, user = {uid, u
   this.once('connected', _ => {
     let distincted = true;
     let hasTeacher = false;
-    this.channelStatusTunnel.once((v, k) => {
+    this.channelStatusTunnel.map().once((v, k) => {
       if(k === 'teacher') {
         hasTeacher = (v !== null)
       }
     });
-    this.userTunnel.once((v, k) => {
+    this.userTunnel.map().once((v, k) => {
       if(k === String(user.uid)) {
         if(user.username === v.username && user.role === v.role) {
           distincted = false
@@ -178,10 +178,10 @@ DataProvider.prototype.handleConnect = function(appId, channelId, user = {uid, u
       }
     })
     if (user.role === 'teacher') {
-      if(hasTeacher) {
-        this.emit('connectChannelFailed', 'Teacher already exist in that class')
-      } else if(!distincted) {
+      if(!distincted ) {
         this.emit('connectChannelFailed', 'Username exists')
+      } else if(hasTeacher) {
+        this.emit('connectChannelFailed', 'Teacher already exist in that class')
       } else {
         this.userTunnel.get(user.uid).put({
           username: user.username,
@@ -200,11 +200,13 @@ DataProvider.prototype.handleConnect = function(appId, channelId, user = {uid, u
         })
       }
     } else if (user.role === 'student') {
-      if(!hasTeacher) {
-        this.emit('connectChannelFailed', 'Teacher for that class not ready yet')
-      } else if(!distincted) {
+      if(!distincted) {
         this.emit('connectChannelFailed', 'Username exists')
-      } else {
+      } 
+      // else if(!hasTeacher) {
+      //   this.emit('connectChannelFailed', 'Teacher for that class not ready yet')
+      // } 
+      else {
         this.userTunnel.get(user.uid).put({
           username: user.username,
           role: user.role
