@@ -1,55 +1,23 @@
 /**
  * Barrel is not another sdk, but a flexible, light-weight 
  * encapsulation for Agora Electron sdk for E-edu. 
- * Easier to use and extend since `Serverless` & `NoDB`
+ * Easier to use and extend.
  */
-import Gun from 'gun/gun';
 import AgoraRtcEngine from 'agora-electron-sdk';
-import {
-  EventEmitter
-} from 'events';
+import DataProvider from './ExampleDataProvider';
+import EventEmitter from 'events';
 
-const sharingStreamId = 2
+/**
+ * Default stream id for sharing stream
+ */
+const SHARE_ID = 2
 
+/**
+ * BarrelClient
+ */
 export default class BarrelClient extends EventEmitter {
   /**
-   * @description constructor for client
-   * @param {string} appId App ID get from agora.io
-   * @param {array} serverUrl Target servers you use to sync data with
-   * @param {object} config some extra config
-   */
-  constructor(appId, serverUrl = ['http://localhost:8888/gun'], config = {
-    defaultProfile: true
-  }) {
-    super()
-    if (!appId || !serverUrl.length) {
-      throw new Error('Required App ID and at least one server url!')
-    }
-    // initialize gun for dataTunnel and rtcEngine for rtcTunnel
-    this.gun = new Gun(serverUrl)
-    this.rtcEngine = new AgoraRtcEngine()
-    this.rtcEngine.initialize(appId)
-    // init user map
-    this.userList = {}
-    // utils 
-    this.appId = appId
-    this.serverUrl = serverUrl
-    this.sharingPrepared = false
-    this.uid = undefined
-    this.info = undefined
-    this.channel = undefined
-    // declare data tunnels
-    this.ChannelStatus = undefined
-    this.Users = undefined
-    this.Messages = undefined
-    // init profile
-    if(config.defaultProfile) {
-      this.initProfile()
-    }
-  }
-
-  /**
-   * @description Encapsulation regular profile you need to set
+   * Encapsulation regular profile you need to set
    * @param {boolean} audience if user is an audience
    * @param {number} videoProfile videoProfile 
    * @param {boolean} swapWidthAndHeight if swap width and height
@@ -64,118 +32,269 @@ export default class BarrelClient extends EventEmitter {
     rtcEngine.setParameters('{"che.audio.enable.agc":false}');
     rtcEngine.setParameters('{"che.video.moreFecSchemeEnable":true}');
     rtcEngine.setParameters('{"che.video.lowBitRateStreamParameter":{"width":192,"height":108,"frameRate":15,"bitRate":100}}');
-    rtcEngine.enableDualStreamMode(true);
-    rtcEngine.enableVideo();
-    rtcEngine.enableLocalVideo(true);
-    rtcEngine.setVideoProfile(videoProfile, swapWidthAndHeight);
-  }
-
-  /**
-   * @description login and open data tunnel with validation
-   * @param {object} info in temp role and username
-   * @param {string} channel channel name
-   * @param {function} validation custom validation, will use default validation if not set
-   */
-  login(info = {
-    username,
-    role
-  }, channel, validation) {
-    // init local user info
-    this.uid = Number(String(new Date().getTime()).slice(7))
-    this.info = info
-    this.channel = channel
-    // init data channel
-    this.ChannelStatus = this.gun.get(this.appId + '/' + channel + '/status')
-    this.Users = this.gun.get(this.appId + '/' + channel + '/users')
-    this.Messages = this.gun.get(this.appId + '/' + channel + '/messages')
-    // do validate
-    if (validation) {
-      return validation(this.uid, info, this.Users, this.ChannelStatus)
-    } else {
-      return this.defaultValidation(this.uid, info, this.Users, this.ChannelStatus)
+    if(!audience) {
+      // audience do not publish stream
+      rtcEngine.enableDualStreamMode(true);
+      rtcEngine.enableVideo();
+      rtcEngine.enableLocalVideo(true);
+      rtcEngine.setVideoProfile(videoProfile, swapWidthAndHeight);
     }
   }
 
   /**
-   * @description default validation for login
-   * @param {number} uid 
-   * @param {object} info 
-   * @param {DataTunnel} Users 
-   * @param {DataTunnel} ChannelStatus 
+   * connect to server and init class through data provider
+   * @param {string} config.channel channel
+   * @param {Object} config.user username, role, uid
    */
-  defaultValidation(uid, info, Users, ChannelStatus) {
-    let distincted = true
-    let hasTeacher = false
-    ChannelStatus.once((v, k) => {
-      if (k === 'teacher') {
-        hasTeacher = (v !== null)
+  initClass(appId, channel, user = {uid, username, role}) {
+
+    // this.appId = appId
+    // this.channel = channel
+    return new Promise((resolve, reject) => {
+      // init local user info
+      if(!user.uid) {
+        // if no uid, use ts instead
+        user.uid = Number(String(new Date().getTime()).slice(7));
+      }
+      this.user = user;
+      this.channel = channel;
+      this.appId = appId;
+      // init rtc engine
+      this.rtcEngine = new AgoraRtcEngine()
+      this.rtcEngine.initialize(appId)
+      // init data provider
+      this.dataProvider = new DataProvider();
+      // init userlist
+      this.userList = {};
+      // subscribe data provider event
+      this.subDataProviderEvents();
+      // dispatch action
+      this.dataProvider.dispatchInitClass(appId, channel, user).then(() => {
+        resolve({uid: user.uid})
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  }
+
+  /**
+   * actually join media channel to make stream ready
+   * @param {string} token - token calculated by app id & app cert
+   * @param {string} info - extra info to be broadcast when joinned channel
+   */
+  enterClass(token = null, info = '') {
+    this.subRtcEvents()
+    this.rtcEngine.joinChannel(token, this.channel, info, this.user.uid);
+  }
+
+  /**
+   * leave the media channel
+   */
+  leaveClass() {
+    this.rtcEngine.leaveChannel();
+    this.dataProvider.dispatchLeaveClass({
+      uid: this.user.uid,
+      username: this.user.username,
+      role: this.user.role
+    });
+    // return new Promise((resolve, reject) => {
+    //   this.dataProvider.dispatchLeaveClass({
+    //     uid: this.user.uid,
+    //     username: this.user.username,
+    //     role: this.user.role
+    //   }).then(() => {
+    //     resolve()
+    //   }).catch(err => {
+    //     reject(err)
+    //   });
+    // });
+  }
+
+  /**
+   * prepare screen share: initialize and join
+   * @param {string} token 
+   * @param {string} info 
+   * @param {number} timeout 
+   */
+  prepareScreenShare(token = null, info = '', timeout = 30000) {
+    return new Promise((resolve, reject) => {
+      let timer = setTimeout(() => {
+        reject(new Error('Timeout'))
+      }, timeout)
+      this.rtcEngine.once('videosourcejoinedsuccess', uid => {
+        clearTimeout(timer)
+        this.sharingPrepared = true
+        resolve(uid)
+      });
+      try {
+        this.rtcEngine.videoSourceInitialize(this.appId);
+        this.rtcEngine.videoSourceSetChannelProfile(1);
+        this.rtcEngine.videoSourceEnableWebSdkInteroperability(true)
+        this.rtcEngine.videoSourceSetVideoProfile(50, false);
+        // to adjust render dimension to optimize performance
+        this.rtcEngine.setVideoRenderDimension(3, SHARE_ID, 1600, 900);
+        this.rtcEngine.videoSourceJoin(token, this.channel, info, SHARE_ID);
+      } catch(err) {
+        clearTimeout(timer)
+        reject(err)
       }
     })
-    Users.once((v, k) => {
-      if (k === String(uid)) {
-        if (info.username === v.username && info.role === v.role) {
-          distincted = false
-        }
-      }
+  }
+
+  /**
+   * when you no longer need to do screen sharing, release it
+   */
+  destructScreenShare() {
+    this.rtcEngine.videoSourceLeave();
+    this.rtcEngine.videoSourceRelease();
+  }
+
+  /**
+   * start screen share
+   */
+  startScreenShare() {
+    if(!this.sharingPrepared) {
+      console.error('Sharing not prepared yet.')
+      return false
+    };
+    return new Promise((resolve, reject) => {
+      this.rtcEngine.startScreenCapture2(0, 15, {
+        top: 0, left: 0, right: 0, bottom: 0
+      }, 0);
+      this.rtcEngine.startScreenCapturePreview();
+      this.dataProvider.dispatchStartScreenShare(SHARE_ID, this.user.uid).then(() => {
+        resolve(SHARE_ID, this.user.uid)
+      }).catch(err => {
+        reject(err)
+      });
+    });
+  }
+
+  /**
+   * stop screen share
+   */
+  stopScreenShare() {
+    return new Promise((resolve, reject) => {
+      this.dataProvider.dispatchStopScreenShare(SHARE_ID, this.user.uid).then(() => {
+        this.rtcEngine.stopScreenCapture2();
+        this.rtcEngine.stopScreenCapturePreview();
+        resolve(SHARE_ID, this.user.uid)
+      }).catch(err => {
+        reject(err)
+      })
     })
-    if (info.role === 'teacher') {
-      if(hasTeacher) {
-        return {result: false, message: 'Teacher already exist in that class'}
-      }
-      if(!distincted) {
-        return {result: false, message: 'Username exists'}
-      }
-      return {result: true, message:''}
-    } else if (info.role === 'student') {
-      // if(!hasTeacher) {
-      //   return {result: false, message: 'Teacher for that class not ready yet'}
-      // }
-      if(!distincted) {
-        return {result: false, message: 'Username exists'}
-      }
-      return {result: true, message:''}
-    } else {
-      throw new Error('Unknow role for user: ' + uid)
-    }
   }
 
   /**
-   * Channel Related
+   * uid is undefined => mute self
+   * uid is number => mute target uid
+   * uid is Array => mute target uids
+   * @param {undefined|number|number[]} uids 
    */
-
-  handleUserAdded = (uid, info, stream) => {
-    if (info.role === 'teacher') {
-      this.emit('teacher-added', uid, info, stream)
-    } else if (info.role === 'student') {
-      this.emit('student-added', uid, info, stream)
-    } else {
-      throw new Error('Unknow role for user: ' + uid)
+  muteVideo(uids) {
+    if (uids === undefined) {
+      return this.rtcEngine.muteLocalVideoStream(true)
+    }
+    if(typeof(uids) === 'number') {
+      if(uids === this.user.uid) {
+        return this.rtcEngine.muteLocalVideoStream(true)
+      } else {
+        return this.rtcEngine.muteRemoteVideoStream(uids, true)
+      }
+    }
+    if(uids instanceof Array) {
+      for(let uid of uids) {
+        return this.rtcEngine.muteRemoteVideoStream(uid, true)
+      }
     }
   }
 
   /**
-   * @description add user to userlist
-   * @param {number} uid 
-   * @param {object} info 
-   * @param {object} stream 
+   * uid is undefined => unmute self
+   * uid is number => unmute target uid
+   * uid is Array => unmute target uids
+   * @param {undefined|number|number[]} uids 
    */
-  addUser = (uid, info, stream) => {
-    // if not exist, create one
-    if (!this.userList.hasOwnProperty(uid)) {
-      this.userList[uid] = this.newUser(uid, this.handleUserAdded)
+  unmuteVideo(uids) {
+    if (uids === undefined) {
+      return this.rtcEngine.muteLocalVideoStream(false)
     }
-    // if exist
-    let target = this.userList[uid]
-    if (info) {
-      target.info = info
+    if(typeof(uids) === 'number') {
+      if(uids === this.user.uid) {
+        return this.rtcEngine.muteLocalVideoStream(false)
+      } else {
+        return this.rtcEngine.muteRemoteVideoStream(uids, false)
+      }
     }
-    if (stream) {
-      target.stream = stream
+    if(uids instanceof Array) {
+      for(let uid of uids) {
+        return this.rtcEngine.muteRemoteVideoStream(uid, false)
+      }
     }
   }
 
   /**
-   * @description new a object only when both info and stream are set will callback be emit
+   * uid is undefined => mute self
+   * uid is number => mute target uid
+   * uid is Array => mute target uids
+   * @param {undefined|number|number[]} uids 
+   */
+  muteAudio(uids) {
+    if (uids === undefined) {
+      return this.rtcEngine.muteLocalAudioStream(true)
+    }
+    if(typeof(uids) === 'number') {
+      if(uids === this.user.uid) {
+        return this.rtcEngine.muteLocalAudioStream(true)
+      } else {
+        return this.rtcEngine.muteRemoteAudioStream(uids, true)
+      }
+    }
+    if(uids instanceof Array) {
+      for(let uid of uids) {
+        return this.rtcEngine.muteRemoteAudioStream(uid, true)
+      }
+    }
+  }
+
+  /**
+   * uid is undefined => unmute self
+   * uid is number => unmute target uid
+   * uid is Array => unmute target uids
+   * @param {undefined|number|number[]} uids 
+   */
+  unmuteAudio(uids) {
+    if (uids === undefined) {
+      return this.rtcEngine.muteLocalAudioStream(false)
+    }
+    if(typeof(uids) === 'number') {
+      if(uids === this.user.uid) {
+        return this.rtcEngine.muteLocalAudioStream(false)
+      } else {
+        return this.rtcEngine.muteRemoteAudioStream(uids, false)
+      }
+    }
+    if(uids instanceof Array) {
+      for(let uid of uids) {
+        return this.rtcEngine.muteRemoteAudioStream(uid, false)
+      }
+    }
+  }
+
+  /**
+   * broadcast message in channel
+   * @param {string} message 
+   */
+  broadcastMessage(message = '') {
+    if(!message) {
+      return
+    }
+    this.dataProvider.dispatchBroadcastMessage(message, this.user)
+  }
+
+  /**
+   * @private
+   * new a object only when both info and stream are set will callback be emit
    * @param {number} uid 
    * @param {function} callback 
    */
@@ -191,6 +310,9 @@ export default class BarrelClient extends EventEmitter {
           this.accessInfo = val
           if (val) {
             this.hasInfo = true
+            if (val.role === 'audience') {
+              callback(this.uid, this.info, this.stream)
+            }
             if (this.hasStream) {
               callback(this.uid, this.info, this.stream)
             }
@@ -219,7 +341,47 @@ export default class BarrelClient extends EventEmitter {
   }
 
   /**
-   * @description remove user from userList and trigger related event
+   * @private
+   * callback for user info and stream both ready
+   */
+  handleUserAdded = (uid, info, stream) => {
+    if (info.role === 'teacher') {
+      this.rtcEngine.setRemoteVideoStreamType(uid, 0)
+      this.emit('teacher-added', uid, info, stream)
+    } else if (info.role === 'student') {
+      this.rtcEngine.setRemoteVideoStreamType(uid, 1)
+      this.emit('student-added', uid, info, stream)
+    } else if (info.role === 'audience') {
+      this.emit('audience-added', uid, info, stream)
+    } else {
+      throw new Error('Unknow role for user: ' + uid)
+    }
+  }
+
+  /**
+   * @private
+   * add user to userlist
+   * @param {number} uid 
+   * @param {object} info 
+   * @param {object} stream 
+   */
+  addUser = (uid, info, stream) => {
+    // if not exist, create one
+    if (!this.userList.hasOwnProperty(uid)) {
+      this.userList[uid] = this.newUser(uid, this.handleUserAdded)
+    }
+    let target = this.userList[uid]
+    if (info && !target.info) {
+      target.info = info
+    }
+    if (stream && !target.stream) {
+      target.stream = stream
+    }
+  }
+
+  /**
+   * @private
+   * remove user from userList and trigger related event
    * @param {number} uid 
    */
   removeUser(uid) {
@@ -230,225 +392,69 @@ export default class BarrelClient extends EventEmitter {
         this.emit('teacher-removed', uid)
       } else if(role === 'student') {
         this.emit('student-removed', uid)
+      } else if (info.role === 'audience') {
+        this.emit('audience-removed', uid)
       } else {
         throw new Error('Unknow role for user: ' + uid)
       }
     }
   }
 
+
   /**
-   * @description trigger local state change when dataTunnel emit sth
+   * get user by uid from userlist
    */
-  initDataTunnel() {
-    this.Users.map().on((info, uid) => {
-      console.info('User', uid, info)
-      if(info === null) {
-        // remove user
-        this.removeUser(uid)
-      } else {
-        this.addUser(uid, info, undefined)
-      }
-    })
-    this.ChannelStatus.map().on((v, k) => {
-      console.info('ChannelStatus:', k, v)
-      if(k === 'sharing') {
-        if(v !== null) {
-          this.rtcEngine.setupViewContentMode('videosource', 1);
-          this.rtcEngine.setupViewContentMode(String(sharingStreamId), 1);
-          if(v.sharer !== this.uid) {
-            this.emit('sharing-start', sharingStreamId, v.sharer)
-          }
-        } else {
-          this.emit('sharing-ended', sharingStreamId)
-        }
-      }
-    })
-    this.Messages.map().on((v, k) => {
-      console.info('Messages', k, v)
-      if(v === null) {
-        // In temp will never happen
-      } else {
-        this.emit('channel-message', v.message, v.uid, v.info, v.ts)
-      }
-    })
+  getUser(uid) {
+    let temp = this.userList[uid]
+    return {
+      username: temp.info.username,
+      role: temp.info.role,
+      uid: uid
+    }
   }
 
-  closeDataTunnel() {
-    this.Users.off()
-    this.ChannelStatus.off()
-    this.Messages.off()
-  }
-
+  /**
+   * subscribe rtc engine events
+   */
   subRtcEvents() {
     this.rtcEngine.on('useroffline', (uid, reason) => {
-      this.Users.get(uid).put(null)
+      let user = this.getUser(uid)
+      this.dataProvider.dispatchLeaveClass(user)
+      this.removeUser(uid)
     });
     this.rtcEngine.on('userjoined', (uid, elpased) => {
-      this.addUser(uid, undefined, uid)
-      if (uid === this.ChannelStatus.get('teacher')) {
-        this.rtcEngine.setRemoteVideoStreamType(uid, 0);
-      } else {
-        this.rtcEngine.setRemoteVideoStreamType(uid, 1);
-      }
+      // add stream info for a user
+      this.addUser(uid, null, uid)
+    });
+    this.rtcEngine.on('joinedchannel', (channel, uid, elpased) => {
+      this.addUser(uid, null, uid)
     });
     this.rtcEngine.on('rejoinedchannel', (channel, uid, elpased) => {
-      this.Users.get(this.uid).put({
-        ...this.info
-      })
-      if(this.info.role === 'teacher') {
-        this.ChannelStatus.get('teacher').put(this.uid)
-      }
-    })
-  }
-
-  /**
-   * 
-   * @param {string} channel Channel Name
-   * @param {number} uid user id
-   * @param {string} token auth token
-   * @param {number} timeout duration before timeout
-   * @param {object} extraInfo any extra info
-   */
-  join(token = null, info = '', timeout = 30000) {
-    if (!this.channel || !this.uid) {
-      throw new Error('params required!')
-    }
-    return new Promise((resolve, reject) => {
-      let timer = setTimeout(() => {
-        reject(new Error('Timeout'))
-      }, timeout)
-      try {
-        this.rtcEngine.joinChannel(token, this.channel, info, this.uid);
-      } catch (err) {
-        clearTimeout(timer)
-        reject(err)
-      }
-      this.rtcEngine.on('joinedchannel', (channel, uid, elpased) => {
-        this.subRtcEvents()
-        clearTimeout(timer)
-        this.initDataTunnel()
-        this.Users.get(this.uid).put({
-          ...this.info
-        })
-        this.addUser(this.uid, undefined, uid)
-        if(this.info.role === 'teacher') {
-          this.ChannelStatus.get('teacher').put(this.uid)
-        }
-        resolve(channel, uid, elpased);
-      });
+      this.addUser(uid, null, uid)
     });
   }
 
   /**
-   * 
-   * @param {number} timeout duration before timeout
+   * subscribe event of data provider
    */
-  leave(timeout = 30000) {
-    return new Promise((resolve, reject) => {
-      if(this.userList.length === 1) {
-        this.gun.get('channels').get(this.channel).put(null)
-      }
-      this.closeDataTunnel()
-      this.Users.get(this.uid).put(null);
-      if(this.info.role === 'teacher') {
-        this.ChannelStatus.get('teacher').put(null)
-      }
-      let timer = setTimeout(() => {
-        reject(new Error('Timeout'))
-      }, timeout)
-      try {
-        this.rtcEngine.leaveChannel();
-      } catch (err) {
-        clearTimeout(timer);
-        reject(err);
-      }
-      this.rtcEngine.on('leavechannel', (...args) => {
-        clearTimeout(timer);
-        this.rtcEngine.removeAllListeners();
-        resolve(...args);
-      });
+  subDataProviderEvents() {
+    this.dataProvider.on('user-info-removed', ({uid}) => {
+      this.removeUser(Number(uid))
     });
-  }
-
-
-  /**
-   * Sharing Related
-   * @method prepareSharing the first time you try to share sth, you need to use preparesharing
-   * @method startSharing start sharing
-   * @method stopSharing stop sharing
-   * @method destructSharing when you will no longer use sharing anymore
-   */
-
-  prepareSharing(token = null, info = '', timeout = 30000) {
-    return new Promise((resolve, reject) => {
-      let timer = setTimeout(() => {
-        reject(new Error('Timeout'))
-      }, timeout)
-      this.rtcEngine.on('videosourcejoinedsuccess', uid => {
-        clearTimeout(timer)
-        this.sharingPrepared = true
-        resolve()
-      });
-      try {
-        this.rtcEngine.videoSourceInitialize(this.appId);
-        this.rtcEngine.videoSourceSetChannelProfile(1);
-        this.rtcEngine.videoSourceEnableWebSdkInteroperability(true)
-        this.rtcEngine.videoSourceSetVideoProfile(50, false);
-        // to adjust render dimension to optimize performance
-        this.rtcEngine.setVideoRenderDimension(3, sharingStreamId, 1600, 900);
-        this.rtcEngine.videoSourceJoin(token, this.channel, info, sharingStreamId);
-      } catch(err) {
-        clearTimeout(timer)
-        reject(err)
-      }
+    this.dataProvider.on('user-info-updated', ({uid, info}) => {
+      this.addUser(Number(uid), info, null)
+    });
+    this.dataProvider.on('screen-share-started', ({sharerId, shareId}) => {
+      this.emit('screen-share-started', {sharerId, shareId})
+    });
+    this.dataProvider.on('screen-share-stopped', () => {
+      this.emit('screen-share-stopped')
+    })
+    this.dataProvider.on('message-received', ({id, detail = {
+      message, ts, uid, username, role
+    }}) => {
+      this.emit('message-received', {id, detail})
     })
   }
 
-  startSharing = () => {
-    if(!this.sharingPrepared) {
-      console.error('Sharing not prepared yet.')
-      return false
-    }
-    this.ChannelStatus.get('sharing').put({
-      sharer: this.uid
-    }, (ack) => {
-      if(ack.err){
-        throw new Error(ack.err)
-      }
-      this.rtcEngine.startScreenCapture2(0, 15, {
-        top: 0, left: 0, right: 0, bottom: 0
-      }, 0);
-      this.rtcEngine.startScreenCapturePreview();
-      this.emit('sharing-start', sharingStreamId, this.uid)
-    })
-  }
-
-  stopSharing() {
-    this.ChannelStatus.get('sharing').put(null)
-    this.rtcEngine.stopScreenCapture2();
-    this.rtcEngine.stopScreenCapturePreview();
-  }
-
-  destructSharing() {
-    this.rtcEngine.videoSourceLeave();
-    this.rtcEngine.videoSourceRelease();
-  }
-
-
-  /**
-   * message related
-   */
-
-  broadcastMessage(message = '') {
-    if(!message) {
-      return
-    }
-    let ts = Number(String(new Date().getTime()).slice(7))
-    this.Messages.get(ts).put({
-      message,
-      ts,
-      uid: this.uid,
-      info: this.info
-    })
-  }
 }

@@ -8,8 +8,10 @@ Update 'agora.config.js' under './app/'.
 **Recommend to use yarn!**
 
 ```bash
+# native modules should be installed under ./app
+cd ./app && npm install
 # install dependency
-npm install
+cd .. && npm install
 # run development mode with hot-reload
 npm run dev
 # build for different platform

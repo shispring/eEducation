@@ -3,7 +3,8 @@ import { Form, Input, Radio, Button, Spin, message } from 'antd';
 
 import './index.scss';
 import TitleBar from '../../components/TitleBar';
-import { localStorage } from '../../utils/storage'
+import { localStorage } from '../../utils/storage';
+import { APP_ID } from '../../agora.config'
 
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
@@ -105,7 +106,9 @@ class Index extends React.Component {
     this.setState({
       isLogining: true
     })
-    this.$client.doConnect(channel, {username, role}).then(_ => {
+    // you can do auth before init class to generate your custom uid
+    this.$client.initClass(APP_ID, channel, {uid: undefined, username, role}).then(() => {
+      this.$client.initProfile()
       this.setState({
         isLogining: false
       }, () => {

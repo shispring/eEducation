@@ -33,7 +33,7 @@ class Classroom extends React.Component {
   }
 
   componentDidMount() {
-    this.$client.join()
+    this.$client.enterClass()
     if(this.$client.user.role === 'teacher') {
       this.$client.prepareScreenShare()
     }
@@ -46,6 +46,7 @@ class Classroom extends React.Component {
   }
 
   addStream = (uid, info, streamId) => {
+    console.log('User Joined', uid, info, streamId)
     if(info.role === 'teacher') {
       this.state.teacherList.set(uid, {
         uid, info, streamId
@@ -95,11 +96,11 @@ class Classroom extends React.Component {
     this.$client.on('student-removed', (uid) => {
       this.removeStream(uid, 'student')
     })
-    this.$client.on('screen-share-start', evt => {
-      console.log('Sharing Start...')
+    this.$client.on('screen-share-started', evt => {
       let board = document.querySelector('.board');
       if (board) {
-        if(evt.sharer === this.$client.user.uid) {
+        // check if presenter is your self
+        if(evt.sharerId === this.$client.user.uid) {
           this.$rtc.setupLocalVideoSource(board);
         } else {
           this.$rtc.subscribe(evt.shareId, board);
@@ -109,13 +110,13 @@ class Classroom extends React.Component {
         this.$rtc.setupViewContentMode(String(evt.shareId), 1);
       };
     })
-    this.$client.on('screen-share-stop', _ => {
+    this.$client.on('screen-share-stopped', () => {
       let board = document.querySelector('.board');
       if(board) {
         board.innerHTML = '';
       };
     })
-    this.$client.on('channel-message', evt => {
+    this.$client.on('message-received', evt => {
       let temp = [...this.state.messageList]
       temp.push({
         message: evt.detail.message,
@@ -132,7 +133,7 @@ class Classroom extends React.Component {
   }
 
   handleExit = () => {
-    this.$client.leave()
+    this.$client.leaveClass()
     message.info('Left the classroom...');
     window.location.hash = ''
   }
@@ -229,7 +230,11 @@ class Classroom extends React.Component {
     this.setState({
       enableVideo: !this.state.enableVideo
     }, () => {
-      this.$client.muteLocalVideoStream(!this.state.enableVideo)
+      if(this.state.enableVideo) {
+        this.$client.muteVideo()
+      } else {
+        this.$client.unmuteVideo()
+      }
     })
   }
 
@@ -237,7 +242,11 @@ class Classroom extends React.Component {
     this.setState({
       enableAudio: !this.state.enableAudio
     }, () => {
-      this.$client.muteLocalAudioStream(!this.state.enableAudio)
+      if(this.state.enableAudio) {
+        this.$client.muteAudio()
+      } else {
+        this.$client.unmuteAudio()
+      }
     })
   }
 
@@ -290,9 +299,9 @@ class Classroom extends React.Component {
       this.state.teacherList.forEach(item => {
         result.push((
           <Window 
-            key={item.streamId} 
-            uid={item.streamId}
-            isLocal={item.streamId === this.$client.user.uid}
+            key={item.uid} 
+            uid={item.uid}
+            isLocal={item.uid === this.$client.user.uid}
             barrel={this.props.barrel}
             username={item.info.username} 
             role={item.info.role} />
@@ -306,9 +315,9 @@ class Classroom extends React.Component {
       this.state.studentList.forEach(item => {
         result.push((
           <Window 
-            key={item.streamId} 
-            uid={item.streamId}
-            isLocal={item.streamId === this.$client.user.uid}
+            key={item.uid} 
+            uid={item.uid}
+            isLocal={item.uid === this.$client.user.uid}
             barrel={this.props.barrel}
             username={item.info.username} 
             role={item.info.role} />

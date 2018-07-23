@@ -5,12 +5,12 @@ import Index from './Index';
 import DeviceTesting from './DeviceTesting';
 import NetworkTesting from './NetworkTesting';
 import Classroom from './Classroom';
-import BarrelClient from '../utils/Barrel_new'
+import BarrelClient from '../utils/Barrel'
 
 class App extends Component {
   constructor() {
     super()
-    this.client = new BarrelClient('aab8b8f5a8cd4469a63042fcfafe7063')
+    this.client = new BarrelClient()
     this.state = {
       style: { visibility: 'hidden' }
     }
