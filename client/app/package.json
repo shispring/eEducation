@@ -6,7 +6,7 @@
   "main": "./main.prod.js",
   "author": "Hao Yang <haoyang@agora.io> (https://github.com/menthays)",
   "scripts": {
-    "electron-rebuild": "node -r babel-register ../internals/scripts/ElectronRebuild.js",
+    "electron-rebuild": "echo \"no need to rebuild agora-electron-sdk\"",
     "postinstall": "npm run electron-rebuild"
   },
   "license": "MIT",
