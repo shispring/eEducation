@@ -1,15 +1,13 @@
 /**
  * By default, we use gun (a real-time database)
- * to realize data provider.
+ * to implement data provider.
+ * @module ExampleDataProvider
  */
 import Gun from "gun/gun";
 import BaseDataProvider from "./BaseDataProvider";
 
 const SERVER_URLS = ["http://123.155.153.85:8888/gun"];
 
-/**
- * @implements BaseDataProvider
- */
 export default class BarrelDataProvider extends BaseDataProvider {
   /**
    * connect to gun service and register events for data tunnel

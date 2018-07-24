@@ -2,6 +2,7 @@
  * Barrel is not another sdk, but a flexible, light-weight 
  * encapsulation for Agora Electron sdk for E-edu. 
  * Easier to use and extend.
+ * @module Adapter
  */
 import AgoraRtcEngine from 'agora-electron-sdk';
 import DataProvider from './ExampleDataProvider';
@@ -12,10 +13,7 @@ import EventEmitter from 'events';
  */
 const SHARE_ID = 2
 
-/**
- * BarrelClient
- */
-export default class BarrelClient extends EventEmitter {
+export default class Adapter extends EventEmitter {
   /**
    * Encapsulation regular profile you need to set
    * @param {boolean} audience if user is an audience
