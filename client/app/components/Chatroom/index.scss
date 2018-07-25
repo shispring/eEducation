@@ -1,8 +1,9 @@
 .message-container {
   background: #FFF;
+  padding: 0.9rem;
 
   .message-box {
-    height: cacl(100% - 2rem);
+    height: 21rem;
     overflow-y: auto;
     scroll-behavior: smooth;
     margin-bottom: 1rem;

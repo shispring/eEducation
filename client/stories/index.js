@@ -1,7 +1,7 @@
 import React from 'react';
 import { storiesOf, addDecorator } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
-import ClassroomCtrl from '../app/components/ClassroomCtrl';
+import Chatroom from '../app/components/Chatroom';
 
 const styles = {
   position: 'fixed',
@@ -22,7 +22,16 @@ const WrapperDecorator = storyFn => (
 
 addDecorator(WrapperDecorator)
 
-storiesOf('Classroom Control', module)
+const defaultMessages = [
+  {local: false, username: 'me', content: '123123'},
+  {local: true, username: 'customer', content: '321321'},
+  {local: false, username: 'me', content: '123123'},
+  {local: true, username: 'customer', content: '321321'},
+  {local: false, username: 'me', content: '123123'},
+  {local: true, username: 'customer', content: '321321'},
+]
+
+storiesOf('Chatroom', module)
   .add('normal', () => (
-    <ClassroomCtrl style={{width: '20rem'}}></ClassroomCtrl>
+    <Chatroom onSendMessage={action('sending message')} messages={defaultMessages} style={{width: '20rem'}}></Chatroom>
   ))
