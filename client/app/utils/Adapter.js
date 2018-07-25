@@ -187,7 +187,7 @@ export default class Adapter extends EventEmitter {
    * uid is undefined => mute self
    * uid is number => mute target uid
    * uid is Array => mute target uids
-   * @param {undefined|number|number[]} uids 
+   * @param {number|number[]} uids 
    */
   muteVideo(uids) {
     if (uids === undefined) {
@@ -211,7 +211,7 @@ export default class Adapter extends EventEmitter {
    * uid is undefined => unmute self
    * uid is number => unmute target uid
    * uid is Array => unmute target uids
-   * @param {undefined|number|number[]} uids 
+   * @param {number|number[]} uids 
    */
   unmuteVideo(uids) {
     if (uids === undefined) {
@@ -235,7 +235,7 @@ export default class Adapter extends EventEmitter {
    * uid is undefined => mute self
    * uid is number => mute target uid
    * uid is Array => mute target uids
-   * @param {undefined|number|number[]} uids 
+   * @param {number|number[]} uids 
    */
   muteAudio(uids) {
     if (uids === undefined) {
@@ -259,7 +259,7 @@ export default class Adapter extends EventEmitter {
    * uid is undefined => unmute self
    * uid is number => unmute target uid
    * uid is Array => unmute target uids
-   * @param {undefined|number|number[]} uids 
+   * @param {number|number[]} uids 
    */
   unmuteAudio(uids) {
     if (uids === undefined) {
@@ -429,6 +429,9 @@ export default class Adapter extends EventEmitter {
     });
     this.rtcEngine.on('rejoinedchannel', (channel, uid, elpased) => {
       this.addUser(uid, null, uid)
+    });
+    this.rtcEngine.on('error', (err, message) => {
+      console.error(err, message)
     });
   }
 
