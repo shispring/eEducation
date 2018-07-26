@@ -45,7 +45,9 @@ export default class Adapter extends EventEmitter {
    * @param {Object} config.user username, role, uid
    */
   initClass(appId, channel, user = {uid, username, role}) {
-
+    if(!appId) {
+      throw new Error('appId cannot be empty!')
+    }
     // this.appId = appId
     // this.channel = channel
     return new Promise((resolve, reject) => {
