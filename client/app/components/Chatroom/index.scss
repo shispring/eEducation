@@ -3,7 +3,7 @@
   padding: 0.9rem;
 
   .message-box {
-    height: 21rem;
+    height: calc(100% - 3rem);
     overflow-y: auto;
     scroll-behavior: smooth;
     margin-bottom: 1rem;

@@ -1,0 +1,21 @@
+.user-list-container {
+  background: #FFF;
+  padding: 0.9rem;
+
+  .user-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    .user-info {
+      flex: 1 1 auto;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .user-control {
+      flex: 0 0 5rem;
+      display: flex;
+      justify-content: space-around;
+      align-content: center;
+    }
+  }
+}

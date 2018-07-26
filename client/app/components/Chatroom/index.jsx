@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Card, Input, Divider } from 'antd';
+import { Button, Input } from 'antd';
 import './index.scss'
 
 function MessageItem(props) {
@@ -17,15 +17,6 @@ function MessageItem(props) {
 };
 
 class Chatroom extends React.Component {
-  constructor(props) {
-    super(props);
-    this.inputRef = React.createRef()
-  }
-  componentDidUpdate() {
-    const box = document.querySelector('.message-box');
-    box.scrollTop = box.scrollHeight - box.clientHeight;
-  }
-
   handleSendMessage = () => {
     let dom = document.querySelector('.message-container #message')
     if (!dom) {
@@ -38,24 +29,39 @@ class Chatroom extends React.Component {
       return;
     }
     dom.value = '';
-    this.props.onSendMessage(msg)
+    if(this.props.onSendMessage) {
+      this.props.onSendMessage(msg);
+    }
+  }
+
+  scrollToBottom = () => {
+    const box = this.messageBoxRef;
+    box.scrollTop = box.scrollHeight - box.clientHeight;
+  }
+
+  componentDidUpdate() {
+    this.scrollToBottom()
+  }
+
+  componentDidMount() {
+    this.scrollToBottom()
   }
 
   render() {
-    const MessageList = this.props.messages.map((item, index) => (
+    const MessageList = this.props.messages && this.props.messages.map((item, index) => (
       <MessageItem 
         key={index}
         username={item.username}
         local={item.local}
         content={item.content}>
       </MessageItem>
-    ))
+    ));
 
-    const className = this.props.className || '' + ' message-container'
+    const className = this.props.className || '' + ' message-container';
 
     return (
       <div style={this.props.style} className={className}>
-        <div className="message-box">
+        <div className="message-box" ref={el => this.messageBoxRef = el}>
           {MessageList}
         </div>
         <div className="message-input">
@@ -72,21 +78,19 @@ class Chatroom extends React.Component {
   }
 };
 
-Chatroom.propTypes = {
-  messages: PropTypes.arrayOf(
-    PropTypes.shape({
-      content: PropTypes.string,
-      local: PropTypes.bool,
-      username: PropTypes.string
-    })
-  ),
-  onSendMessage: PropTypes.func
-};
-
 MessageItem.propTypes = {
   content: PropTypes.string,
   local: PropTypes.bool,
   username: PropTypes.string
-}
+};
+
+Chatroom.propTypes = {
+  messages: PropTypes.arrayOf(
+    PropTypes.shape(MessageItem.propTypes)
+  ),
+  onSendMessage: PropTypes.func
+};
 
 export default Chatroom;
+
+export const messagesType = Chatroom.propTypes.messages;
