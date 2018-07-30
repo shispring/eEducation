@@ -65,7 +65,7 @@ class UserList extends React.Component {
       />
     ))
 
-    const className = this.props.className || '' + ' user-list-container';
+    const className = (this.props.className || '') + ' user-list-container';
 
     return (
       <div style={this.props.style} className={className}>

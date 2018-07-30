@@ -34,6 +34,12 @@ class Chatroom extends React.Component {
     }
   }
 
+  handleKeyPress = () => {
+    if (e.key === 'Enter') {
+      this.handleSendMessage();
+    }
+  }
+
   scrollToBottom = () => {
     const box = this.messageBoxRef;
     box.scrollTop = box.scrollHeight - box.clientHeight;
@@ -57,7 +63,7 @@ class Chatroom extends React.Component {
       </MessageItem>
     ));
 
-    const className = this.props.className || '' + ' message-container';
+    const className = (this.props.className || '') + ' message-container';
 
     return (
       <div style={this.props.style} className={className}>
@@ -67,8 +73,8 @@ class Chatroom extends React.Component {
         <div className="message-input">
           <Input id="message" placeholder="Input messages..." />
           <Button 
+            onKeyPress={this.handleKeyPress}
             onClick={this.handleSendMessage} 
-            icon="notification" 
             id="sendBtn" 
             type="primary">Send
           </Button>

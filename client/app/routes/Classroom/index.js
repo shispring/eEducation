@@ -8,6 +8,7 @@ import ipcRenderer from 'electron';
 import {
   APP_ID
 } from '../../agora.config';
+import ClassControl from '../../components/ClassControl'
 import TitleBar from '../../components/TitleBar';
 import { localStorage } from '../../utils/storage'
 import './index.scss';
@@ -101,11 +102,8 @@ class Classroom extends React.Component {
     this.$client.on('message-received', evt => {
       this.setState({
         messageList: this.state.messageList.push({
-          message: evt.detail.message,
-          uid: evt.detail.uid, 
-          role: evt.detail.role, 
+          content: evt.detail.message,
           username: evt.detail.username,
-          ts: evt.detail.ts,
           local: evt.detail.uid === this.$client.user.uid
         })
       })
@@ -118,10 +116,8 @@ class Classroom extends React.Component {
     window.location.hash = ''
   }
 
-  handleKeyPress = e => {
-    if (e.key === 'Enter') {
-      this.handleSendMsg();
-    }
+  handleSendMsg = msg => {
+    this.$client.broadcastMessage(msg)
   }
 
   subscribeRTCEvents = () => {
@@ -133,15 +129,6 @@ class Classroom extends React.Component {
         networkQuality: quality
       });
     });
-  }
-
-  handleSendMsg = () => {
-    const msg = document.querySelector('#channelMsg').value;
-    if (!msg) {
-      return;
-    }
-    this.$client.broadcastMessage(msg);
-    document.querySelector('#channelMsg').value = '';
   }
 
   handleShareScreen = () => {
@@ -371,7 +358,17 @@ class Classroom extends React.Component {
         <section className="teacher-container">
           {teacher}
         </section>
-        <section className="channel-container">
+
+        <ClassControl
+          className="channel-container"
+          controllable={this.$client.user.username === this.state.teacher}
+          onSendMessage={this.handleSendMsg} 
+          onAction={this.handleClassCtrlAction}
+          messages={this.state.messageList.toArray()} 
+          users={this.state.studentList.toArray()} 
+        />
+
+        {/* <section className="channel-container">
           <div className="channel">
             <header className="channel-header">Chatroom</header>
             <MessageBox messageList={this.state.messageList} />
@@ -383,7 +380,7 @@ class Classroom extends React.Component {
 
             </footer>
           </div>
-        </section>
+        </section> */}
       </div>
 
     );

@@ -3,7 +3,7 @@ import { storiesOf, addDecorator } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import Chatroom from '../app/components/Chatroom';
 import UserList from '../app/components/UserList';
-import ClassCtrl from '../app/components/ClassCtrl';
+import ClassControl from '../app/components/ClassControl';
 
 const styles = {
   position: 'fixed',
@@ -63,7 +63,7 @@ storiesOf('UserList', module)
 
 storiesOf('Composed Class Control', module)
   .add('default', () => (
-    <ClassCtrl
+    <ClassControl
       controllable={true}
       onSendMessage={action('message from class ctrl')} 
       onAction={action('action from class ctrl')}

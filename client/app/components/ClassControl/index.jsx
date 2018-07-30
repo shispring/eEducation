@@ -30,19 +30,21 @@ class ClassCtrl extends React.Component {
   }
 
   render() {
+    const className = (this.props.className || '') + ' classroom-control';
+
     return (
       <Tabs
-        className="classroom-control"
+        className={className}
         activeKey={this.state.activeKey} 
         onChange={this.callback}
-        tabBarStyle={{margin: '0', width: '20rem'}}
+        tabBarStyle={{margin: '0', width: '100%'}}
         type="card"
       >
         <TabPane tab="Chatroom" key="1">
           <Chatroom 
             onSendMessage={this.handleSendMessage}
             messages={this.props.messages} 
-            style={{width: '20rem', height: '24rem'}}
+            style={{width: '100%', height: '16rem'}}
           />
         </TabPane>
         <TabPane tab="Student List" key="2">
@@ -50,7 +52,7 @@ class ClassCtrl extends React.Component {
             controllable={this.props.controllable}
             onAction={this.handleAction}
             users={this.props.users} 
-            style={{width: '20rem', height: '24rem'}} 
+            style={{width: '100%', height: '16rem'}} 
           />
         </TabPane>
       </Tabs>
