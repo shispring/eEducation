@@ -36,9 +36,6 @@ const defaultMessages = [
 const defaultUsers = [
   {  
     username: 'cczcyy',
-    video: true,
-    audio: true,
-    chat: false,
     uid: 1010
   }
 ]

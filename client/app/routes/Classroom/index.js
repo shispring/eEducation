@@ -32,6 +32,7 @@ class Classroom extends React.Component {
       enableAudio: true,
       waitSharing: false,
     };
+    this.enableChat = true;
   }
 
   componentDidMount() {
@@ -51,7 +52,9 @@ class Classroom extends React.Component {
     this.$client.on('teacher-added', (uid, info, streamId) => {
       this.setState({
         teacherList: this.state.teacherList.push({
-          uid, info, streamId
+          uid, streamId,
+          username: info.username,
+          role: info.role
         }),
         teacher: info.username
       })
@@ -59,7 +62,9 @@ class Classroom extends React.Component {
     this.$client.on('student-added', (uid, info, streamId) => {
       this.setState({
         studentList: this.state.studentList.push({
-          uid, info, streamId
+          uid, streamId,
+          username: info.username,
+          role: info.role
         })
       })
     });
@@ -100,14 +105,51 @@ class Classroom extends React.Component {
       };
     })
     this.$client.on('message-received', evt => {
-      this.setState({
-        messageList: this.state.messageList.push({
-          content: evt.detail.message,
-          username: evt.detail.username,
-          local: evt.detail.uid === this.$client.user.uid
-        })
-      })
+      if (evt.detail.type === 'str') {
+        this.setState({
+          messageList: this.state.messageList.push({
+            content: evt.detail.message,
+            username: evt.detail.username,
+            local: evt.detail.uid === this.$client.user.uid
+          })
+        });
+      } else {
+        // type === 'json'
+        let {type, action, uid} = JSON.parse(evt.detail.message);
+        this.handleRemoteControl(type, action, uid);
+      }
     });
+  }
+
+  handleRemoteControl = (type, action, uid) => {
+    let isLocal = (uid === this.$client.user.uid)
+    if (type === 'chat') {
+      if(isLocal) {
+        this.enableChat = (action === 'enable')
+      }
+    } else if (type === 'video') {
+      if (action === 'enable') {
+        if(!isLocal) {
+          this.$client.unmuteVideo(uid)
+        }
+      } else {
+        if(!isLocal) {
+          this.$client.muteVideo(uid)
+        }
+      }
+    } else if (type === 'audio') {
+      if (action === 'enable') {
+        if(!isLocal) {
+          this.$client.unmuteAudio(uid)
+        }
+      } else {
+        if(!isLocal) {
+          this.$client.muteAudio(uid)
+        }
+      }
+    } else {
+      // can be extended by your situation
+    }
   }
 
   handleExit = () => {
@@ -117,7 +159,19 @@ class Classroom extends React.Component {
   }
 
   handleSendMsg = msg => {
-    this.$client.broadcastMessage(msg)
+    if(this.enableChat) {
+      this.$client.broadcastMessage(msg)
+    } else {
+      message.warn('You are banned to send messages!')
+    }
+  }
+
+  handleClassCtrlAction = (type, action, uid) => {
+    this.$client.broadcastMessage(JSON.stringify({
+      type,
+      action,
+      uid
+    }), 'json')
   }
 
   subscribeRTCEvents = () => {
@@ -198,9 +252,9 @@ class Classroom extends React.Component {
       enableVideo: !this.state.enableVideo
     }, () => {
       if(this.state.enableVideo) {
-        this.$client.muteVideo()
-      } else {
         this.$client.unmuteVideo()
+      } else {
+        this.$client.muteVideo()
       }
     })
   }
@@ -210,9 +264,9 @@ class Classroom extends React.Component {
       enableAudio: !this.state.enableAudio
     }, () => {
       if(this.state.enableAudio) {
-        this.$client.muteAudio()
-      } else {
         this.$client.unmuteAudio()
+      } else {
+        this.$client.muteAudio()
       }
     })
   }
@@ -270,8 +324,8 @@ class Classroom extends React.Component {
             uid={item.uid}
             isLocal={item.uid === this.$client.user.uid}
             barrel={this.props.barrel}
-            username={item.info.username} 
-            role={item.info.role} />
+            username={item.username} 
+            role={item.role} />
         ))
       })
       return result
@@ -286,8 +340,8 @@ class Classroom extends React.Component {
             uid={item.uid}
             isLocal={item.uid === this.$client.user.uid}
             barrel={this.props.barrel}
-            username={item.info.username} 
-            role={item.info.role} />
+            username={item.username} 
+            role={item.role} />
         ))
       })
       return result

@@ -3,47 +3,57 @@ import PropTypes from 'prop-types';
 import { Button, Icon } from 'antd';
 import './index.scss'
 
-function UserItem(props) {
+class UserItem extends React.Component {
+  state = {
+    video: true,
+    audio: true,
+    chat: true
+  }
 
-  const handleAction = (type) => {
-    props.onAction && props.onAction(
+  handleAction = (type) => {
+    this.props.onAction && this.props.onAction(
       type,
-      props[type] ? 'mute' : 'unmute',
-      props.uid
+      this.state[type] ? 'disable' : 'enable',
+      this.props.uid
     );
-  } 
+    this.setState({
+      [type]: !this.state[type]
+    })
+  }
 
-  return (
-    <div className="user-item">
-      <div className="user-info">
-        {props.username}
-      </div>
-      {
-        props.controllable ? (      
-        <div className="user-control">
-          <Button 
-            onClick={_ => handleAction('chat')}
-            type={props.chat?'primary':'default'} 
-            shape="circle" 
-            icon="message" 
-          />
-          <Button 
-            onClick={_ => handleAction('video')}
-            type={props.video?'primary':'default'} 
-            shape="circle" 
-            icon="video-camera" 
-          />
-          <Button 
-            onClick={_ => handleAction('audio')}
-            type={props.audio?'primary':'default'} 
-            shape="circle" 
-            icon="sound" 
-          />
+  render() {
+    return (
+      <div className="user-item">
+        <div className="user-info">
+          {this.props.username}
         </div>
-      ) : ""
-    }
-    </div>
-  );
+        {
+          this.props.controllable ? (      
+          <div className="user-control">
+            <Button 
+              onClick={_ => this.handleAction('chat')}
+              type={this.state.chat?'primary':'default'} 
+              shape="circle" 
+              icon="message" 
+            />
+            <Button 
+              onClick={_ => this.handleAction('video')}
+              type={this.state.video?'primary':'default'} 
+              shape="circle" 
+              icon="video-camera" 
+            />
+            <Button 
+              onClick={_ => this.handleAction('audio')}
+              type={this.state.audio?'primary':'default'} 
+              shape="circle" 
+              icon="sound" 
+            />
+          </div>
+        ) : ""
+      }
+      </div>
+    )
+  }
 }
 
 class UserList extends React.Component {
@@ -57,9 +67,6 @@ class UserList extends React.Component {
         key={index}
         uid={item.uid}
         username={item.username}
-        video={item.video}
-        audio={item.audio}
-        chat={item.chat}
         controllable={this.props.controllable}
         onAction={this.handleAction}
       />
@@ -78,9 +85,6 @@ class UserList extends React.Component {
 UserItem.propTypes = {
   username: PropTypes.string,
   uid: PropTypes.number,
-  video: PropTypes.bool,
-  audio: PropTypes.bool,
-  chat: PropTypes.bool,
   onAction: PropTypes.func,
   controllable: PropTypes.bool
 };
@@ -90,9 +94,6 @@ UserList.propTypes = {
     PropTypes.shape({
       username: PropTypes.string,
       uid: PropTypes.number,
-      video: PropTypes.bool,
-      audio: PropTypes.bool,
-      chat: PropTypes.bool,
     })
   ),
   onAction: PropTypes.func,

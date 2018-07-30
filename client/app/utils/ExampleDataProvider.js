@@ -196,17 +196,18 @@ export default class BarrelDataProvider extends BaseDataProvider {
    * @param {number} user.uid - uid for user
    * @param {string} user.username - username for user
    * @param {Role} user.role - teacher | student | audience
+   * @param {'str'||'json'} type - whether a str or a json
    * @returns {Promise<T>} 
    */
-  dispatchBroadcastMessage(message, user = {uid, username, role}) {
+  dispatchBroadcastMessage(message, user = {uid, username, role}, type = 'str') {
     return new Promise((resolve, reject) => {
       // use ts as uid
       let ts = String(new Date().getTime()).slice(7)
       this.messageTunnel.get(ts).put({
-        ts, message,
+        ts, message, type,
         uid: user.uid,
         username: user.username,
-        role: user.role
+        role: user.role,
       }, ack => {
         if (ack.err) {
           reject(ack.err);

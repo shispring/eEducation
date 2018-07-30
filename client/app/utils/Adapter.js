@@ -284,12 +284,13 @@ export default class Adapter extends EventEmitter {
   /**
    * broadcast message in channel
    * @param {string} message 
+   * @param {'str'||'json'} type - whether a str or a json
    */
-  broadcastMessage(message = '') {
+  broadcastMessage(message = '', type = 'str') {
     if(!message) {
       return
     }
-    this.dataProvider.dispatchBroadcastMessage(message, this.user)
+    this.dataProvider.dispatchBroadcastMessage(message, this.user, type)
   }
 
   /**
@@ -454,7 +455,7 @@ export default class Adapter extends EventEmitter {
       this.emit('screen-share-stopped')
     })
     this.dataProvider.on('message-received', ({id, detail = {
-      message, ts, uid, username, role
+      message, ts, uid, username, role, type
     }}) => {
       this.emit('message-received', {id, detail})
     })
