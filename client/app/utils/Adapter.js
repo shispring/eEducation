@@ -442,10 +442,10 @@ export default class Adapter extends EventEmitter {
    */
   subDataProviderEvents() {
     this.dataProvider.on('user-info-removed', ({uid}) => {
-      this.removeUser(Number(uid))
+      this.removeUser(uid)
     });
     this.dataProvider.on('user-info-updated', ({uid, info}) => {
-      this.addUser(Number(uid), info, null)
+      this.addUser(uid, info, null)
     });
     this.dataProvider.on('screen-share-started', ({sharerId, shareId}) => {
       this.emit('screen-share-started', {sharerId, shareId})

@@ -16,10 +16,17 @@ class ClassCtrl extends React.Component {
   }
 
   callback = (key) => {
-    console.log(key);
     this.setState({ 
       activeKey: key 
     });
+  }
+
+  handleSendMessage = (msg) => {
+    this.props.onSendMessage && this.props.onSendMessage(msg)
+  }
+
+  handleAction = (type, action, uid) => {
+    this.props.onAction && this.props.onAction(type, action, uid)
   }
 
   render() {
@@ -33,12 +40,15 @@ class ClassCtrl extends React.Component {
       >
         <TabPane tab="Chatroom" key="1">
           <Chatroom 
+            onSendMessage={this.handleSendMessage}
             messages={this.props.messages} 
             style={{width: '20rem', height: '24rem'}}
           />
         </TabPane>
         <TabPane tab="Student List" key="2">
           <UserList 
+            controllable={this.props.controllable}
+            onAction={this.handleAction}
             users={this.props.users} 
             style={{width: '20rem', height: '24rem'}} 
           />
@@ -50,7 +60,10 @@ class ClassCtrl extends React.Component {
 
 ClassCtrl.propTypes = {
   messages: messagesType,
-  users: usersType
+  users: usersType,
+  controllable: PropTypes.bool,
+  onSendMessage: PropTypes.func,
+  onAction: PropTypes.func
 };
 
-export default ClassCtrl
+export default ClassCtrl;

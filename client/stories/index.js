@@ -38,6 +38,7 @@ const defaultUsers = [
     username: 'cczcyy',
     video: true,
     audio: true,
+    chat: false,
     uid: 1010
   }
 ]
@@ -45,7 +46,7 @@ const defaultUsers = [
 storiesOf('Chatroom', module)
   .add('default', () => (
     <Chatroom 
-      onSendMessage={action('sending message')} 
+      onSendMessage={action('message from chatroom')} 
       messages={defaultMessages} 
       style={{width: '20rem', height: '24rem'}}
     />
@@ -54,6 +55,7 @@ storiesOf('Chatroom', module)
 storiesOf('UserList', module)
   .add('default', () => (
     <UserList 
+      onAction={action('action from user list')}
       users={defaultUsers} 
       style={{width: '20rem', height: '24rem'}} 
     />
@@ -62,6 +64,9 @@ storiesOf('UserList', module)
 storiesOf('Composed Class Control', module)
   .add('default', () => (
     <ClassCtrl
+      controllable={true}
+      onSendMessage={action('message from class ctrl')} 
+      onAction={action('action from class ctrl')}
       messages={defaultMessages} 
       users={defaultUsers} 
     />

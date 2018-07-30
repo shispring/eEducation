@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Icon, Input, Spin, Tooltip, message } from 'antd';
+import { List } from 'immutable';
 import { isEqual } from 'lodash';
 import axios from 'axios'
 import ipcRenderer from 'electron';
@@ -22,9 +23,9 @@ class Classroom extends React.Component {
       networkQuality: 2,
       isRecording: false,
       recordBtnLoading: false,
-      teacherList: new Map(),
-      studentList: new Map(),
-      messageList: [],
+      teacherList: List(),
+      studentList: List(),
+      messageList: List(),
       isSharing: false,
       enableVideo: true,
       enableAudio: true,
@@ -45,57 +46,38 @@ class Classroom extends React.Component {
     this.$client.destructScreenShare()
   }
 
-  addStream = (uid, info, streamId) => {
-    console.log('User Joined', uid, info, streamId)
-    if(info.role === 'teacher') {
-      this.state.teacherList.set(uid, {
-        uid, info, streamId
-      })
-      this.setState({
-        teacherList: this.state.teacherList
-      })
-    } else {
-      this.state.studentList.set(uid, {
-        uid, info, streamId
-      })
-      this.setState({
-        studentList: this.state.studentList
-      })
-    }
-
-  }
-
-  removeStream = (uid, role) => {
-    let spliceIndex = undefined
-    if(role === 'teacher') {
-      this.state.teacherList.delete(uid)
-      this.setState({
-        teacherList: this.state.teacherList
-      })
-    } else {
-      this.state.studentList.delete(uid)
-      this.setState({
-        studentList: this.state.studentList
-      })
-    }
-  }
-
   subscribeClientEvents = () => {
     this.$client.on('teacher-added', (uid, info, streamId) => {
       this.setState({
+        teacherList: this.state.teacherList.push({
+          uid, info, streamId
+        }),
         teacher: info.username
       })
-      this.addStream(uid, info, streamId)
-    })
+    });
     this.$client.on('student-added', (uid, info, streamId) => {
-      this.addStream(uid, info, streamId)
-    })
+      this.setState({
+        studentList: this.state.studentList.push({
+          uid, info, streamId
+        })
+      })
+    });
     this.$client.on('teacher-removed', (uid) => {
-      this.removeStream(uid, 'teacher')
-    })
+      let index = this.state.teacherList.findKey((value, key) => value.uid === uid);
+      if(index !== undefined) {
+        this.setState({
+          teacherList: this.state.teacherList.splice(index, 1)
+        })
+      }
+    });
     this.$client.on('student-removed', (uid) => {
-      this.removeStream(uid, 'student')
-    })
+      let index = this.state.studentList.findKey((value, key) => value.uid === uid);
+      if(index !== undefined) {
+        this.setState({
+          studentList: this.state.studentList.splice(index, 1)
+        })
+      };
+    });
     this.$client.on('screen-share-started', evt => {
       let board = document.querySelector('.board');
       if (board) {
@@ -117,19 +99,17 @@ class Classroom extends React.Component {
       };
     })
     this.$client.on('message-received', evt => {
-      let temp = [...this.state.messageList]
-      temp.push({
-        message: evt.detail.message,
-        uid: evt.detail.uid, 
-        role: evt.detail.role, 
-        username: evt.detail.username,
-        ts: evt.detail.ts,
-        local: evt.detail.uid === this.$client.user.uid
-      })
       this.setState({
-        messageList: temp
+        messageList: this.state.messageList.push({
+          message: evt.detail.message,
+          uid: evt.detail.uid, 
+          role: evt.detail.role, 
+          username: evt.detail.username,
+          ts: evt.detail.ts,
+          local: evt.detail.uid === this.$client.user.uid
+        })
       })
-    })
+    });
   }
 
   handleExit = () => {
@@ -296,7 +276,7 @@ class Classroom extends React.Component {
 
     const teacher = (() => {
       let result = []
-      this.state.teacherList.forEach(item => {
+      this.state.teacherList.map(item => {
         result.push((
           <Window 
             key={item.uid} 
@@ -312,7 +292,7 @@ class Classroom extends React.Component {
 
     const students = (() => {
       let result = []
-      this.state.studentList.forEach(item => {
+      this.state.studentList.map(item => {
         result.push((
           <Window 
             key={item.uid} 
@@ -345,19 +325,6 @@ class Classroom extends React.Component {
         <Button loading={this.state.recordBtnLoading} onClick={func} id={id} type="primary">{content}</Button>
       );
     }
-
-    // // screen share btn
-    // let ScreenSharingBtn;
-    // if (this.$client.info && this.$client.info.role === 'teacher') {
-    //   ScreenSharingBtn = (
-    //     <div onClick={this.handleShareScreen} className="btn board-bar">
-    //       <div>
-    //         <img src={require('../../assets/images/screen share.png')} alt="" />
-    //       </div>
-    //       <div>Screen Share</div>
-    //     </div>
-    //   );
-    // }
 
     let Toolbar = (
       <div className="board-bar">

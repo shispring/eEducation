@@ -4,28 +4,53 @@ import { Button, Icon } from 'antd';
 import './index.scss'
 
 function UserItem(props) {
+
+  const handleAction = (type) => {
+    props.onAction && props.onAction(
+      type,
+      props[type] ? 'mute' : 'unmute',
+      props.uid
+    );
+  } 
+
   return (
     <div className="user-item">
       <div className="user-info">
         {props.username}
       </div>
-      <div className="user-control">
-        <Button 
-          type={props.video?'primary':'default'} 
-          shape="circle" 
-          icon="video-camera" 
-        />
-        <Button 
-          type={props.audio?'primary':'default'} 
-          shape="circle" 
-          icon="sound" 
-        />
-      </div>
+      {
+        props.controllable ? (      
+        <div className="user-control">
+          <Button 
+            onClick={_ => handleAction('chat')}
+            type={props.chat?'primary':'default'} 
+            shape="circle" 
+            icon="message" 
+          />
+          <Button 
+            onClick={_ => handleAction('video')}
+            type={props.video?'primary':'default'} 
+            shape="circle" 
+            icon="video-camera" 
+          />
+          <Button 
+            onClick={_ => handleAction('audio')}
+            type={props.audio?'primary':'default'} 
+            shape="circle" 
+            icon="sound" 
+          />
+        </div>
+      ) : ""
+    }
     </div>
   );
 }
 
 class UserList extends React.Component {
+  handleAction = (type, action, uid) => {
+    this.props.onAction && this.props.onAction(type, action, uid)
+  }
+
   render() {
     const MessageList = this.props.users && this.props.users.map((item, index) => (
       <UserItem 
@@ -34,6 +59,9 @@ class UserList extends React.Component {
         username={item.username}
         video={item.video}
         audio={item.audio}
+        chat={item.chat}
+        controllable={this.props.controllable}
+        onAction={this.handleAction}
       />
     ))
 
@@ -52,12 +80,23 @@ UserItem.propTypes = {
   uid: PropTypes.number,
   video: PropTypes.bool,
   audio: PropTypes.bool,
+  chat: PropTypes.bool,
+  onAction: PropTypes.func,
+  controllable: PropTypes.bool
 };
 
 UserList.propTypes = {
   users: PropTypes.arrayOf(
-    PropTypes.shape(UserItem.propTypes)
+    PropTypes.shape({
+      username: PropTypes.string,
+      uid: PropTypes.number,
+      video: PropTypes.bool,
+      audio: PropTypes.bool,
+      chat: PropTypes.bool,
+    })
   ),
+  onAction: PropTypes.func,
+  controllable: PropTypes.bool
 };
 
 export default UserList;
