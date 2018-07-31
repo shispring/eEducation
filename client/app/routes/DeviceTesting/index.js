@@ -12,7 +12,7 @@ const Option = Select.Option;
 class DeviceTesting extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.barrel
+    this.$client = props.adapter
     this.$rtc = this.$client.rtcEngine
     this.outputVolume = this.$rtc.getAudioPlaybackVolume();
     this.state = {

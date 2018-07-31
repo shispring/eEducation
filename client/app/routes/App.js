@@ -5,12 +5,12 @@ import Index from './Index';
 import DeviceTesting from './DeviceTesting';
 import NetworkTesting from './NetworkTesting';
 import Classroom from './Classroom';
-import BarrelClient from '../utils/Adapter'
+import AdapterClient from '../utils/Adapter'
 
 class App extends Component {
   constructor() {
     super()
-    this.client = new BarrelClient()
+    this.client = new AdapterClient()
     this.state = {
       style: { visibility: 'hidden' }
     }
@@ -29,10 +29,10 @@ class App extends Component {
     return (
       <Router>
         <div className="full" style={this.state.style}>
-          <Route exact path="/" render={() => <Index barrel={this.client} />} />
-          <Route path="/device_testing" render={() => <DeviceTesting barrel={this.client} />} />
-          {/* <Route path="/network_testing" component=(<NetworkTesting barrel={this.client} />) /> */}
-          <Route path="/classroom" render={() => <Classroom barrel={this.client} />} />
+          <Route exact path="/" render={() => <Index adapter={this.client} />} />
+          <Route path="/device_testing" render={() => <DeviceTesting adapter={this.client} />} />
+          {/* <Route path="/network_testing" component=(<NetworkTesting adapter={this.client} />) /> */}
+          <Route path="/classroom" render={() => <Classroom adapter={this.client} />} />
         </div>
       </Router>
     );

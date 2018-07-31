@@ -16,7 +16,7 @@ import './index.scss';
 class Classroom extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.barrel;
+    this.$client = props.adapter;
     this.$rtc = this.$client.rtcEngine;
     this.subscribeRTCEvents();
     this.state = {
@@ -335,7 +335,7 @@ class Classroom extends React.Component {
             key={item.uid} 
             uid={item.uid}
             isLocal={item.uid === this.$client.user.uid}
-            barrel={this.props.barrel}
+            adapter={this.props.adapter}
             username={item.username} 
             role={item.role} />
         ))
@@ -351,7 +351,7 @@ class Classroom extends React.Component {
             key={item.uid} 
             uid={item.uid}
             isLocal={item.uid === this.$client.user.uid}
-            barrel={this.props.barrel}
+            adapter={this.props.adapter}
             username={item.username} 
             role={item.role} />
         ))
@@ -480,7 +480,7 @@ class Window extends React.Component {
     this.state = {
       loading: true
     };
-    this.$rtc = props.barrel.rtcEngine
+    this.$rtc = props.adapter.rtcEngine
   }
 
   shouldComponentUpdate(nextProps, nextState) {

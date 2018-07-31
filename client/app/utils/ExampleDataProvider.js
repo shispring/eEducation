@@ -8,7 +8,7 @@ import BaseDataProvider from "./BaseDataProvider";
 
 const SERVER_URLS = ["http://123.155.153.85:8888/gun"];
 
-export default class BarrelDataProvider extends BaseDataProvider {
+export default class ExampleDataProvider extends BaseDataProvider {
   /**
    * connect to gun service and register events for data tunnel
    * @param {string} appId - agora app id

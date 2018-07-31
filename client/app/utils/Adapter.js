@@ -1,5 +1,5 @@
 /**
- * Barrel is not another sdk, but a flexible, light-weight 
+ * Adapter is not another sdk, but a flexible, light-weight 
  * encapsulation for Agora Electron sdk for E-edu. 
  * Easier to use and extend.
  * @module Adapter

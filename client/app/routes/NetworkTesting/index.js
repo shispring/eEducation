@@ -13,7 +13,7 @@ class NetworkTesting extends React.Component {
     this.state = {
       networkQuality: 2
     };
-    this.$rtc = props.barrel.$rtc;
+    this.$rtc = props.adapter.$rtc;
 
   }
 

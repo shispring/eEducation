@@ -12,7 +12,7 @@ const RadioGroup = Radio.Group;
 class Index extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.barrel;
+    this.$client = props.adapter;
     this.state = {
       role: 'student',
       isLogining: false
