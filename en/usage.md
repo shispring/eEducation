@@ -35,7 +35,7 @@ this.client.initClass(agoraAppId, channel, user = {uid, username, role}).then(()
 
 ### device test
 
-Agora RTC Engine provides kinds of APIs for device test. So we recommend you to use object `client.rtcEngine` directly and go to native apis for detail.
+Agora RTC Engine provides kinds of APIs for device test. So we recommend you to use object `client.rtcEngine` directly and go to sdk apis for detail.
 
 ### enterClass and prepareScreenShare
 
