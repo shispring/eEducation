@@ -98,4 +98,6 @@ Chatroom.propTypes = {
 
 export default Chatroom;
 
-export const messagesType = Chatroom.propTypes.messages;
+export const messagesType = PropTypes.arrayOf(
+  PropTypes.shape(MessageItem.propTypes)
+);

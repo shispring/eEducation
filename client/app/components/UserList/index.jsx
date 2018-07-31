@@ -102,4 +102,9 @@ UserList.propTypes = {
 
 export default UserList;
 
-export const usersType = UserList.propTypes.users;
+export const usersType = PropTypes.arrayOf(
+  PropTypes.shape({
+    username: PropTypes.string,
+    uid: PropTypes.number,
+  })
+);
