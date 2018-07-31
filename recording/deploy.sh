@@ -1,5 +1,5 @@
 #!/bin/sh
-deployDir=/home/devops/web_demo/project/RecordingCloud/
+deployDir=/home/devops/web_demo/project/RecordingCloud2/
 ServerName=${@:$OPTIND:1}
 
 Rev="$(git rev-parse HEAD)"
