@@ -69,7 +69,7 @@ class Classroom extends React.Component {
       })
     });
     this.$client.on('teacher-removed', (uid) => {
-      let index = this.state.teacherList.findKey((value, key) => value.uid === uid);
+      let index = this.state.teacherList.findIndex((value, key) => value.uid === uid);
       if(index !== undefined) {
         this.setState({
           teacherList: this.state.teacherList.splice(index, 1)
@@ -77,7 +77,7 @@ class Classroom extends React.Component {
       }
     });
     this.$client.on('student-removed', (uid) => {
-      let index = this.state.studentList.findKey((value, key) => value.uid === uid);
+      let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
       if(index !== undefined) {
         this.setState({
           studentList: this.state.studentList.splice(index, 1)
@@ -116,12 +116,13 @@ class Classroom extends React.Component {
       } else {
         // type === 'json'
         let {type, action, uid} = JSON.parse(evt.detail.message);
-        this.handleRemoteControl(type, action, uid);
+        let from = evt.detail.uid
+        this.handleRemoteControl(type, action, uid, from);
       }
     });
   }
 
-  handleRemoteControl = (type, action, uid) => {
+  handleRemoteControl = (type, action, uid, from) => {
     let isLocal = (uid === this.$client.user.uid)
     if (type === 'chat') {
       if(isLocal) {
@@ -146,6 +147,11 @@ class Classroom extends React.Component {
         if(!isLocal) {
           this.$client.muteAudio(uid)
         }
+      }
+    } else if (type === 'ring') {
+      if(from !== this.$client.user.uid) {
+        let username = this.$client.getUser(from).username
+        message.info(`Student ${username} is ringing the bell!`)
       }
     } else {
       // can be extended by your situation
@@ -271,6 +277,12 @@ class Classroom extends React.Component {
     })
   }
 
+  handleRing = () => {
+    this.$client.broadcastMessage(JSON.stringify({
+      type: 'ring'
+    }), 'json')
+  }
+
   render() {
     // get network status
     const profile = {
@@ -367,12 +379,33 @@ class Classroom extends React.Component {
       );
     }
 
+    // Toolbar
+    let ButtonGroup = [
+      (
+        <Button key={0} onClick={this.handleToggleVideo} style={{margin: '0 8px'}} type={this.state.enableVideo?'primary':'default'} shape="circle" icon="video-camera" />
+      ),
+      (
+        <Button key={1} onClick={this.handleToggleAudio} style={{margin: '0 8px'}} type={this.state.enableAudio?'primary':'default'} shape="circle" icon="sound" />
+      )
+    ]
+    if (this.$client.user.role === 'student') {
+      ButtonGroup.push((<Button key={2} onClick={this.handleRing} style={{margin: '0 8px'}} type="primary" shape="circle" icon="bell" />))
+    }
     let Toolbar = (
       <div className="board-bar">
-        <Button loading={this.state.waitSharing} onClick={this.handleShareScreen} type={this.state.isSharing ? "primary" : "default"} style={{margin: '0 8px'}} icon="laptop">Share Screen</Button>
+        {
+          this.$client.user.role === 'teacher' ? (
+            <Button loading={this.state.waitSharing} 
+            onClick={this.handleShareScreen} 
+            type={this.state.isSharing ? "primary" : "default"} 
+            style={{margin: '0 8px'}} 
+            icon="laptop">Share Screen</Button>
+          ) : (<div></div>)
+        }
         <div className="board-bar--toolbar">
-          <Button onClick={this.handleToggleVideo} style={{margin: '0 8px'}} type={this.state.enableVideo?'primary':'default'} shape="circle" icon="video-camera"></Button>
-          <Button onClick={this.handleToggleAudio} style={{margin: '0 8px'}} type={this.state.enableAudio?'primary':'default'} shape="circle" icon="sound"></Button>
+          {
+            this.$client.user.role === 'audience' ? '' : ButtonGroup
+          }
         </div>
       </div>
     )
@@ -507,45 +540,6 @@ class Window extends React.Component {
       );
     }
   }
-}
-
-
-class MessageBox extends React.Component {
-  componentDidUpdate() {
-    const box = document.querySelector('.channel-box');
-    box.scrollTop = box.scrollHeight - box.clientHeight;
-  }
-
-  render() {
-    const messages = this.props.messageList.map(item => (
-      <MessageItem 
-        key={item.ts} 
-        message={item.message}
-        username={item.username}
-        role={item.role}
-        ts={item.ts}
-        local={item.local} />
-    ));
-
-    return (
-      <section className="channel-box">
-        {messages}
-      </section>
-    );
-  }
-}
-
-function MessageItem(props) {
-  const align = props.local ? 'right' : 'left';
-  return (
-    <div className={`message-item ${align}`}>
-      <div className="arrow" style={{ float: align }} />
-      <div className="message-content" style={{ textAlign: align, float: align }}>
-        {props.message}
-      </div>
-      <div className="message-sender" style={{ textAlign: align }}>{props.username}</div>
-    </div>
-  );
 }
 
 export default Classroom;

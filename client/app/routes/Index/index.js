@@ -51,6 +51,7 @@ class Index extends React.Component {
                   <RadioGroup onChange={this.handleRole} id="role" defaultValue="student">
                     <Radio value="teacher">Teacher</Radio>
                     <Radio value="student">Student</Radio>
+                    <Radio value="audience">Audience</Radio>
                   </RadioGroup>
                 </FormItem>
                 <FormItem>
@@ -108,11 +109,15 @@ class Index extends React.Component {
     })
     // you can do auth before init class to generate your custom uid
     this.$client.initClass(APP_ID, channel, {uid: undefined, username, role}).then(() => {
-      this.$client.initProfile()
+      this.$client.initProfile(role === 'audience')
       this.setState({
         isLogining: false
       }, () => {
-        window.location.hash = 'device_testing';
+        if(role === 'audience') {
+          window.location.hash = 'classroom'
+        } else {
+          window.location.hash = 'device_testing';
+        }
       })
     }).catch(err => {
       this.setState({

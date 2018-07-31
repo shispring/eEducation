@@ -62,7 +62,7 @@ export default class BarrelDataProvider extends BaseDataProvider {
         })
         .catch(err => {
           // do nothing
-          this.fire('error', error);
+          this.fire('error', err);
           // reject
           reject(err);
         });
@@ -93,11 +93,42 @@ export default class BarrelDataProvider extends BaseDataProvider {
   dispatchInitClass(appId, channel, user = {uid, username, role}) {
     return new Promise((resolve, reject) => {
       this.connect(appId, channel).then(() => {
-        // do validation
         // init promises
-        let promises = [];
+        let promisesValidation = [];
+        let promisesRegister = [];
+        // do validation
+        // if teacher exists
+        promisesValidation.push(new Promise((resolve, reject) => {
+          let hasTeacher = false
+          this.channelStatusTunnel.get('teacher').once(data => {
+            if(data !== null) {
+              hasTeacher = true
+            }
+          });
+          if(hasTeacher && user.role === 'teacher') {
+            reject(new Error('Teacher exists!'))
+          } else {
+            resolve()
+          }
+        }));
+        // if username unique
+        promisesValidation.push(new Promise((resolve, reject) => {
+          let unique = true
+          this.userTunnel.once((info, uid) => {
+            if(uid === user.uid) {
+              if(info.role === user.role) {
+                unique = false
+              }
+            }
+          });
+          if(!unique) {
+            reject(new Error('Username exists!'))
+          } else {
+            resolve()
+          }
+        }));
         // promise for add user
-        promises.push(new Promise((resolve, reject) => {
+        promisesRegister.push(new Promise((resolve, reject) => {
           this.userTunnel.get(user.uid).put({
             username: user.username,
             role: user.role
@@ -111,7 +142,7 @@ export default class BarrelDataProvider extends BaseDataProvider {
         }));
         // promise for add teacher
         if (user.role === 'teacher') {
-          promises.push(new Promise((resolve, reject) => {
+          promisesRegister.push(new Promise((resolve, reject) => {
             this.channelStatusTunnel.get('teacher').put({
               username: user.username,
               uid: user.uid
@@ -125,10 +156,14 @@ export default class BarrelDataProvider extends BaseDataProvider {
           }));
         }
         // do promises
-        Promise.all(promises).then(() => {
-          resolve();
+        Promise.all(promisesValidation).then(() => {
+          Promise.all(promisesRegister).then(() => {
+            resolve();
+          }).catch(err => {
+            reject(err);
+          });
         }).catch(err => {
-          reject(err);
+          reject(err)
         });
       }).catch(err => {
         reject(err);
@@ -258,6 +293,6 @@ export default class BarrelDataProvider extends BaseDataProvider {
       } else {
         this.fire('message-received', {id, detail})
       }
-    })
+    }, {change: true})
   }
 }

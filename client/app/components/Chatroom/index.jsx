@@ -34,7 +34,7 @@ class Chatroom extends React.Component {
     }
   }
 
-  handleKeyPress = () => {
+  handleKeyPress = e => {
     if (e.key === 'Enter') {
       this.handleSendMessage();
     }
@@ -71,9 +71,8 @@ class Chatroom extends React.Component {
           {MessageList}
         </div>
         <div className="message-input">
-          <Input id="message" placeholder="Input messages..." />
+          <Input id="message" onKeyPress={this.handleKeyPress} placeholder="Input messages..." />
           <Button 
-            onKeyPress={this.handleKeyPress}
             onClick={this.handleSendMessage} 
             id="sendBtn" 
             type="primary">Send

@@ -92,22 +92,12 @@ export default class Adapter extends EventEmitter {
    */
   leaveClass() {
     this.rtcEngine.leaveChannel();
+    this.removeAllListeners();
     this.dataProvider.dispatchLeaveClass({
       uid: this.user.uid,
       username: this.user.username,
       role: this.user.role
     });
-    // return new Promise((resolve, reject) => {
-    //   this.dataProvider.dispatchLeaveClass({
-    //     uid: this.user.uid,
-    //     username: this.user.username,
-    //     role: this.user.role
-    //   }).then(() => {
-    //     resolve()
-    //   }).catch(err => {
-    //     reject(err)
-    //   });
-    // });
   }
 
   /**
@@ -393,7 +383,7 @@ export default class Adapter extends EventEmitter {
         this.emit('teacher-removed', uid)
       } else if(role === 'student') {
         this.emit('student-removed', uid)
-      } else if (info.role === 'audience') {
+      } else if (role === 'audience') {
         this.emit('audience-removed', uid)
       } else {
         throw new Error('Unknow role for user: ' + uid)
