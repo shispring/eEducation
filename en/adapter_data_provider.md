@@ -51,7 +51,7 @@ With Adapter:
     })
 ```
 
-## Data Privider
+## Data Provider
 
 ![data_provider](../assets/data_provider.png)
 

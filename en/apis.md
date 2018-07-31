@@ -3,7 +3,7 @@
 - [Adapter](#module_Adapter)
   - _instance_
     - [.initProfile(audience, videoProfile, swapWidthAndHeight)](#initProfile)
-    - [.initClass()](#initClass)
+    - [.initClass(appId, channel, user)](#initClass)
     - [.enterClass(token, info)](#enterClass)
     - [.leaveClass()](#leaveClass)
     - [.prepareScreenShare(token, info, timeout)](#prepareScreenShare)
@@ -15,7 +15,7 @@
     - [.muteAudio(uids)](#muteAudio)
     - [.unmuteAudio(uids)](#unmuteAudio)
     - [.broadcastMessage(message)](#broadcastMessage)
-    - [.getUser()](#getUser)
+    - [.getUser(uid)](#getUser)
     - [.subRtcEvents()](#subRtcEvents)
     - [.subDataProviderEvents()](#subDataProviderEvents)
   - _inner_
@@ -37,8 +37,9 @@ connect to server and init class through data provider
 
 | Param          | Type                | Description         |
 | -------------- | ------------------- | ------------------- |
-| config.channel | <code>string</code> | channel             |
-| config.user    | <code>Object</code> | username, role, uid |
+| appId          | <code>string</code> | Agora App ID        |
+| channel        | <code>string</code> | channel             |
+| user           | <code>Object</code> | username, role, uid |
 
 ### enterClass
 
@@ -123,9 +124,13 @@ broadcast message in channel
 | ------- | ------------------- |
 | message | <code>string</code> |
 
-### getUser
+### getUser  
 
 get user by uid from userlist
+
+| Param   | Type                |
+| ------- | ------------------- |
+| uid     | <code>number</code> |
 
 ### subRtcEvents
 
