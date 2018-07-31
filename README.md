@@ -34,7 +34,7 @@ Go to [Doc Center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) fo
   Client-side demo by React and Electron.
 - room_control  
   Provide service for data exchange with `Data Provider`(Go to [Doc Center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) for detail) to control room status.
-- recording
+- recording  
   Agora Recording Service on Linux Server.
 
 Room control and recording service are for reference only, you can integrate these services according to your own situation.
