@@ -5,7 +5,6 @@ const bodyParser = require("body-parser");
 const http_server = require("http").Server(app);
 const logger = require("./modules/logger").get("es");
 const RecorderManager = require("./modules/recorder").RecorderManager;
-const RoomManager = require("./modules/room").RoomManager;
 const Api = require("./modules/api.js");
 
 
@@ -40,10 +39,9 @@ function initProcess(application) {
 //master node
 initProcess(app);
 let recManager = new RecorderManager();
-let roomManager = new RoomManager(http_server);
 let init = recManager.init();
 init.then(() => {
-    Api(roomManager, recManager, app);
+    Api(recManager, app);
     http_server.listen(process.env.PORT || 3232);
 }).catch((e) => {
     logger.error(e);

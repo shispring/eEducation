@@ -3,79 +3,10 @@ const fs = require("fs");
 const path = require("path");
 const max_image_limit = 100;
 
-const Role = {
-    Teacher: 0,
-    Student: 1
-}
-
-const Api = (roomManager, recManager, app) => {
+const Api = (recManager, app) => {
     app.use((req, res, next) => {
         logger.info(`incoming restful request: ${req.method}, ${req.url}, ${req.method === "GET" ? JSON.stringify(req.query) : JSON.stringify(req.body)}`);
         next();
-    });
-
-    app.post("/v1/room/join", (req, res) => {
-        let body = req.body;
-        let appid = body.appid || "";
-        let channel = body.channel || "";
-        let name = body.name || "";
-        let token = body.token || "";
-        let role = body.role;
-
-        if(!appid || !channel || !name || role === undefined){
-            res.status(500).json({err: "missing_info"});
-            return;
-        }
-
-        if(role !== Role.Teacher && role !== Role.Student){
-            res.status(500).json({err: "invalid_role"});
-            return;
-        }
-
-        let room = roomManager.findRoom(appid, channel);
-        if(!room){
-            //room not exist
-            if(role === Role.Teacher){
-                //teacher request, we will create the room
-                room = roomManager.createRoom(appid, channel, name);
-                if(!room){
-                    res.status(500).json({err: "room_create_failed"});
-                } else {
-                    res.status(200).json({
-                        token: room.token,
-                        appid: appid,
-                        channel: channel
-                    })
-                }
-            } else {
-                //student request, return room not exist
-                res.status(404).json({err: "room_not_exist"});
-            }
-        } else {
-            //room exists
-            if(room.users[name]){
-                res.status(500).json({err: "username_exists"});
-                return;
-            }
-
-
-            if(role === Role.Teacher){
-                if(room.token === token){
-                    res.status(200).json({
-                        token: token,
-                        appid: appid,
-                        channel: channel
-                    });
-                } else {
-                    res.status(400).json({err: "invalid_token"});
-                }
-            } else {
-                res.status(200).json({
-                    appid: appid,
-                    channel: channel
-                });
-            }
-        }
     });
 
     app.get("/v1/recording/status", (req, res) => {
