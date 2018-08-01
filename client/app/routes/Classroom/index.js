@@ -44,8 +44,10 @@ class Classroom extends React.Component {
   }
 
   componentWillUnmount() {
-    this.$client.stopScreenShare()
-    this.$client.destructScreenShare()
+    if(this.$client.user.role === 'teacher') {
+      this.$client.stopScreenShare()
+      this.$client.destructScreenShare()
+    }
   }
 
   subscribeClientEvents = () => {
@@ -149,7 +151,7 @@ class Classroom extends React.Component {
         }
       }
     } else if (type === 'ring') {
-      if(from !== this.$client.user.uid) {
+      if(this.$client.user.role === 'teacher') {
         let username = this.$client.getUser(from).username
         message.info(`Student ${username} is ringing the bell!`)
       }

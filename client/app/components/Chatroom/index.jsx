@@ -8,7 +8,7 @@ function MessageItem(props) {
   return (
     <div className={`message-item ${align}`}>
       <div className="arrow" style={{ float: align }} />
-      <div className="message-content" style={{ textAlign: align, float: align }}>
+      <div className="message-content" style={{ float: align }}>
         {props.content}
       </div>
       <div className="message-sender" style={{ textAlign: align }}>{props.username}</div>
