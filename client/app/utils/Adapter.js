@@ -408,7 +408,7 @@ export default class Adapter extends EventEmitter {
    * subscribe rtc engine events
    */
   subRtcEvents() {
-    this.rtcEngine.on('useroffline', (uid, reason) => {
+    this.rtcEngine.on('removestream', (uid, reason) => {
       let user = this.getUser(uid)
       this.dataProvider.dispatchLeaveClass(user)
       this.removeUser(uid)
@@ -418,14 +418,31 @@ export default class Adapter extends EventEmitter {
       this.addUser(uid, null, uid)
     });
     this.rtcEngine.on('joinedchannel', (channel, uid, elpased) => {
-      this.addUser(uid, null, uid)
+      this.addUser(uid, null, uid);
+      this._joinned = true;
+      if(this.sharingInfo) {
+        this.emit('screen-share-started', {
+          sharerId: this.sharingInfo.sharerId, 
+          shareId: this.sharingInfo.shareId
+        })
+      };
     });
     this.rtcEngine.on('rejoinedchannel', (channel, uid, elpased) => {
-      this.addUser(uid, null, uid)
+      this.addUser(uid, null, uid);
+      this._joinned = true;
+      if(this.sharingInfo) {
+        this.emit('screen-share-started', {
+          sharerId: this.sharingInfo.sharerId, 
+          shareId: this.sharingInfo.shareId
+        })
+      };
     });
     this.rtcEngine.on('error', (err, message) => {
       console.error(err, message)
     });
+    this.rtcEngine.on('leavechannel', () => {
+      this._joinned = false;
+    })
   }
 
   /**
@@ -439,16 +456,24 @@ export default class Adapter extends EventEmitter {
       this.addUser(uid, info, null)
     });
     this.dataProvider.on('screen-share-started', ({sharerId, shareId}) => {
-      this.emit('screen-share-started', {sharerId, shareId})
+      if (this._joinned) {
+        this.emit('screen-share-started', {sharerId, shareId})
+      } else {
+        this.sharingInfo = {
+          shareId: shareId,
+          sharerId: sharerId
+        }
+      }
     });
     this.dataProvider.on('screen-share-stopped', () => {
+      this.sharingInfo = null
       this.emit('screen-share-stopped')
-    })
+    });
     this.dataProvider.on('message-received', ({id, detail = {
       message, ts, uid, username, role, type
     }}) => {
       this.emit('message-received', {id, detail})
-    })
+    });
   }
 
 }

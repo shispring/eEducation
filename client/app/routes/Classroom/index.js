@@ -13,6 +13,8 @@ import TitleBar from '../../components/TitleBar';
 import { localStorage } from '../../utils/storage'
 import './index.scss';
 
+const RECORDING_SERVICE = 'http://123.155.153.85:3233';
+
 class Classroom extends React.Component {
   constructor(props) {
     super(props);
@@ -66,7 +68,11 @@ class Classroom extends React.Component {
         studentList: this.state.studentList.push({
           uid, streamId,
           username: info.username,
-          role: info.role
+          role: info.role,
+          video: true,
+          audio: true,
+          chat: true,
+          ring: false
         })
       })
     });
@@ -118,14 +124,14 @@ class Classroom extends React.Component {
       } else {
         // type === 'json'
         let {type, action, uid} = JSON.parse(evt.detail.message);
-        let from = evt.detail.uid
+        let from = evt.detail.uid;
         this.handleRemoteControl(type, action, uid, from);
       }
     });
   }
 
   handleRemoteControl = (type, action, uid, from) => {
-    let isLocal = (uid === this.$client.user.uid)
+    let isLocal = (uid === this.$client.user.uid);
     if (type === 'chat') {
       if(isLocal) {
         this.enableChat = (action === 'enable')
@@ -179,7 +185,14 @@ class Classroom extends React.Component {
       type,
       action,
       uid
-    }), 'json')
+    }), 'json');
+    let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
+    this.setState({
+      studentList: this.state.studentList.update(index, value => {
+        value[type] = !value[type];
+        return value
+      })
+    });
   }
 
   subscribeRTCEvents = () => {
@@ -216,7 +229,7 @@ class Classroom extends React.Component {
     this.setState({
       recordBtnLoading: true
     });
-    axios.post(`${SERVER_URL}/v1/recording/start`, {
+    axios.post(`${RECORDING_SERVICE}/v1/recording/start`, {
       appid: APP_ID,
       channel: this.$client.channel,
       uid: this.$client.user.uid
@@ -238,7 +251,7 @@ class Classroom extends React.Component {
     this.setState({
       recordBtnLoading: true
     });
-    axios.post(`${SERVER_URL}/v1/recording/stop`, {
+    axios.post(`${RECORDING_SERVICE}/v1/recording/stop`, {
       appid: APP_ID,
       channel: this.$client.channel,
       uid: this.$client.user.uid

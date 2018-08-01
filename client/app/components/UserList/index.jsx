@@ -4,21 +4,12 @@ import { Button, Icon } from 'antd';
 import './index.scss'
 
 class UserItem extends React.Component {
-  state = {
-    video: true,
-    audio: true,
-    chat: true
-  }
-
   handleAction = (type) => {
     this.props.onAction && this.props.onAction(
       type,
-      this.state[type] ? 'disable' : 'enable',
+      this.props[type] ? 'disable' : 'enable',
       this.props.uid
     );
-    this.setState({
-      [type]: !this.state[type]
-    })
   }
 
   render() {
@@ -32,19 +23,19 @@ class UserItem extends React.Component {
           <div className="user-control">
             <Button 
               onClick={_ => this.handleAction('chat')}
-              type={this.state.chat?'primary':'default'} 
+              type={this.props.chat?'primary':'default'} 
               shape="circle" 
               icon="message" 
             />
             <Button 
               onClick={_ => this.handleAction('video')}
-              type={this.state.video?'primary':'default'} 
+              type={this.props.video?'primary':'default'} 
               shape="circle" 
               icon="video-camera" 
             />
             <Button 
               onClick={_ => this.handleAction('audio')}
-              type={this.state.audio?'primary':'default'} 
+              type={this.props.audio?'primary':'default'} 
               shape="circle" 
               icon="sound" 
             />
@@ -67,6 +58,10 @@ class UserList extends React.Component {
         key={index}
         uid={item.uid}
         username={item.username}
+        video={item.video}
+        audio={item.audio}
+        chat={item.chat}
+        ring={item.ring}
         controllable={this.props.controllable}
         onAction={this.handleAction}
       />
@@ -86,7 +81,11 @@ UserItem.propTypes = {
   username: PropTypes.string,
   uid: PropTypes.number,
   onAction: PropTypes.func,
-  controllable: PropTypes.bool
+  controllable: PropTypes.bool,
+  video: PropTypes.bool,
+  audio: PropTypes.bool,
+  chat: PropTypes.bool,
+  ring: PropTypes.bool,
 };
 
 UserList.propTypes = {
@@ -94,6 +93,10 @@ UserList.propTypes = {
     PropTypes.shape({
       username: PropTypes.string,
       uid: PropTypes.number,
+      video: PropTypes.bool,
+      audio: PropTypes.bool,
+      chat: PropTypes.bool,
+      ring: PropTypes.bool,
     })
   ),
   onAction: PropTypes.func,
@@ -106,5 +109,9 @@ export const usersType = PropTypes.arrayOf(
   PropTypes.shape({
     username: PropTypes.string,
     uid: PropTypes.number,
+    video: PropTypes.bool,
+    audio: PropTypes.bool,
+    chat: PropTypes.bool,
+    ring: PropTypes.bool,
   })
 );
