@@ -2,6 +2,13 @@
   background: #FFF;
   padding: 0.3rem;
 
+  .user-list-box {
+    height: calc(100% - 3rem);
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    margin-bottom: 1rem;
+  }
+
   .user-item {
     display: flex;
     align-items: center;
@@ -16,6 +23,17 @@
       display: flex;
       justify-content: space-around;
       align-content: center;
+    }
+  }
+
+  .user-list-button-group {
+    height: 2rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: .25rem;
+    button {
+      width: 5rem;
     }
   }
 }

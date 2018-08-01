@@ -52,6 +52,16 @@ class Classroom extends React.Component {
     }
   }
 
+  _getOtherStudents = () => {
+    let uids = this.state.studentList.map(value => value.uid)
+    let index = uids.indexOf(this.$client.user.uid)
+    if (index !== -1) {
+      return uids.splice(index, 1).toArray();
+    } else {
+      return uids.toArray();
+    }
+  }
+
   subscribeClientEvents = () => {
     this.$client.on('teacher-added', (uid, info, streamId) => {
       this.setState({
@@ -141,20 +151,32 @@ class Classroom extends React.Component {
         if(!isLocal) {
           this.$client.unmuteVideo(uid)
         }
-      } else {
+      } else if (action === 'disable') {
         if(!isLocal) {
           this.$client.muteVideo(uid)
         }
+      } else if (action === 'enableAll') {
+        this.$client.unmuteVideo(this._getOtherStudents()) 
+      } else if (action === 'disableAll') {
+        this.$client.muteVideo(this._getOtherStudents()) 
+      } else {
+        throw new Error('Invalid action')
       }
     } else if (type === 'audio') {
       if (action === 'enable') {
         if(!isLocal) {
           this.$client.unmuteAudio(uid)
         }
-      } else {
+      } else if (action === 'disable') {
         if(!isLocal) {
           this.$client.muteAudio(uid)
         }
+      } else if (action === 'enableAll') {
+        this.$client.unmuteAudio(this._getOtherStudents()) 
+      } else if (action === 'disableAll') {
+        this.$client.muteAudio(this._getOtherStudents()) 
+      } else {
+        throw new Error('Invalid action')
       }
     } else if (type === 'ring') {
       if(this.$client.user.role === 'teacher') {

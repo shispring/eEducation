@@ -48,8 +48,31 @@ class UserItem extends React.Component {
 }
 
 class UserList extends React.Component {
+  state = {
+    allVideo: true,
+    allAudio: true
+  }
+
   handleAction = (type, action, uid) => {
     this.props.onAction && this.props.onAction(type, action, uid)
+  }
+
+  toggleAllVideo = () => {
+    let action = this.state.allVideo ? 'disableAll' : 'enableAll';
+    let type = 'video';
+    this.handleAction(type, action);
+    this.setState({
+      allVideo: !this.state.allVideo
+    });
+  }
+
+  toggleAllAudio = () => {
+    let action = this.state.allAudio ? 'disableAll' : 'enableAll';
+    let type = 'audio';
+    this.handleAction(type, action);
+    this.setState({
+      allAudio: !this.state.allAudio
+    });
   }
 
   render() {
@@ -71,7 +94,19 @@ class UserList extends React.Component {
 
     return (
       <div style={this.props.style} className={className}>
-        {MessageList}
+        <div className="user-list-box">{MessageList}</div>
+        <div className="user-list-button-group">
+          <Button 
+            onClick={this.toggleAllVideo}
+            type={this.state.allVideo?"primary":"default"}
+            icon="video-camera" 
+          >{this.state.allVideo?"Mute ":"Unmute"}</Button>
+          <Button 
+            onClick={this.toggleAllAudio}
+            type={this.state.allAudio?"primary":"default"}
+            icon="sound" 
+          >{this.state.allAudio?"Mute ":"Unmute"}</Button>
+        </div>
       </div>
     )
   }

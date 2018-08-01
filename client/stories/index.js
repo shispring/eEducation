@@ -52,6 +52,7 @@ storiesOf('Chatroom', module)
 storiesOf('UserList', module)
   .add('default', () => (
     <UserList 
+      controllable={true}
       onAction={action('action from user list')}
       users={defaultUsers} 
       style={{width: '20rem', height: '24rem'}} 
