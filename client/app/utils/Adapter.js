@@ -1,18 +1,23 @@
 /**
- * Adapter is not another sdk, but a flexible, light-weight 
- * encapsulation for Agora Electron sdk for E-edu. 
- * Easier to use and extend.
- * @module Adapter
+
  */
 import AgoraRtcEngine from 'agora-electron-sdk';
 import DataProvider from './ExampleDataProvider';
 import EventEmitter from 'events';
 
 /**
- * Default stream id for sharing stream
+ * Default screen-share stream's id
+ * @constant SHARE_ID 
  */
 const SHARE_ID = 2
 
+/**
+ * A class representing Adapter.
+ * Adapter is not another sdk, but a flexible, light-weight 
+ * encapsulation for Agora Electron sdk for E-edu,
+ * easier to use and extend.
+ * @namespace Adapter 
+ */
 export default class Adapter extends EventEmitter {
   /**
    * Encapsulation regular profile you need to set
@@ -41,15 +46,15 @@ export default class Adapter extends EventEmitter {
 
   /**
    * connect to server and init class through data provider
-   * @param {string} config.channel channel
-   * @param {Object} config.user username, role, uid
+   * @param {string} appId Agora App ID
+   * @param {string} channel channel name
+   * @param {Object} user username, role, uid
    */
   initClass(appId, channel, user = {uid, username, role}) {
     if(!appId) {
       throw new Error('appId cannot be empty!')
     }
-    // this.appId = appId
-    // this.channel = channel
+
     return new Promise((resolve, reject) => {
       // init local user info
       if(!user.uid) {
@@ -69,7 +74,7 @@ export default class Adapter extends EventEmitter {
       // subscribe data provider event
       this.subDataProviderEvents();
       // dispatch action
-      this.dataProvider.dispatchInitClass(appId, channel, user).then(() => {
+      this.dataProvider.dispatch('initClass', {appId, channel, user}).then(() => {
         resolve({uid: user.uid})
       }).catch(err => {
         reject(err)
@@ -93,11 +98,7 @@ export default class Adapter extends EventEmitter {
   leaveClass() {
     this.rtcEngine.leaveChannel();
     this.removeAllListeners();
-    this.dataProvider.dispatchLeaveClass({
-      uid: this.user.uid,
-      username: this.user.username,
-      role: this.user.role
-    });
+    this.dataProvider.dispatch('leaveClass', {user: this.user});
   }
 
   /**
@@ -134,7 +135,7 @@ export default class Adapter extends EventEmitter {
   /**
    * when you no longer need to do screen sharing, release it
    */
-  destructScreenShare() {
+  destroyScreenShare() {
     this.rtcEngine.videoSourceLeave();
     this.rtcEngine.videoSourceRelease();
   }
@@ -152,8 +153,14 @@ export default class Adapter extends EventEmitter {
         top: 0, left: 0, right: 0, bottom: 0
       }, 0);
       this.rtcEngine.startScreenCapturePreview();
-      this.dataProvider.dispatchStartScreenShare(SHARE_ID, this.user.uid).then(() => {
-        resolve(SHARE_ID, this.user.uid)
+      this.dataProvider.dispatch('startScreenShare', {
+        shareId: SHARE_ID,
+        sharerId: this.user.uid
+      }).then(() => {
+        resolve({
+          shareId: SHARE_ID,
+          sharerId: this.user.uid
+        })
       }).catch(err => {
         reject(err)
       });
@@ -165,10 +172,16 @@ export default class Adapter extends EventEmitter {
    */
   stopScreenShare() {
     return new Promise((resolve, reject) => {
-      this.dataProvider.dispatchStopScreenShare(SHARE_ID, this.user.uid).then(() => {
+      this.dataProvider.dispatch('stopScreenShare', {
+        shareId: SHARE_ID,
+        sharerId: this.user.uid
+      }).then(() => {
         this.rtcEngine.stopScreenCapture2();
         this.rtcEngine.stopScreenCapturePreview();
-        resolve(SHARE_ID, this.user.uid)
+        resolve({
+          shareId: SHARE_ID,
+          sharerId: this.user.uid
+        })
       }).catch(err => {
         reject(err)
       })
@@ -274,13 +287,31 @@ export default class Adapter extends EventEmitter {
   /**
    * broadcast message in channel
    * @param {string} message 
-   * @param {'str'||'json'} type - whether a str or a json
+   * @param {string} type - whether a 'str' or a 'json'
    */
   broadcastMessage(message = '', type = 'str') {
     if(!message) {
       return
     }
-    this.dataProvider.dispatchBroadcastMessage(message, this.user, type)
+    this.dataProvider.dispatch('broadcastMessage', {
+      message, 
+      user: this.user, 
+      type
+    })
+  }
+
+  /**
+   * get user by uid from userlist
+   * @param {number} uid uid
+   * @return {Object} User with username, role and uid
+   */
+  getUser(uid) {
+    let temp = this.userList[uid]
+    return {
+      username: temp.info.username,
+      role: temp.info.role,
+      uid: uid
+    }
   }
 
   /**
@@ -391,20 +422,8 @@ export default class Adapter extends EventEmitter {
     }
   }
 
-
   /**
-   * get user by uid from userlist
-   */
-  getUser(uid) {
-    let temp = this.userList[uid]
-    return {
-      username: temp.info.username,
-      role: temp.info.role,
-      uid: uid
-    }
-  }
-
-  /**
+   * @private
    * subscribe rtc engine events
    */
   subRtcEvents() {
@@ -446,6 +465,7 @@ export default class Adapter extends EventEmitter {
   }
 
   /**
+   * @private
    * subscribe event of data provider
    */
   subDataProviderEvents() {

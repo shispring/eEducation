@@ -1,13 +1,12 @@
 /**
  * DataProvider is for data exchange between client and server.
  * You must implement below methods by yourself according to your stack.
- * @module BaseDataProvider
+ * @interface BaseDataProvider
  */
-import EventEmitter from 'events';
-
-export default class BaseDataProvider extends EventEmitter {
+export default class BaseDataProvider {
   /**
    * connect - open your data tunnel to server
+   * @abstract
    */
   connect () {
     throw new Error('This method must be implement!');
@@ -15,70 +14,48 @@ export default class BaseDataProvider extends EventEmitter {
 
   /**
    * disconnect - close your data tunnel to server
+   * @abstract
    */
   disconnect () {
     throw new Error('This method must be implement!')
   }
 
   /**
-   * dispatchInitClass - add user info in the class on server
+   * dispatch - dispatch action with payload
+   * @param {string} action action name
+   * @param {Object} payload payload for the action
+   * @abstract
    */
-  dispatchInitClass () {
+  dispatch (action, payload) {
     throw new Error('This method must be implement!')
   }
 
   /**
-   * dispatchLeaveClass - remove user info in the class on server
+   * emit events according to status change on server
+   * @param {string} event event name
+   * @abstract
    */
-  dispatchLeaveClass () {
+  emit (event) {
     throw new Error('This method must be implement!')
   }
 
   /**
-   * dispatchStartScreenShare - update sharing status in the class on server
-   */
-  dispatchStartScreenShare () {
-    throw new Error('This method must be implement!')
-  }
-
-  /**
-   * dispatchStopScreenShare - remove sharing status in the class on server
-   */
-  dispatchStopScreenShare () {
-    throw new Error('This method must be implement!')
-  }
-
-  /**
-   * dispatchBroadcastMessage - broadcast message in the class on server
-   */
-  dispatchBroadcastMessage (message, uid) {
-    throw new Error('This method must be implement!')
-  }
-
-  /**
-   * fire - emit events on client according to status change on server
-   * @param {string} eventType - event type/name, for example, user-added
-   * @param {any} eventPayload - event payload, params client will get
+   * add listener to events
+   * @event BaseDataProvider#user-info-updated
+   * @event BaseDataProvider#user-info-removed
+   * @event BaseDataProvider#connected
+   * @event BaseDataProvider#disconnected
+   * @event BaseDataProvider#error
+   * @event BaseDataProvider#message-received
+   * @event BaseDataProvider#screen-share-started
+   * @event BaseDataProvider#screen-share-stopped
    * 
-   * @fires BaseDataProvider#user-info-updated - this.emit('user-info-updated', {uid, info})
-   * @fires BaseDataProvider#user-info-removed - this.emit('user-info-removed', {uid})
-   * @fires BaseDataProvider#connected
-   * @fires BaseDataProvider#disconnected
-   * @fires BaseDataProvider#error - this.emit('error', error)
-   * @fires BaseDataProvider#message-received - this.emit('message-received', {id, detail})
-   * @fires BaseDataProvider#screen-share-started - this.emit('screen-share-started', {sharerId, shareId})
-   * @fires BaseDataProvider#screen-share-stopped - this.emit('screen-share-stopped')
+   * @abstract
+   * 
+   * @param {string} event event name
+   * @param {functiion} callback callback function to execute when event emitted
    */
-  fire (eventType, eventPayload) {
-    // listen to server events and fire related events on client
-    this.emit(eventType, eventPayload)
+  on (event, callback) {
+    throw new Error('This method must be implement!')
   }
-
-  /**
-   * log with prefix: `[Data Provider:]`
-   */
-  log (...args) {
-    console.log('[Data Provider:]', ...args)
-  }
-
 }

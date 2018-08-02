@@ -48,7 +48,7 @@ class Classroom extends React.Component {
   componentWillUnmount() {
     if(this.$client.user.role === 'teacher') {
       this.$client.stopScreenShare()
-      this.$client.destructScreenShare()
+      this.$client.destroyScreenShare()
     }
   }
 
@@ -88,7 +88,7 @@ class Classroom extends React.Component {
     });
     this.$client.on('teacher-removed', (uid) => {
       let index = this.state.teacherList.findIndex((value, key) => value.uid === uid);
-      if(index !== undefined) {
+      if(index !== -1) {
         this.setState({
           teacherList: this.state.teacherList.splice(index, 1)
         })
@@ -96,7 +96,7 @@ class Classroom extends React.Component {
     });
     this.$client.on('student-removed', (uid) => {
       let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
-      if(index !== undefined) {
+      if(index !== -1) {
         this.setState({
           studentList: this.state.studentList.splice(index, 1)
         })
@@ -209,12 +209,14 @@ class Classroom extends React.Component {
       uid
     }), 'json');
     let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
-    this.setState({
-      studentList: this.state.studentList.update(index, value => {
-        value[type] = !value[type];
-        return value
-      })
-    });
+    if(index !== -1) {
+      this.setState({
+        studentList: this.state.studentList.update(index, value => {
+          value[type] = !value[type];
+          return value
+        })
+      });
+    }
   }
 
   subscribeRTCEvents = () => {

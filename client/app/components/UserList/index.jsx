@@ -95,18 +95,20 @@ class UserList extends React.Component {
     return (
       <div style={this.props.style} className={className}>
         <div className="user-list-box">{MessageList}</div>
-        <div className="user-list-button-group">
-          <Button 
-            onClick={this.toggleAllVideo}
-            type={this.state.allVideo?"primary":"default"}
-            icon="video-camera" 
-          >{this.state.allVideo?"Mute ":"Unmute"}</Button>
-          <Button 
-            onClick={this.toggleAllAudio}
-            type={this.state.allAudio?"primary":"default"}
-            icon="sound" 
-          >{this.state.allAudio?"Mute ":"Unmute"}</Button>
-        </div>
+        { this.props.controllable ? (
+          <div className="user-list-button-group">
+            <Button 
+              onClick={this.toggleAllVideo}
+              type={this.state.allVideo?"primary":"default"}
+              icon="video-camera" 
+            >{this.state.allVideo?"Mute ":"Unmute"}</Button>
+            <Button 
+              onClick={this.toggleAllAudio}
+              type={this.state.allAudio?"primary":"default"}
+              icon="sound" 
+            >{this.state.allAudio?"Mute ":"Unmute"}</Button>
+          </div>
+        ) : '' }
       </div>
     )
   }

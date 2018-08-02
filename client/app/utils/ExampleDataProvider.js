@@ -1,16 +1,22 @@
-/**
- * By default, we use gun (a real-time database)
- * to implement data provider.
- * @module ExampleDataProvider
- */
 import Gun from "gun/gun";
-import BaseDataProvider from "./BaseDataProvider";
+import EventEmitter from 'events';
 
+/**
+ * room control service urls
+ * @constant SERVER_URLS
+ */
 const SERVER_URLS = ["http://123.155.153.85:8888/gun"];
 
-export default class ExampleDataProvider extends BaseDataProvider {
+/**
+ * By default, we use gun (a real-time database) for data exchange
+ * and EventEmitter for handling events to implement data provider
+ * @namespace ExampleDataProvider
+ * @implements {BaseDataProvider}
+ */
+export default class ExampleDataProvider extends EventEmitter {
   /**
    * connect to gun service and register events for data tunnel
+   * also do validation and login
    * @param {string} appId - agora app id
    * @param {string} channel - channel id 
    * @param {string[]} serverUrls - gun service urls 
@@ -56,13 +62,13 @@ export default class ExampleDataProvider extends BaseDataProvider {
           // register event
           this.registerServerEvent();
           // connected
-          this.fire('connected');
+          this.emit('connected');
           // resolve
           resolve();
         })
         .catch(err => {
           // do nothing
-          this.fire('error', err);
+          this.emit('error', err);
           // reject
           reject(err);
         });
@@ -71,7 +77,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
   }
 
   /**
-   * remove listeners for server
+   * close data tunnel and remove listeners for server
    */
   disconnect () {
     // close all data tunnel
@@ -81,17 +87,45 @@ export default class ExampleDataProvider extends BaseDataProvider {
     this.removeAllListeners();
   }
 
+
+  /**
+   * log with prefix: `[Data Provider:]`
+   * @param {*} args 
+   */
+  log (...args) {
+    console.log('[Data Provider:]', ...args)
+  }
+
+  /**
+   * dispatch action from client to server and return a promise
+   * @param {string} action action name
+   * @param {*} payload payload for the action
+   * @returns {Promise<T>}
+   */
+  dispatch (action, payload) {
+    if(action === 'initClass') {
+      return this.dispatchInitClass(payload)
+    } else if (action === 'leaveClass') {
+      return this.dispatchLeaveClass(payload)
+    } else if (action === 'startScreenShare') {
+      return this.dispatchStartScreenShare(payload)
+    } else if (action === 'stopScreenShare') {
+      return this.dispatchStopScreenShare(payload)
+    } else if (action === 'broadcastMessage') {
+      return this.dispatchBroadcastMessage(payload)
+    } else {
+      // your custom events
+    }
+  }
+
   /**
    * connect and get class info, do validation
-   * @param {string} appId - agora app id 
-   * @param {string} channel - channel id 
-   * @param {Object} user - user object 
-   * @param {number} user.uid - uid for user
-   * @param {string} user.username - username for user
-   * @param {Role} user.role - teacher | student | audience
+   * @param {string} payload.appId - agora app id 
+   * @param {string} payload.channel - channel id 
+   * @param {Object} payload.user - user object 
    * @returns {Promise<T>} 
    */
-  dispatchInitClass(appId, channel, user = {uid, username, role}) {
+  dispatchInitClass({appId, channel, user}) {
     return new Promise((resolve, reject) => {
       this.connect(appId, channel).then(() => {
         // init promises
@@ -174,12 +208,9 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
   /**
    * leave the class and remove info
-   * @param {Object} user 
-   * @param {number} user.uid - uid for user
-   * @param {string} user.username - username for user
-   * @param {Role} user.role - teacher | student | audience
+   * @param {Object} payload.user 
    */
-  dispatchLeaveClass(user = {uid, username, role}) {
+  dispatchLeaveClass({user}) {
     if(user.role === 'teacher') {
       this.channelStatusTunnel.get('teacher').put(null);
     }
@@ -189,11 +220,11 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
   /**
    * start screen share and notify the class
-   * @param {number} shareId - stream id for sharing stream
-   * @param {number} sharerId - the user who do the sharing
+   * @param {number} payload.shareId - stream id for sharing stream
+   * @param {number} payload.sharerId - the user who do the sharing
    * @returns {Promise<T>} 
    */
-  dispatchStartScreenShare(shareId, sharerId) {
+  dispatchStartScreenShare({shareId, sharerId}) {
     return new Promise((resolve, reject) => {
       this.channelStatusTunnel.get('sharing').put({
         sharerId, shareId
@@ -209,11 +240,11 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
   /**
    * stop screen share and notify the class
-   * @param {number} shareId - stream id for sharing stream
-   * @param {number} sharerId - the user who do the sharing
+   * @param {number} payload.shareId - stream id for sharing stream
+   * @param {number} payload.sharerId - the user who do the sharing
    * @returns {Promise<T>} 
    */
-  dispatchStopScreenShare(shareId, sharerId) {
+  dispatchStopScreenShare({shareId, sharerId}) {
     return new Promise((resolve, reject) => {
       this.channelStatusTunnel.get('sharing').put(null, ack => {
         if (ack.err) {
@@ -227,15 +258,12 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
   /**
    * broadcast message in the class
-   * @param {string} message 
-   * @param {Object} user 
-   * @param {number} user.uid - uid for user
-   * @param {string} user.username - username for user
-   * @param {Role} user.role - teacher | student | audience
-   * @param {'str'||'json'} type - whether a str or a json
+   * @param {string} payload.message 
+   * @param {Object} payload.user 
+   * @param {string} payload.type - whether a 'str' or a 'json'
    * @returns {Promise<T>} 
    */
-  dispatchBroadcastMessage(message, user = {uid, username, role}, type = 'str') {
+  dispatchBroadcastMessage({message, user, type}) {
     return new Promise((resolve, reject) => {
       // use ts as uid
       let ts = String(new Date().getTime()).slice(7)
@@ -256,6 +284,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
   /**
    * add listener for server and fire client events
+   * @private
    * @fires user-info-removed {uid}
    * @fires user-info-updated {uid, info}
    * @fires screen-share-stopped null
@@ -267,9 +296,9 @@ export default class ExampleDataProvider extends BaseDataProvider {
     this.userTunnel.map().on((info, uid) => {
       this.log('user info', uid, info)
       if(info === null) {
-        this.fire('user-info-removed', {uid: Number(uid)})
+        this.emit('user-info-removed', {uid: Number(uid)})
       } else {
-        this.fire('user-info-updated', {uid: Number(uid), info})
+        this.emit('user-info-updated', {uid: Number(uid), info})
       }
     })
     // sub channel status changes
@@ -277,9 +306,9 @@ export default class ExampleDataProvider extends BaseDataProvider {
       this.log('channel status', key, value)
       if(key === 'sharing') {
         if(value === null) {
-          this.fire('screen-share-stopped')
+          this.emit('screen-share-stopped')
         } else {
-          this.fire('screen-share-started', {
+          this.emit('screen-share-started', {
             sharerId: value.sharerId,
             shareId: value.shareId
           })
@@ -292,7 +321,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
       if(detail === null) {
         // it seem it will never happen
       } else {
-        this.fire('message-received', {id, detail})
+        this.emit('message-received', {id, detail})
       }
     }, {change: true})
   }
