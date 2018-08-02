@@ -306,11 +306,15 @@ export default class Adapter extends EventEmitter {
    * @return {Object} User with username, role and uid
    */
   getUser(uid) {
-    let temp = this.userList[uid]
-    return {
-      username: temp.info.username,
-      role: temp.info.role,
-      uid: uid
+    if(this.userList.hasOwnProperty(uid)) {
+      let temp = this.userList[uid]
+      return {
+        username: temp.info.username,
+        role: temp.info.role,
+        uid: uid
+      }
+    } else {
+      return false
     }
   }
 
@@ -429,7 +433,7 @@ export default class Adapter extends EventEmitter {
   subRtcEvents() {
     this.rtcEngine.on('removestream', (uid, reason) => {
       let user = this.getUser(uid)
-      this.dataProvider.dispatchLeaveClass(user)
+      this.dataProvider.dispatch('leaveClass', {user})
       this.removeUser(uid)
     });
     this.rtcEngine.on('userjoined', (uid, elpased) => {

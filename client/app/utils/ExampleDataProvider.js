@@ -120,6 +120,7 @@ export default class ExampleDataProvider extends EventEmitter {
 
   /**
    * connect and get class info, do validation
+   * @private
    * @param {string} payload.appId - agora app id 
    * @param {string} payload.channel - channel id 
    * @param {Object} payload.user - user object 
@@ -134,17 +135,13 @@ export default class ExampleDataProvider extends EventEmitter {
         // do validation
         // if teacher exists
         promisesValidation.push(new Promise((resolve, reject) => {
-          let hasTeacher = false
           this.channelStatusTunnel.get('teacher').once(data => {
-            if(data !== null) {
-              hasTeacher = true
+            if(data !== null && user.role === 'teacher') {
+              reject(new Error('Teacher exists!'));
+            } else {
+              resolve();
             }
           });
-          if(hasTeacher && user.role === 'teacher') {
-            reject(new Error('Teacher exists!'))
-          } else {
-            resolve()
-          }
         }));
         // if username unique
         promisesValidation.push(new Promise((resolve, reject) => {
@@ -208,18 +205,22 @@ export default class ExampleDataProvider extends EventEmitter {
 
   /**
    * leave the class and remove info
+   * @private
    * @param {Object} payload.user 
    */
   dispatchLeaveClass({user}) {
-    if(user.role === 'teacher') {
-      this.channelStatusTunnel.get('teacher').put(null);
+    if(user) {
+      if(user.role === 'teacher') {
+        this.channelStatusTunnel.get('teacher').put(null);
+      }
+      this.userTunnel.get(user.uid).put(null);
     }
-    this.userTunnel.get(user.uid).put(null);
     this.disconnect()
   }
 
   /**
    * start screen share and notify the class
+   * @private
    * @param {number} payload.shareId - stream id for sharing stream
    * @param {number} payload.sharerId - the user who do the sharing
    * @returns {Promise<T>} 
@@ -240,6 +241,7 @@ export default class ExampleDataProvider extends EventEmitter {
 
   /**
    * stop screen share and notify the class
+   * @private
    * @param {number} payload.shareId - stream id for sharing stream
    * @param {number} payload.sharerId - the user who do the sharing
    * @returns {Promise<T>} 
@@ -258,6 +260,7 @@ export default class ExampleDataProvider extends EventEmitter {
 
   /**
    * broadcast message in the class
+   * @private
    * @param {string} payload.message 
    * @param {Object} payload.user 
    * @param {string} payload.type - whether a 'str' or a 'json'
