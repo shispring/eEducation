@@ -10,7 +10,7 @@ const SERVER_URLS = ["http://123.155.153.85:8888/gun"];
 /**
  * By default, we use gun (a real-time database) for data exchange
  * and EventEmitter for handling events to implement data provider
- * @namespace ExampleDataProvider
+ * @class ExampleDataProvider
  * @implements {BaseDataProvider}
  */
 export default class ExampleDataProvider extends EventEmitter {

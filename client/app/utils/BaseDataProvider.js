@@ -41,17 +41,7 @@ export default class BaseDataProvider {
 
   /**
    * add listener to events
-   * @event BaseDataProvider#user-info-updated
-   * @event BaseDataProvider#user-info-removed
-   * @event BaseDataProvider#connected
-   * @event BaseDataProvider#disconnected
-   * @event BaseDataProvider#error
-   * @event BaseDataProvider#message-received
-   * @event BaseDataProvider#screen-share-started
-   * @event BaseDataProvider#screen-share-stopped
-   * 
    * @abstract
-   * 
    * @param {string} event event name
    * @param {functiion} callback callback function to execute when event emitted
    */

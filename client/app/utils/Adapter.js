@@ -16,7 +16,7 @@ const SHARE_ID = 2
  * Adapter is not another sdk, but a flexible, light-weight 
  * encapsulation for Agora Electron sdk for E-edu,
  * easier to use and extend.
- * @namespace Adapter 
+ * @class Adapter 
  */
 export default class Adapter extends EventEmitter {
   /**
