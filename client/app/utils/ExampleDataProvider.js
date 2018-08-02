@@ -78,6 +78,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
     this.userTunnel.off();
     this.messageTunnel.off();
     this.channelStatusTunnel.off();
+    this.removeAllListeners();
   }
 
   /**
