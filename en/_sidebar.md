@@ -5,5 +5,6 @@
   * [Install](/en/get_started)
   * [Usage](/en/usage)
 * References
-  * [API](/en/apis)
-  * [Example Data Provider](/en/example_data_provider)
+  * [Adapter API](/en/adapter_api)
+  * [Data Provider Interface](/en/base_data_provider_api)
+  * [Example Data Provider](/en/example_data_provider_api)
