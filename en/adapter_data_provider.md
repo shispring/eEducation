@@ -1,5 +1,5 @@
 ## Adapter
-> Adapter encapsulation original Agora APIs in e-Edu situation
+> Adapter encapsulate original Agora APIs for e-Edu scenario
 
 For example, before joining class, you should set related profile to make your client work properly and have the optimization for e-Edu situation.
 
@@ -60,11 +60,11 @@ either receiving status change from server and emit client event.
 
 For example, when adapter trying to do `initClass`, you must connect to your 
 server and update your info in a session maybe. Implemention varies depending on 
-your practical business logic. That is why we provide a `base interface: Data Provider`
+your practical business logic. That is why we provide a base interface: `Data Provider`
 
 ``` javascript
 // you should implement your data provider with your tech stack
-dispatchInitClass() {
+dispatch('initClass', payload) {
 
   // maybe socket.io
   // io.emit(...)
@@ -75,8 +75,8 @@ dispatchInitClass() {
   // or your own signaling tunnel
   // yourSignaling.dosth
 }
-// dispatchBroadcastMessage()
-// dispatchStartScreenShare()
+// dispatch('broadcastMessage', payload)
+// dispatch('startScreenShare', payload)
 // ...
 ```
 

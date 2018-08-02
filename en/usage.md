@@ -29,7 +29,8 @@ this.client.initClass(agoraAppId, channel, user = {uid, username, role}).then(()
 
 ```
 
-`initClass` will trigger `connect` and `dispatchInitClass` of `Data Provider`. For example, if you use socket.io to implement room control, you should init connection, register events, and do validation.
+`initClass` will dispatch action 'initClass' and related payload(appid, channel, userinfo...) to `Data Provider`. Then `DataProvider` should connect to
+server and update user info (maybe by socket.io or ajax, it all depends on you).
 
 `initProfile` do most of common settings and optimization for e-Edu. It provides three params: audience (boolean) to determine wheter to publish stream, profile for resolution, and swap (boolean) to determine whether to rotate the video. (You can also modify this method according to your situation.)
 
