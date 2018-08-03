@@ -1,5 +1,5 @@
-## Adapter
-> Adapter encapsulate original Agora APIs for e-Edu scenario
+## API Adapter
+> API Adapter encapsulate original Agora APIs for e-Edu scenario
 
 For example, before joining class, you should set related profile to make your client work properly and have the optimization for e-Edu situation.
 
@@ -30,7 +30,7 @@ For example, before joining class, you should set related profile to make your c
   }
 ```
 
-Without adapter, you must set all of these yourself, even if you only want to implement a client with 3 type of role in a common e-Edu situation: 
+Without `API Adapter`, you must set all of these yourself, even if you only want to implement a client with 3 type of role in a common e-Edu situation: 
 - Teacher: High-quality video, presenter.
 - Student: No need for high-quality, presenter too.
 - Audience: Only subscribe stream, never publishing
@@ -39,7 +39,7 @@ For example, when a teacher joining class:
 
 ![join_class](../assets/join_class.png)
 
-With Adapter:
+With `API Adapter`:
 
 ``` javascript
     AdapterClient.initClass(APP_ID, channel, {uid, username, role}).then(() => {

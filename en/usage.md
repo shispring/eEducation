@@ -1,4 +1,6 @@
-## Usage of Adapter
+## API Adapter
+
+![usage_flowchart](../assets/usage_flowchart.png)
 
 ### constructor
 
@@ -75,7 +77,7 @@ These apis can accept `number` or `number[]` or even `undefined` as param.
 
 This is for common chatting in class or you can broadcast instructions to use 'json' type.
 
-### leaveClass and destructScreenShare
+### destructScreenShare and leaveClass
 
 Relative to enterClass and prepareScreenShare.
 
@@ -86,4 +88,4 @@ give a uid and get a User object (username, role, uid ...)
 
 
 ## Data Provider
-You can either implement your own data provider according to your tech stack (Go to BaseDataProvider for detail) or use our example data provider (Not recommended for production environment).
+You can either implement your own data provider according to your tech stack (Go to BaseDataProvider for detail) or use our example data provider (**Not recommended for production environment**).
