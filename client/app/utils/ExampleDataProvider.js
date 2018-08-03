@@ -136,7 +136,7 @@ export default class ExampleDataProvider extends EventEmitter {
         // if teacher exists
         promisesValidation.push(new Promise((resolve, reject) => {
           this.channelStatusTunnel.get('teacher').once(data => {
-            if(data !== null && user.role === 'teacher') {
+            if(data && user.role === 'teacher') {
               reject(new Error('Teacher exists!'));
             } else {
               resolve();
