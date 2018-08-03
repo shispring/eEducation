@@ -5,7 +5,7 @@ For example, before joining class, you should set related profile to make your c
 
 ``` javascript
   /**
-   * Encapsulation regular profile you need to set
+   * Encapsulate regular profile you need to set
    * @param {boolean} audience if user is an audience
    * @param {number} videoProfile videoProfile 
    * @param {boolean} swapWidthAndHeight if swap width and height
