@@ -207,7 +207,10 @@ export default class Adapter extends EventEmitter {
     }
     if(uids instanceof Array) {
       for(let uid of uids) {
-        return this.rtcEngine.muteRemoteVideoStream(uid, true)
+        let result = this.rtcEngine.muteRemoteVideoStream(uid, true);
+        if (result !== 0 ) {
+          return result;
+        }
       }
     }
   }
@@ -231,7 +234,10 @@ export default class Adapter extends EventEmitter {
     }
     if(uids instanceof Array) {
       for(let uid of uids) {
-        return this.rtcEngine.muteRemoteVideoStream(uid, false)
+        let result = this.rtcEngine.muteRemoteVideoStream(uid, false);
+        if (result !== 0) {
+          return result;
+        }
       }
     }
   }
@@ -255,7 +261,10 @@ export default class Adapter extends EventEmitter {
     }
     if(uids instanceof Array) {
       for(let uid of uids) {
-        return this.rtcEngine.muteRemoteAudioStream(uid, true)
+        let result = this.rtcEngine.muteRemoteAudioStream(uid, true);
+        if (result !== 0) {
+          return result;
+        }
       }
     }
   }
@@ -279,7 +288,10 @@ export default class Adapter extends EventEmitter {
     }
     if(uids instanceof Array) {
       for(let uid of uids) {
-        return this.rtcEngine.muteRemoteAudioStream(uid, false)
+        let result = this.rtcEngine.muteRemoteAudioStream(uid, false);
+        if (result !== 0) {
+          return result;
+        }
       }
     }
   }
