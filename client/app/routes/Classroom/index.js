@@ -105,6 +105,8 @@ class Classroom extends React.Component {
     this.$client.on('screen-share-started', evt => {
       let board = document.querySelector('.board');
       if (board) {
+        // reclear board
+        board.innerHTML = '';
         // check if presenter is your self
         if(evt.sharerId === this.$client.user.uid) {
           this.$rtc.setupLocalVideoSource(board);
@@ -414,7 +416,7 @@ class Classroom extends React.Component {
         func = this.handleStartRecording;
       }
       RecordingButton = (
-        <Button loading={this.state.recordBtnLoading} onClick={func} id={id} type="primary">{content}</Button>
+        <Button className="no-drag-btn" loading={this.state.recordBtnLoading} onClick={func} id={id} type="primary">{content}</Button>
       );
     }
 

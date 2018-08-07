@@ -65,8 +65,9 @@ export default class Adapter extends EventEmitter {
       this.channel = channel;
       this.appId = appId;
       // init rtc engine
-      this.rtcEngine = new AgoraRtcEngine()
-      this.rtcEngine.initialize(appId)
+      this.rtcEngine = new AgoraRtcEngine();
+      this.rtcEngine.initialize(appId);
+      console.log('Agora RTC Engine: ', this.rtcEngine.getVersion());
       // init data provider
       this.dataProvider = new DataProvider();
       // init userlist
@@ -321,8 +322,8 @@ export default class Adapter extends EventEmitter {
     if(this.userList.hasOwnProperty(uid)) {
       let temp = this.userList[uid]
       return {
-        username: temp.info.username,
-        role: temp.info.role,
+        username: temp.info && temp.info.username,
+        role: temp.info && temp.info.role,
         uid: uid
       }
     } else {
