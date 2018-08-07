@@ -145,17 +145,17 @@ export default class ExampleDataProvider extends EventEmitter {
       // if username unique
       promisesValidation.push(new Promise((resolve, reject) => {
         let unique = true
-        this.userTunnel.once((info, uid) => {
-          if(uid === user.uid) {
-            if(info.role === user.role) {
+        this.userTunnel.once().map(info => {
+          if (info) {
+            if (info.username === user.username && info.role === user.role) {
               unique = false
             }
           }
         });
-        if(!unique) {
-          reject(new Error('Username exists!'))
+        if (unique) {
+          resolve();
         } else {
-          resolve()
+          reject(new Error('Username exists!'));
         }
       }));
       // promise for add user
