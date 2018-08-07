@@ -74,12 +74,17 @@ export default class Adapter extends EventEmitter {
       this.userList = {};
       // subscribe data provider event
       this.subDataProviderEvents();
-      // dispatch action
-      this.dataProvider.dispatch('initClass', {appId, channel, user}).then(() => {
-        resolve({uid: user.uid})
+      // do connect
+      this.dataProvider.connect(appId, channel).then(() => {
+        // dispatch action
+        this.dataProvider.dispatch('initClass', {appId, channel, user}).then(() => {
+          resolve({uid: user.uid});
+        }).catch(err => {
+          reject(err);
+        });
       }).catch(err => {
-        reject(err)
-      })
+        reject(err);
+      });
     })
   }
 
@@ -100,6 +105,7 @@ export default class Adapter extends EventEmitter {
     this.rtcEngine.leaveChannel();
     this.removeAllListeners();
     this.dataProvider.dispatch('leaveClass', {user: this.user});
+    this.dataProvider.disconnect()
   }
 
   /**

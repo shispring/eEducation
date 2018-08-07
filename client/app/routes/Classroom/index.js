@@ -474,7 +474,7 @@ class Classroom extends React.Component {
 
           <TitleBar>
             {RecordingButton}
-            <Button className="btn" ghost icon="logout" onClick={this.handleExit} />
+            <Button className="no-drag-btn btn" ghost icon="logout" onClick={this.handleExit} />
           </TitleBar>
 
         </header>

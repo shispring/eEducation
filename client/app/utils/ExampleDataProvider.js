@@ -128,42 +128,55 @@ export default class ExampleDataProvider extends EventEmitter {
    */
   dispatchInitClass({appId, channel, user}) {
     return new Promise((resolve, reject) => {
-      this.connect(appId, channel).then(() => {
-        // init promises
-        let promisesValidation = [];
-        let promisesRegister = [];
-        // do validation
-        // if teacher exists
-        promisesValidation.push(new Promise((resolve, reject) => {
-          this.channelStatusTunnel.get('teacher').once(data => {
-            if(data && user.role === 'teacher') {
-              reject(new Error('Teacher exists!'));
-            } else {
-              resolve();
-            }
-          });
-        }));
-        // if username unique
-        promisesValidation.push(new Promise((resolve, reject) => {
-          let unique = true
-          this.userTunnel.once((info, uid) => {
-            if(uid === user.uid) {
-              if(info.role === user.role) {
-                unique = false
-              }
-            }
-          });
-          if(!unique) {
-            reject(new Error('Username exists!'))
+      // init promises
+      let promisesValidation = [];
+      let promisesRegister = [];
+      // do validation
+      // if teacher exists
+      promisesValidation.push(new Promise((resolve, reject) => {
+        this.channelStatusTunnel.get('teacher').once(data => {
+          if(data && user.role === 'teacher') {
+            reject(new Error('Teacher exists!'));
           } else {
-            resolve()
+            resolve();
           }
-        }));
-        // promise for add user
+        });
+      }));
+      // if username unique
+      promisesValidation.push(new Promise((resolve, reject) => {
+        let unique = true
+        this.userTunnel.once((info, uid) => {
+          if(uid === user.uid) {
+            if(info.role === user.role) {
+              unique = false
+            }
+          }
+        });
+        if(!unique) {
+          reject(new Error('Username exists!'))
+        } else {
+          resolve()
+        }
+      }));
+      // promise for add user
+      promisesRegister.push(new Promise((resolve, reject) => {
+        this.userTunnel.get(user.uid).put({
+          username: user.username,
+          role: user.role
+        }, ack => {
+          if(ack.err) {
+            reject(ack.err);
+          } else {
+            resolve();
+          }
+        })
+      }));
+      // promise for add teacher
+      if (user.role === 'teacher') {
         promisesRegister.push(new Promise((resolve, reject) => {
-          this.userTunnel.get(user.uid).put({
+          this.channelStatusTunnel.get('teacher').put({
             username: user.username,
-            role: user.role
+            uid: user.uid
           }, ack => {
             if(ack.err) {
               reject(ack.err);
@@ -172,34 +185,17 @@ export default class ExampleDataProvider extends EventEmitter {
             }
           })
         }));
-        // promise for add teacher
-        if (user.role === 'teacher') {
-          promisesRegister.push(new Promise((resolve, reject) => {
-            this.channelStatusTunnel.get('teacher').put({
-              username: user.username,
-              uid: user.uid
-            }, ack => {
-              if(ack.err) {
-                reject(ack.err);
-              } else {
-                resolve();
-              }
-            })
-          }));
-        }
-        // do promises
-        Promise.all(promisesValidation).then(() => {
-          Promise.all(promisesRegister).then(() => {
-            resolve();
-          }).catch(err => {
-            reject(err);
-          });
+      }
+      // do promises
+      Promise.all(promisesValidation).then(() => {
+        Promise.all(promisesRegister).then(() => {
+          resolve();
         }).catch(err => {
-          reject(err)
+          reject(err);
         });
       }).catch(err => {
-        reject(err);
-      })
+        reject(err)
+      });
     })
   }
 
@@ -215,7 +211,6 @@ export default class ExampleDataProvider extends EventEmitter {
       }
       this.userTunnel.get(user.uid).put(null);
     }
-    this.disconnect()
   }
 
   /**
