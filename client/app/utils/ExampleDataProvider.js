@@ -1,5 +1,5 @@
 import Gun from "gun/gun";
-import EventEmitter from 'events';
+import BaseDataProvider from './BaseDataProvider';
 
 /**
  * room control service urls
@@ -13,7 +13,7 @@ const SERVER_URLS = ["http://123.155.153.85:8888/gun"];
  * @class ExampleDataProvider
  * @implements {BaseDataProvider}
  */
-export default class ExampleDataProvider extends EventEmitter {
+export default class ExampleDataProvider extends BaseDataProvider {
   /**
    * connect to gun service and register events for data tunnel
    * also do validation and login

@@ -51,11 +51,10 @@ export default class Adapter extends EventEmitter {
    * @param {Object} user username, role, uid
    */
   initClass(appId, channel, user = {uid, username, role}) {
-    if(!appId) {
-      throw new Error('appId cannot be empty!')
-    }
-
     return new Promise((resolve, reject) => {
+      if(!appId) {
+        reject(new Error('appId cannot be empty!'));
+      }
       // init local user info
       if(!user.uid) {
         // if no uid, use ts instead

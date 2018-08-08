@@ -1,14 +1,18 @@
+import EventEmitter from 'events';
+
 /**
  * DataProvider is for data exchange between client and server.
  * You must implement below methods by yourself according to your stack.
  * @interface BaseDataProvider
  */
-export default class BaseDataProvider {
+export default class BaseDataProvider extends EventEmitter {
   /**
    * connect - open your data tunnel to server
    * @abstract
+   * @param {string} - agora app id
+   * @param {channel} - channel id
    */
-  connect () {
+  connect (appId, channel) {
     throw new Error('This method must be implement!');
   }
 
@@ -30,22 +34,22 @@ export default class BaseDataProvider {
     throw new Error('This method must be implement!')
   }
 
-  /**
-   * emit events according to status change on server
-   * @param {string} event event name
-   * @abstract
-   */
-  emit (event) {
-    throw new Error('This method must be implement!')
-  }
+  // /**
+  //  * emit events according to status change on server
+  //  * @param {string} event event name
+  //  * @abstract
+  //  */
+  // emit (event) {
+  //   throw new Error('This method must be implement!')
+  // }
 
-  /**
-   * add listener to events
-   * @abstract
-   * @param {string} event event name
-   * @param {functiion} callback callback function to execute when event emitted
-   */
-  on (event, callback) {
-    throw new Error('This method must be implement!')
-  }
+  // /**
+  //  * add listener to events
+  //  * @abstract
+  //  * @param {string} event event name
+  //  * @param {functiion} callback callback function to execute when event emitted
+  //  */
+  // on (event, callback) {
+  //   throw new Error('This method must be implement!')
+  // }
 }
