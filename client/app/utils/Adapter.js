@@ -398,7 +398,7 @@ export default class Adapter extends EventEmitter {
     } else if (info.role === 'audience') {
       this.emit('audience-added', uid, info, stream)
     } else {
-      throw new Error('Unknow role for user: ' + uid)
+      console.warn('Unknow role for user: ' + uid)
     }
   }
 
@@ -430,7 +430,8 @@ export default class Adapter extends EventEmitter {
    */
   removeUser(uid) {
     if(this.userList.hasOwnProperty(uid)) {
-      let role = this.userList[uid].info.role
+      let info = this.userList[uid].info;
+      let role = info && info.role
       delete this.userList[uid]
       if(role === 'teacher') {
         this.emit('teacher-removed', uid)
@@ -439,7 +440,7 @@ export default class Adapter extends EventEmitter {
       } else if (role === 'audience') {
         this.emit('audience-removed', uid)
       } else {
-        throw new Error('Unknow role for user: ' + uid)
+        console.warn('Unknow role for user: ' + uid)
       }
     }
   }
