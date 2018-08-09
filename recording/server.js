@@ -42,7 +42,7 @@ let recManager = new RecorderManager();
 let init = recManager.init();
 init.then(() => {
     Api(recManager, app);
-    http_server.listen(process.env.PORT || 3232);
+    http_server.listen(process.env.PORT || 3233);
 }).catch((e) => {
     logger.error(e);
 });

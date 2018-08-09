@@ -33,23 +33,4 @@ export default class BaseDataProvider extends EventEmitter {
   dispatch (action, payload) {
     throw new Error('This method must be implement!')
   }
-
-  // /**
-  //  * emit events according to status change on server
-  //  * @param {string} event event name
-  //  * @abstract
-  //  */
-  // emit (event) {
-  //   throw new Error('This method must be implement!')
-  // }
-
-  // /**
-  //  * add listener to events
-  //  * @abstract
-  //  * @param {string} event event name
-  //  * @param {functiion} callback callback function to execute when event emitted
-  //  */
-  // on (event, callback) {
-  //   throw new Error('This method must be implement!')
-  // }
 }

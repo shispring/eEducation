@@ -7,7 +7,7 @@ module.exports = {
 
     // First application
     {
-      name      : 'RecordingCloud',
+      name      : 'RecordingCloud2',
       script    : 'server.js',
       env: {
         COMMON_VARIABLE: 'true'
