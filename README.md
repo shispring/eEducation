@@ -1,5 +1,7 @@
 # Agora e-Education Demo with Electron
 
+Agora e-Edu 2.0 releases! Go to [Doc Center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) for more detail.
+
 ## Background
 
 - Open source e-Edu sample code
@@ -15,8 +17,6 @@ You can [download](https://github.com/AgoraIO/ARD-eEducation-with-Electron/relea
 
 First, create a developer account at [Agora.io](https://dashboard.agora.io/signin/), and obtain an App ID.
 Update 'agora.config.js' under './app/'.  
-
-Go to [Doc Center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) for more detail.
 
 
 ## Feature 
