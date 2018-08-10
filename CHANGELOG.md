@@ -1,4 +1,12 @@
-## 1.0.0-alpha (July 31, 2018)
+## 2.0.0-beta.1 (Aug 10, 2018)
+
+#### :house: Internal
+* Regression testing passed.
+* Provide another data provider based on our Signaling SDK. [What is data provider](https://agoraio.github.io/ARD-eEducation-with-Electron/#/en/concepts?id=data-provider)
+
+
+
+## 2.0.0-alpha (July 31, 2018)
 
 #### :memo: Documentation
 [New doc center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) now accessible!
