@@ -133,15 +133,28 @@ export default class ExampleDataProvider extends BaseDataProvider {
       let promisesRegister = [];
       // do validation
       // if teacher exists
-      promisesValidation.push(new Promise((resolve, reject) => {
-        this.channelStatusTunnel.get('teacher').once(data => {
-          if(data && user.role === 'teacher') {
-            reject(new Error('Teacher exists!'));
-          } else {
-            resolve();
-          }
-        });
-      }));
+      if(user.role === 'teacher') {
+        promisesValidation.push(new Promise((resolve, reject) => {
+          this.channelStatusTunnel.get('teacher').once(data => {
+            if(data) {
+              let now = new Date().getTime();
+              let ts = Number(data.ts)
+              if (isNaN(ts)) {
+                ts = 0
+              }
+              // min
+              if((now - ts)/60000 > 10) {
+                resolve();
+              } else {
+                reject(new Error('Teacher exists!'));
+              }
+            } else {
+              resolve();
+            }
+          });
+        }));
+      }
+
       // if username unique
       promisesValidation.push(new Promise((resolve, reject) => {
         let unique = true
@@ -174,16 +187,22 @@ export default class ExampleDataProvider extends BaseDataProvider {
       // promise for add teacher
       if (user.role === 'teacher') {
         promisesRegister.push(new Promise((resolve, reject) => {
+          let ts = new Date().getTime();
           this.channelStatusTunnel.get('teacher').put({
             username: user.username,
-            uid: user.uid
+            uid: user.uid,
+            ts
           }, ack => {
             if(ack.err) {
               reject(ack.err);
             } else {
               resolve();
             }
-          })
+          });
+          this.heartbeat = setInterval(() => {
+            let currentTs = new Date().getTime();
+            this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
+          }, 60000)
         }));
       }
       // do promises
@@ -208,6 +227,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
     if(user) {
       if(user.role === 'teacher') {
         this.channelStatusTunnel.get('teacher').put(null);
+        clearInterval(this.heartbeat);
       }
       this.userTunnel.get(user.uid).put(null);
     }
