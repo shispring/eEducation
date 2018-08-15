@@ -199,15 +199,15 @@ export default class ExampleDataProvider extends BaseDataProvider {
               resolve();
             }
           });
-          this.heartbeat = setInterval(() => {
-            let currentTs = new Date().getTime();
-            this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
-          }, 60000)
         }));
       }
       // do promises
       Promise.all(promisesValidation).then(() => {
         Promise.all(promisesRegister).then(() => {
+          this.heartbeat = setInterval(() => {
+            let currentTs = new Date().getTime();
+            this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
+          }, 60000);
           resolve();
         }).catch(err => {
           reject(err);
