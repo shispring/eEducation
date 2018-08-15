@@ -55,10 +55,6 @@ app.on('window-all-closed', () => {
 
 
 app.on('ready', async () => {
-  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
-    // await installExtensions();
-  }
-
   process.env.APP_PATH = app.getAppPath();
 
   mainWindow = new BrowserWindow({
@@ -68,7 +64,10 @@ app.on('ready', async () => {
     frame: false
   });
 
-  mainWindow.webContents.openDevTools()
+  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+    mainWindow.webContents.openDevTools();
+    // await installExtensions();
+  }
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
