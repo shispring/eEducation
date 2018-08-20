@@ -52,11 +52,11 @@ class WindowItem extends React.Component {
       <Card
         hoverable
         style={style}
-        cover={<img id={`window-${this.props.windowId}`}/>}
+        cover={<img style={{height: '150px'}} id={`window-${this.props.windowId}`}/>}
       >
         <Meta
-          title={this.props.name}
-          description={this.props.ownerName}
+          // title={this.props.ownerName}
+          description={this.props.name}
         />
       </Card>
     )
@@ -95,9 +95,9 @@ class WindowPicker extends React.Component {
   render() {
     let chunkList = chunk(this.props.windowList, 3);
 
-    const content = chunkList.map(chunk => {
+    const content = chunkList.map((chunk, index) => {
       return (
-        <Row style={{marginBottom:'10px'}}>
+        <Row key={index} style={{marginBottom:'10px'}}>
           {chunk.map(item => (
             <Col
               key={item.windowId}
@@ -109,17 +109,25 @@ class WindowPicker extends React.Component {
     })
 
     return (
-      <Card 
-        title="Pick a window for sharing" 
-        bordered={false} 
-        style={{width: '800px', position: 'fixed', zIndex:'999', margin:'0 auto', top: '80px'}}
-        bodyStyle={{ height: '300px', overflowY: 'auto'}}
-        extra={[
-          <Button onClick={this.handleCancel} style={{marginRight: '10px'}}>Cancel</Button>, 
-          <Button disabled={this.state.currentWindowId === -1} onClick={this.handleSubmit} type="primary">Confirm</Button>
-        ]}>
-        {content}
-      </Card>
+      <div style={
+        {
+          width: '100%', height: '100%', position: 'fixed', zIndex: '9999', 
+          backgroundColor: 'rgba(222, 222, 222, .3)', display: 'flex',
+          justifyContent: 'center', alignItems: 'center'
+        }
+      }>
+        <Card 
+          title="Pick a window for sharing" 
+          bordered={false} 
+          style={{width: '800px'}}
+          bodyStyle={{ height: '300px', overflowY: 'auto'}}
+          extra={[
+            <Button key="cancel" onClick={this.handleCancel} style={{marginRight: '10px'}}>Cancel</Button>, 
+            <Button key="submit" disabled={this.state.currentWindowId === -1} onClick={this.handleSubmit} type="primary">Confirm</Button>
+          ]}>
+          {content}
+        </Card>
+      </div>
     )
   }
 }
@@ -130,7 +138,7 @@ WindowPicker.propTypes = {
       windowId: PropTypes.number,
       name: PropTypes.string,
       ownerName: PropTypes.string,
-      bmpData: PropTypes.array
+      bmpData: PropTypes.object
     }
   ),
   onCancel: PropTypes.func,

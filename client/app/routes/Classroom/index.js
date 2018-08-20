@@ -10,6 +10,7 @@ import {
 } from '../../agora.config';
 import ClassControl from '../../components/ClassControl'
 import TitleBar from '../../components/TitleBar';
+import WindowPicker from '../../components/WindowPicker';
 import { localStorage } from '../../utils/storage'
 import './index.scss';
 
@@ -33,6 +34,8 @@ class Classroom extends React.Component {
       enableVideo: true,
       enableAudio: true,
       waitSharing: false,
+      showWindowPicker: false,
+      windowList: []
     };
     this.enableChat = true;
   }
@@ -234,10 +237,14 @@ class Classroom extends React.Component {
 
   handleShareScreen = () => {
     if (!this.state.isSharing) {
-      this.$client.startScreenShare();
-    } else {
-      this.$client.stopScreenShare();
-    }
+      this.setState({
+        showWindowPicker: true,
+        windowList: this.$rtc.getShareWindowIds()
+      });
+      return;
+      // this.$client.startScreenShare();
+    } 
+    this.$client.stopScreenShare();
     this.setState({
       waitSharing: true,
       isSharing: !this.state.isSharing
@@ -247,6 +254,20 @@ class Classroom extends React.Component {
         waitSharing: false
       })
     }, 300)
+  }
+
+  handleWindowPicker = windowId => {
+    this.$client.startScreenShare(windowId);
+    this.setState({
+      waitSharing: true,
+      showWindowPicker: false,
+      isSharing: !this.state.isSharing
+    });
+    setTimeout(() => {
+      this.setState({
+        waitSharing: false
+      })
+    }, 300);
   }
 
 
@@ -451,6 +472,11 @@ class Classroom extends React.Component {
       </div>
     )
 
+    let windowPicker;
+    if(this.state.showWindowPicker) {
+      windowPicker = <WindowPicker onSubmit={this.handleWindowPicker} onCancel={e => this.setState({showWindowPicker: false})} windowList={this.state.windowList} />
+    };
+
     return (
       <div className="wrapper" id="classroom">
         <header className="title">
@@ -509,8 +535,10 @@ class Classroom extends React.Component {
             </footer>
           </div>
         </section> */}
-      </div>
 
+        { windowPicker }
+
+      </div>
     );
   }
 }

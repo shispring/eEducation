@@ -148,16 +148,21 @@ export default class Adapter extends EventEmitter {
 
   /**
    * start screen share
+   * @param {*} windowId windows id to capture
+   * @param {*} captureFreq fps of video source screencapture, 1 - 15
+   * @param {*} rect null/if specified, {x: 0, y: 0, width: 0, height: 0}
+   * @param {*} bitrate bitrate of video source screencapture
    */
-  startScreenShare() {
+  startScreenShare(windowId=0, captureFreq=15, rect={
+      top: 0, left: 0, right: 0, bottom: 0
+    }, bitrate=0
+  ) {
     if(!this.sharingPrepared) {
       console.error('Sharing not prepared yet.')
       return false
     };
     return new Promise((resolve, reject) => {
-      this.rtcEngine.startScreenCapture2(0, 15, {
-        top: 0, left: 0, right: 0, bottom: 0
-      }, 0);
+      this.rtcEngine.startScreenCapture2(windowId, captureFreq, rect, bitrate);
       this.rtcEngine.startScreenCapturePreview();
       this.dataProvider.dispatch('startScreenShare', {
         shareId: SHARE_ID,
