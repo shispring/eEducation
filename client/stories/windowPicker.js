@@ -23,6 +23,13 @@ const WrapperDecorator = storyFn => (
 addDecorator(WrapperDecorator);
 
 
+const windowList = [
+  {ownerName:'hy', name: '1test', windowId: 1, bmpData: []},
+  {ownerName:'hy', name: '2test', windowId: 2, bmpData: []},
+  {ownerName:'hy', name: '3test', windowId: 3, bmpData: []},
+  {ownerName:'hy', name: '4test', windowId: 4, bmpData: []},
+]
+
 storiesOf('WindowPicker', module)
   .add('default', () => (
     <WindowPicker 
