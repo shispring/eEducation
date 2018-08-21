@@ -70,7 +70,7 @@ WindowItem.propTypes = {
   active: PropTypes.bool,
   // bmpWidth: PropTypes.number,
   // bmpHeight: PropTypes.number,
-  bmpData: PropTypes.array
+  bmpData: PropTypes.object
 }
 
 class WindowPicker extends React.Component {
