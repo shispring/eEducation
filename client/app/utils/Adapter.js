@@ -342,6 +342,58 @@ export default class Adapter extends EventEmitter {
   }
 
   /**
+   * premote an audience to student
+   * @param {number} uid
+   */
+  promote(uid) {
+    if(this.userList.hasOwnProperty(uid)) {
+      let temp = this.userList[uid];
+      let targetUser = {
+        uid: temp.uid,
+        info: {...temp.info},
+        stream: temp.stream,
+      };
+      if(targetUser.info.role !== 'audience') {
+        return;
+      } else {
+        targetUser.info.role = 'student';
+        this.removeUser(uid);
+        if(this.user.uid === uid) {
+          this.user.role = 'student';
+          this.rtcEngine.setClientRole(1)
+        }
+        this.addUser(targetUser.uid, targetUser.info, targetUser.stream);
+      }
+    }
+  }
+
+  /**
+   * demote a student to audience
+   * @param {number} uid 
+   */
+  demote(uid) {
+    if(this.userList.hasOwnProperty(uid)) {
+      let temp = this.userList[uid];
+      let targetUser = {
+        uid: temp.uid,
+        info: {...temp.info},
+        stream: temp.stream,
+      };
+      if (targetUser.info.role !== 'student') {
+        return;
+      } else {
+        targetUser.info.role = 'audience';
+        this.removeUser(uid);
+        if(this.user.uid === uid) {
+          this.user.role = 'audience';
+          this.rtcEngine.setClientRole(2)
+        }
+        this.addUser(targetUser.uid, targetUser.info, targetUser.stream);
+      }
+    }
+  }
+
+  /**
    * @private
    * new a object only when both info and stream are set will callback be emit
    * @param {number} uid 
@@ -456,9 +508,14 @@ export default class Adapter extends EventEmitter {
    */
   subRtcEvents() {
     this.rtcEngine.on('removestream', (uid, reason) => {
-      let user = this.getUser(uid)
-      this.dataProvider.dispatch('leaveClass', {user})
-      this.removeUser(uid)
+      if(reason === 2) {
+        // triggerred by func demote/promote
+      } else {
+        // unexpected leaving
+        let user = this.getUser(uid)
+        this.dataProvider.dispatch('leaveClass', {user})
+        this.removeUser(uid)
+      }
     });
     this.rtcEngine.on('userjoined', (uid, elpased) => {
       // add stream info for a user

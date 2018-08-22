@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Icon, Input, Spin, Tooltip, message } from 'antd';
+import { Button, Icon, Input, Modal, notification, Spin, Tooltip, message } from 'antd';
 import { List } from 'immutable';
 import { isEqual } from 'lodash';
 import axios from 'axios'
@@ -15,6 +15,10 @@ import { localStorage } from '../../utils/storage'
 import './index.scss';
 
 const RECORDING_SERVICE = 'http://123.155.153.85:3233';
+notification.config({
+  placement: 'bottomLeft'
+})
+
 
 class Classroom extends React.Component {
   constructor(props) {
@@ -188,6 +192,19 @@ class Classroom extends React.Component {
         let username = this.$client.getUser(from).username
         message.info(`Student ${username} is ringing the bell!`)
       }
+    } else if (type === 'role') {
+      if( action === 'requestPromotion') {
+        if(this.$client.user.role === 'teacher') {
+          let user = this.$client.getUser(from);
+          this.openNotification(user.username, user.uid);
+        }
+      } else if (action === 'promote') {
+        this.$client.promote(uid);
+      } else if (action === 'demote') {
+        this.$client.demote(uid);
+      } else {
+        // to be extended
+      }
     } else {
       // can be extended by your situation
     }
@@ -270,6 +287,26 @@ class Classroom extends React.Component {
     }, 300);
   }
 
+  openNotification = (username, uid) => {
+    const key = `open${Date.now()}`;
+    const handleBtnClick = () => {
+      this.handlePromotion(uid);
+      notification.close(key);
+    }
+    const btn = (
+      <Button type="primary" size="small" onClick={handleBtnClick}>
+        Confirm
+      </Button>
+    );
+
+    notification.open({
+      message: 'Request for promotion',
+      description: `Audience ${username} wants to join the discussion`,
+      btn,
+      key
+    });
+  };
+
 
   handleStartRecording = () => {
     console.log('Start Recording...');
@@ -342,6 +379,29 @@ class Classroom extends React.Component {
   handleRing = () => {
     this.$client.broadcastMessage(JSON.stringify({
       type: 'ring'
+    }), 'json')
+  }
+
+  handleRequestPromotion = () => {
+    this.$client.broadcastMessage(JSON.stringify({
+      type: 'role',
+      action: 'requestPromotion',
+    }), 'json')
+  }
+
+  handlePromotion = uid => {
+    this.$client.broadcastMessage(JSON.stringify({
+      type: 'role',
+      action: 'promote',
+      uid,
+    }), 'json')
+  }
+
+  handleDemotion = uid => {
+    this.$client.broadcastMessage(JSON.stringify({
+      type: 'role',
+      action: 'demote',
+      uid,
     }), 'json')
   }
 
@@ -442,16 +502,26 @@ class Classroom extends React.Component {
     }
 
     // Toolbar
-    let ButtonGroup = [
-      (
-        <Button key={0} onClick={this.handleToggleVideo} style={{margin: '0 8px'}} type={this.state.enableVideo?'primary':'default'} shape="circle" icon="video-camera" />
-      ),
-      (
-        <Button key={1} onClick={this.handleToggleAudio} style={{margin: '0 8px'}} type={this.state.enableAudio?'primary':'default'} shape="circle" icon="sound" />
-      )
-    ]
+    let ButtonGroup= [];
+    if (this.$client.user.role === 'audience') {
+      ButtonGroup = [
+        (
+          <Button key={0} onClick={this.handleRequestPromotion} style={{margin: '0 8px'}} type='primary' shape="circle" icon="arrow-up" />
+        )
+      ]
+    } else {
+      ButtonGroup = [
+        (
+          <Button key={0} onClick={this.handleToggleVideo} style={{margin: '0 8px'}} type={this.state.enableVideo?'primary':'default'} shape="circle" icon="video-camera" />
+        ),
+        (
+          <Button key={1} onClick={this.handleToggleAudio} style={{margin: '0 8px'}} type={this.state.enableAudio?'primary':'default'} shape="circle" icon="sound" />
+        )
+      ]
+    }
     if (this.$client.user.role === 'student') {
-      ButtonGroup.push((<Button key={2} onClick={this.handleRing} style={{margin: '0 8px'}} type="primary" shape="circle" icon="bell" />))
+      ButtonGroup.push((<Button key={2} onClick={this.handleRing} style={{margin: '0 8px'}} type="primary" shape="circle" icon="bell" />));
+      ButtonGroup.push((<Button key={3} onClick={() => this.handleDemotion(this.$client.user.uid)} style={{margin: '0 8px'}} type="primary" shape="circle" icon="arrow-down" />))
     }
     let Toolbar = (
       <div className="board-bar">
@@ -466,7 +536,7 @@ class Classroom extends React.Component {
         }
         <div className="board-bar--toolbar">
           {
-            this.$client.user.role === 'audience' ? '' : ButtonGroup
+            ButtonGroup
           }
         </div>
       </div>
