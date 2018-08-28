@@ -109,12 +109,6 @@ class Index extends React.Component {
     })
     // you can do auth before init class to generate your custom uid
     this.$client.initClass(APP_ID, channel, {uid: undefined, username, role}).then(() => {
-      this.$client.rtcEngine.getShareWindowIds().map((item, index) => {
-        let fs = require('fs');
-        fs.writeFile(index+item.ownerName+item.name+'.bmp', item.bmpData, err => {
-          console.error(err)
-        });
-      });
       this.$client.initProfile(role === 'audience')
       this.setState({
         isLogining: false

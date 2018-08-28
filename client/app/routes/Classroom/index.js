@@ -12,6 +12,7 @@ import ClassControl from '../../components/ClassControl'
 import TitleBar from '../../components/TitleBar';
 import WindowPicker from '../../components/WindowPicker';
 import { localStorage } from '../../utils/storage'
+import base64Encode from '../../utils/Base64Encode'
 import './index.scss';
 
 const RECORDING_SERVICE = 'http://123.155.153.85:3233';
@@ -254,9 +255,18 @@ class Classroom extends React.Component {
 
   handleShareScreen = () => {
     if (!this.state.isSharing) {
+      let list = this.$rtc.getShareWindowIds();
+      let windowList = list.map(item => {
+        return {
+          ownerName: item.ownerName,
+          name: item.name,
+          windowId: item.windowId,
+          bmpData: base64Encode(item.bmpData)
+        }
+      })
       this.setState({
         showWindowPicker: true,
-        windowList: this.$rtc.getShareWindowIds()
+        windowList: windowList
       });
       return;
       // this.$client.startScreenShare();
