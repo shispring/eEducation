@@ -171,43 +171,45 @@ export default class ExampleDataProvider extends BaseDataProvider {
           reject(new Error('Username exists!'));
         }
       }));
-      // promise for add user
-      promisesRegister.push(new Promise((resolve, reject) => {
-        this.userTunnel.get(user.uid).put({
-          username: user.username,
-          role: user.role
-        }, ack => {
-          if(ack.err) {
-            reject(ack.err);
-          } else {
-            resolve();
-          }
-        })
-      }));
-      // promise for add teacher
-      if (user.role === 'teacher') {
+      // do promises
+      Promise.all(promisesValidation).then(() => {
+        // promise for add user
         promisesRegister.push(new Promise((resolve, reject) => {
-          let ts = new Date().getTime();
-          this.channelStatusTunnel.get('teacher').put({
+          this.userTunnel.get(user.uid).put({
             username: user.username,
-            uid: user.uid,
-            ts
+            role: user.role
           }, ack => {
             if(ack.err) {
               reject(ack.err);
             } else {
               resolve();
             }
-          });
+          })
         }));
-      }
-      // do promises
-      Promise.all(promisesValidation).then(() => {
+        // promise for add teacher
+        if (user.role === 'teacher') {
+          promisesRegister.push(new Promise((resolve, reject) => {
+            let ts = new Date().getTime();
+            this.channelStatusTunnel.get('teacher').put({
+              username: user.username,
+              uid: user.uid,
+              ts
+            }, ack => {
+              if(ack.err) {
+                reject(ack.err);
+              } else {
+                resolve();
+              }
+            });
+          }));
+        }
         Promise.all(promisesRegister).then(() => {
-          this.heartbeat = setInterval(() => {
-            let currentTs = new Date().getTime();
-            this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
-          }, 60000);
+          if (user.role === 'teacher') {
+            this.heartbeat = setInterval(() => {
+              let currentTs = new Date().getTime();
+              this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
+            }, 60000);
+          }
           resolve();
         }).catch(err => {
           reject(err);
