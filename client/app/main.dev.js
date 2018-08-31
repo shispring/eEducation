@@ -64,7 +64,7 @@ app.on('ready', async () => {
     frame: false
   });
 
-  if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
+  if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
     // await installExtensions();
   }
