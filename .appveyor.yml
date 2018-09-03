@@ -1,0 +1,16 @@
+platform:
+  - x64
+
+cache:
+  - node_modules
+  - '%APPDATA%\npm-cache'
+  - '%USERPROFILE%\.electron'
+
+install:
+  - ps: Install-Product node 8 x64
+  - npm install
+
+build_script:
+  - cd client 
+  - npm run write-config
+  - npm install && npm run package-win:publish
