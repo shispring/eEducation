@@ -71,44 +71,87 @@ class Classroom extends React.Component {
   }
 
   subscribeClientEvents = () => {
-    this.$client.on('teacher-added', (uid, info, streamId) => {
-      this.setState({
-        teacherList: this.state.teacherList.push({
-          uid, streamId,
-          username: info.username,
-          role: info.role
-        }),
-        teacher: info.username
-      })
-    });
-    this.$client.on('student-added', (uid, info, streamId) => {
-      this.setState({
-        studentList: this.state.studentList.push({
-          uid, streamId,
-          username: info.username,
-          role: info.role,
-          video: true,
-          audio: true,
-          chat: true,
-          ring: false
-        })
-      })
-    });
-    this.$client.on('teacher-removed', (uid) => {
-      let index = this.state.teacherList.findIndex((value, key) => value.uid === uid);
-      if(index !== -1) {
+    this.$client.on('user-added', (uid, info) => {
+      if (info.role === 'teacher') {
+        // set to high stream
+        this.$rtc.setRemoteVideoStreamType(uid, 0)
         this.setState({
-          teacherList: this.state.teacherList.splice(index, 1)
+          teacherList: this.state.teacherList.push({
+            uid,
+            username: info.username,
+            role: info.role
+          }),
+          teacher: info.username
         })
+      } else if (info.role === 'student') {
+        // set to low stream
+        this.$rtc.setRemoteVideoStreamType(uid, 1)
+        this.setState({
+          studentList: this.state.studentList.push({
+            uid,
+            username: info.username,
+            role: info.role,
+            video: true,
+            audio: true,
+            chat: true,
+            ring: false
+          })
+        })
+      } else {
+        // do nothing in temp
       }
     });
-    this.$client.on('student-removed', (uid) => {
-      let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
-      if(index !== -1) {
-        this.setState({
-          studentList: this.state.studentList.splice(index, 1)
-        })
-      };
+    this.$client.on('user-updated', (uid, preInfo, nextInfo) => {
+      if (preInfo.role !== nextInfo.role) {
+        if (preInfo.role === 'audience' && nextInfo.role === 'student') {
+          if(uid === this.$client.user.uid) {
+            this.$rtc.setClientRole(1)
+          }
+          this.$rtc.setRemoteVideoStreamType(uid, 1)
+          this.setState({
+            studentList: this.state.studentList.push({
+              uid,
+              username: nextInfo.username,
+              role: nextInfo.role,
+              video: true,
+              audio: true,
+              chat: true,
+              ring: false
+            })
+          })
+        }
+
+        if (preInfo.role === 'student' && nextInfo.role === 'audience') {
+          if(uid === this.$client.user.uid) {
+            this.$rtc.setClientRole(2)
+          }
+          let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
+          if(index !== -1) {
+            this.setState({
+              studentList: this.state.studentList.splice(index, 1)
+            })
+          }
+        }
+      }
+    });
+    this.$client.on('user-removed', (uid, info) => {
+      if (info.role === 'teacher') {
+        let index = this.state.teacherList.findIndex((value, key) => value.uid === uid);
+        if(index !== -1) {
+          this.setState({
+            teacherList: this.state.teacherList.splice(index, 1)
+          })
+        }
+      } else if (info.role === 'student') {
+        let index = this.state.studentList.findIndex((value, key) => value.uid === uid);
+        if(index !== -1) {
+          this.setState({
+            studentList: this.state.studentList.splice(index, 1)
+          })
+        };
+      } else {
+        // do nothing in temp
+      }
     });
     this.$client.on('screen-share-started', evt => {
       let board = document.querySelector('.board');
@@ -199,10 +242,6 @@ class Classroom extends React.Component {
           let user = this.$client.getUser(from);
           this.openNotification(user.username, user.uid);
         }
-      } else if (action === 'promote') {
-        this.$client.promote(uid);
-      } else if (action === 'demote') {
-        this.$client.demote(uid);
       } else {
         // to be extended
       }
@@ -400,19 +439,15 @@ class Classroom extends React.Component {
   }
 
   handlePromotion = uid => {
-    this.$client.broadcastMessage(JSON.stringify({
-      type: 'role',
-      action: 'promote',
-      uid,
-    }), 'json')
+    this.$client.updateUserInfo(uid, {
+      role: 'student'
+    });
   }
 
   handleDemotion = uid => {
-    this.$client.broadcastMessage(JSON.stringify({
-      type: 'role',
-      action: 'demote',
-      uid,
-    }), 'json')
+    this.$client.updateUserInfo(uid, {
+      role: 'audience'
+    });
   }
 
   render() {
@@ -601,20 +636,6 @@ class Classroom extends React.Component {
           messages={this.state.messageList.toArray()} 
           users={this.state.studentList.toArray()} 
         />
-
-        {/* <section className="channel-container">
-          <div className="channel">
-            <header className="channel-header">Chatroom</header>
-            <MessageBox messageList={this.state.messageList} />
-            <footer className="channel-input">
-
-              <Input id="channelMsg" placeholder="Input messages..." onKeyPress={this.handleKeyPress} />
-
-              <Button onClick={this.handleSendMsg} type="primary" id="sendBtn">Send</Button>
-
-            </footer>
-          </div>
-        </section> */}
 
         { windowPicker }
 

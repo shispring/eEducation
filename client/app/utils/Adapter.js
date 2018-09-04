@@ -4,7 +4,7 @@
 import AgoraRtcEngine from 'agora-electron-sdk';
 import DataProvider from './ExampleDataProvider';
 import EventEmitter from 'events';
-
+import { clone, merge } from 'lodash';
 /**
  * Default screen-share stream's id
  * @constant SHARE_ID 
@@ -324,6 +324,17 @@ export default class Adapter extends EventEmitter {
   }
 
   /**
+   * 
+   * @param {number} uid  target uid
+   * @param {object} info new info you want to update
+   */
+  updateUserInfo(uid, info) {
+    let tempUser = clone(this.getUser(uid));
+    let newUser = merge(tempUser, info);
+    this.dataProvider.dispatch('updateUserInfo', {user: newUser});
+  }
+
+  /**
    * get user by uid from userlist
    * @param {number} uid uid
    * @return {Object} User with username, role and uid
@@ -341,65 +352,66 @@ export default class Adapter extends EventEmitter {
     }
   }
 
-  /**
-   * premote an audience to student
-   * @param {number} uid
-   */
-  promote(uid) {
-    if(this.userList.hasOwnProperty(uid)) {
-      let temp = this.userList[uid];
-      let targetUser = {
-        uid: temp.uid,
-        info: {...temp.info},
-        stream: temp.stream,
-      };
-      if(targetUser.info.role !== 'audience') {
-        return;
-      } else {
-        targetUser.info.role = 'student';
-        this.removeUser(uid);
-        if(this.user.uid === uid) {
-          this.user.role = 'student';
-          this.rtcEngine.setClientRole(1)
-        }
-        this.addUser(targetUser.uid, targetUser.info, targetUser.stream);
-      }
-    }
-  }
+  // /**
+  //  * premote an audience to student
+  //  * @param {number} uid
+  //  */
+  // promote(uid) {
+  //   if(this.userList.hasOwnProperty(uid)) {
+  //     let temp = this.userList[uid];
+  //     let targetUser = {
+  //       uid: temp.uid,
+  //       info: {...temp.info},
+  //       stream: temp.stream,
+  //     };
+  //     if(targetUser.info.role !== 'audience') {
+  //       return;
+  //     } else {
+  //       targetUser.info.role = 'student';
+  //       this.removeUser(uid);
+  //       if(this.user.uid === uid) {
+  //         this.user.role = 'student';
+  //         this.rtcEngine.setClientRole(1)
+  //       }
+  //       this.addUser(targetUser.uid, targetUser.info, targetUser.stream);
+  //     }
+  //   }
+  // }
 
-  /**
-   * demote a student to audience
-   * @param {number} uid 
-   */
-  demote(uid) {
-    if(this.userList.hasOwnProperty(uid)) {
-      let temp = this.userList[uid];
-      let targetUser = {
-        uid: temp.uid,
-        info: {...temp.info},
-        stream: temp.stream,
-      };
-      if (targetUser.info.role !== 'student') {
-        return;
-      } else {
-        targetUser.info.role = 'audience';
-        this.removeUser(uid);
-        if(this.user.uid === uid) {
-          this.user.role = 'audience';
-          this.rtcEngine.setClientRole(2)
-        }
-        this.addUser(targetUser.uid, targetUser.info, targetUser.stream);
-      }
-    }
-  }
+  // /**
+  //  * demote a student to audience
+  //  * @param {number} uid 
+  //  */
+  // demote(uid) {
+  //   if(this.userList.hasOwnProperty(uid)) {
+  //     let temp = this.userList[uid];
+  //     let targetUser = {
+  //       uid: temp.uid,
+  //       info: {...temp.info},
+  //       stream: temp.stream,
+  //     };
+  //     if (targetUser.info.role !== 'student') {
+  //       return;
+  //     } else {
+  //       targetUser.info.role = 'audience';
+  //       this.removeUser(uid);
+  //       if(this.user.uid === uid) {
+  //         this.user.role = 'audience';
+  //         this.rtcEngine.setClientRole(2)
+  //       }
+  //       this.addUser(targetUser.uid, targetUser.info, targetUser.stream);
+  //     }
+  //   }
+  // }
 
   /**
    * @private
    * new a object only when both info and stream are set will callback be emit
    * @param {number} uid 
-   * @param {function} callback 
+   * @param {function} onUserAdded 
+   * @param {function} onUserUpdated 
    */
-  newUser(uid, callback) {
+  newUser(uid, onUserAdded, onUserUpdated) {
     let target = {
       uid,
       hasInfo: false,
@@ -408,14 +420,27 @@ export default class Adapter extends EventEmitter {
     Object.defineProperties(target, {
       info: {
         set: function (val) {
+          if (!val) {
+            return;
+          }
+          let preInfo = clone(this.accessInfo);
           this.accessInfo = val
-          if (val) {
-            this.hasInfo = true
-            if (val.role === 'audience') {
-              callback(this.uid, this.info, this.stream)
+          if (val.role === 'audience') {
+            // audience do not have stream
+            if (this.hasInfo) {
+              onUserUpdated && onUserUpdated(this.uid, preInfo, this.info);
+            } else {
+              this.hasInfo = true;
+              onUserAdded && onUserAdded(this.uid, this.info);
             }
-            if (this.hasStream) {
-              callback(this.uid, this.info, this.stream)
+          } else {
+            if (this.hasInfo && this.hasStream) {
+              onUserUpdated && onUserUpdated(this.uid, preInfo, this.info);
+            } else {
+              this.hasInfo = true;
+              if (this.hasStream) {
+                onUserAdded && onUserAdded(this.uid, this.info);
+              }
             }
           }
         },
@@ -425,11 +450,17 @@ export default class Adapter extends EventEmitter {
       },
       stream: {
         set: function (val) {
+          if (!val) {
+            return;
+          }
           this.accessStream = val
-          if (val) {
-            this.hasStream = true
-            if (this.hasInfo) {
-              callback(this.uid, this.info, this.stream)
+          if (this.hasInfo && this.hasStream) {
+            // this should not happen since uid === stream
+            // onUserUpdated && onUserUpdated(this.uid, this.info);
+          } else {
+            this.hasStream = true;
+            if(this.hasInfo) {
+              onUserAdded && onUserAdded(this.uid, this.info)
             }
           }
         },
@@ -445,18 +476,31 @@ export default class Adapter extends EventEmitter {
    * @private
    * callback for user info and stream both ready
    */
-  handleUserAdded = (uid, info, stream) => {
-    if (info.role === 'teacher') {
-      this.rtcEngine.setRemoteVideoStreamType(uid, 0)
-      this.emit('teacher-added', uid, info, stream)
-    } else if (info.role === 'student') {
-      this.rtcEngine.setRemoteVideoStreamType(uid, 1)
-      this.emit('student-added', uid, info, stream)
-    } else if (info.role === 'audience') {
-      this.emit('audience-added', uid, info, stream)
-    } else {
-      console.warn('Unknow role for user: ' + uid)
+  handleUserAdded = (uid, info) => {
+    // if (info.role === 'teacher') {
+    //   this.rtcEngine.setRemoteVideoStreamType(uid, 0)
+    //   this.emit('teacher-added', uid, info, stream)
+    // } else if (info.role === 'student') {
+    //   this.rtcEngine.setRemoteVideoStreamType(uid, 1)
+    //   this.emit('student-added', uid, info, stream)
+    // } else if (info.role === 'audience') {
+    //   this.emit('audience-added', uid, info, stream)
+    // } else {
+    //   console.warn('Unknow role for user: ' + uid)
+    // }
+    this.emit('user-added', uid, clone(info));
+  }
+
+  /**
+   * @private
+   * callback fro user info updated
+   */
+  handleUserUpdated = (uid, preInfo, nextInfo) => {
+    if (uid === this.user.uid) {
+      this.user.username = nextInfo.username;
+      this.user.role = nextInfo.role;
     }
+    this.emit('user-updated', uid, clone(preInfo), clone(nextInfo));
   }
 
   /**
@@ -469,15 +513,11 @@ export default class Adapter extends EventEmitter {
   addUser = (uid, info, stream) => {
     // if not exist, create one
     if (!this.userList.hasOwnProperty(uid)) {
-      this.userList[uid] = this.newUser(uid, this.handleUserAdded)
+      this.userList[uid] = this.newUser(uid, this.handleUserAdded, this.handleUserUpdated)
     }
-    let target = this.userList[uid]
-    if (info && !target.info) {
-      target.info = info
-    }
-    if (stream && !target.stream) {
-      target.stream = stream
-    }
+    let target = this.userList[uid];
+    target.info = clone(info);
+    target.stream = stream;
   }
 
   /**
@@ -487,18 +527,18 @@ export default class Adapter extends EventEmitter {
    */
   removeUser(uid) {
     if(this.userList.hasOwnProperty(uid)) {
-      let info = this.userList[uid].info;
-      let role = info && info.role
-      delete this.userList[uid]
-      if(role === 'teacher') {
-        this.emit('teacher-removed', uid)
-      } else if(role === 'student') {
-        this.emit('student-removed', uid)
-      } else if (role === 'audience') {
-        this.emit('audience-removed', uid)
-      } else {
-        console.warn('Unknow role for user: ' + uid)
-      }
+      let user = this.getUser(uid);
+      this.emit('user-removed', user.uid, {role: user.role, username: user.username});
+      delete this.userList[uid];
+      // if(role === 'teacher') {
+      //   this.emit('teacher-removed', uid)
+      // } else if(role === 'student') {
+      //   this.emit('student-removed', uid)
+      // } else if (role === 'audience') {
+      //   this.emit('audience-removed', uid)
+      // } else {
+      //   console.warn('Unknow role for user: ' + uid)
+      // }
     }
   }
 
@@ -508,18 +548,18 @@ export default class Adapter extends EventEmitter {
    */
   subRtcEvents() {
     this.rtcEngine.on('removestream', (uid, reason) => {
+      let user = this.getUser(uid)
       if(reason === 2) {
         // triggerred by func demote/promote
+        // this.removeUser(uid);
       } else {
         // unexpected leaving
-        let user = this.getUser(uid)
         this.dataProvider.dispatch('leaveClass', {user})
-        this.removeUser(uid)
       }
     });
     this.rtcEngine.on('userjoined', (uid, elpased) => {
       // add stream info for a user
-      this.addUser(uid, null, uid)
+      this.addUser(uid, null, uid);
     });
     this.rtcEngine.on('joinedchannel', (channel, uid, elpased) => {
       this.addUser(uid, null, uid);

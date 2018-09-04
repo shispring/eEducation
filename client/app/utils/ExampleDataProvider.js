@@ -104,15 +104,17 @@ export default class ExampleDataProvider extends BaseDataProvider {
    */
   dispatch (action, payload) {
     if(action === 'initClass') {
-      return this.dispatchInitClass(payload)
+      return this.dispatchInitClass(payload);
     } else if (action === 'leaveClass') {
-      return this.dispatchLeaveClass(payload)
+      return this.dispatchLeaveClass(payload);
     } else if (action === 'startScreenShare') {
-      return this.dispatchStartScreenShare(payload)
+      return this.dispatchStartScreenShare(payload);
     } else if (action === 'stopScreenShare') {
-      return this.dispatchStopScreenShare(payload)
+      return this.dispatchStopScreenShare(payload);
     } else if (action === 'broadcastMessage') {
-      return this.dispatchBroadcastMessage(payload)
+      return this.dispatchBroadcastMessage(payload);
+    } else if (action === 'updateUserInfo') {
+      return this.dispatchUpdateUserInfo(payload);
     } else {
       // your custom events
     }
@@ -301,6 +303,61 @@ export default class ExampleDataProvider extends BaseDataProvider {
           resolve();
         }
       })
+    })
+  }
+
+  /**
+   * update user info in class
+   * @private
+   * @param {Object} payload.user 
+   */
+  dispatchUpdateUserInfo({user}) {
+    return new Promise((resolve, reject) => {
+      if (!user) {
+        reject(new Error('User cannot be null'))
+      }
+      let promisesRegister = [];
+      // promise for add user
+      promisesRegister.push(new Promise((resolve, reject) => {
+        this.userTunnel.get(user.uid).put({
+          username: user.username,
+          role: user.role
+        }, ack => {
+          if(ack.err) {
+            reject(ack.err);
+          } else {
+            resolve();
+          }
+        })
+      }));
+      // promise for add teacher
+      if (user.role === 'teacher') {
+        promisesRegister.push(new Promise((resolve, reject) => {
+          let ts = new Date().getTime();
+          this.channelStatusTunnel.get('teacher').put({
+            username: user.username,
+            uid: user.uid,
+            ts
+          }, ack => {
+            if(ack.err) {
+              reject(ack.err);
+            } else {
+              resolve();
+            }
+          });
+        }));
+      }
+      Promise.all(promisesRegister).then(() => {
+        if (user.role === 'teacher') {
+          this.heartbeat = setInterval(() => {
+            let currentTs = new Date().getTime();
+            this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
+          }, 60000);
+        }
+        resolve();
+      }).catch(err => {
+        reject(err);
+      });
     })
   }
 
