@@ -160,8 +160,10 @@ export default class ExampleDataProvider extends BaseDataProvider {
         let unique = true
         this.userTunnel.once().map(info => {
           if (info) {
-            if (info.username === user.username && info.role === user.role) {
-              unique = false
+            if (user.role === 'teacher') {
+              unique = !(info.username === user.username && info.role === user.role);
+            } else {
+              unique = !(info.username === user.username && info.role !== 'teacher');
             }
           }
         });
