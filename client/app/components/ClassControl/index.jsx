@@ -3,7 +3,7 @@ import { Tabs } from 'antd';
 import PropTypes from 'prop-types';
 import Chatroom, { messagesType } from '../Chatroom';
 import UserList, { usersType } from '../UserList';
-import './index.scss'
+import './index.sass'
 
 const TabPane = Tabs.TabPane;
 
@@ -44,7 +44,7 @@ class ClassCtrl extends React.Component {
           <Chatroom 
             onSendMessage={this.handleSendMessage}
             messages={this.props.messages} 
-            style={{width: '100%', height: '16rem'}}
+            style={{width: '100%', height: '100%'}}
           />
         </TabPane>
         <TabPane tab="Student List" key="2">
@@ -52,7 +52,7 @@ class ClassCtrl extends React.Component {
             controllable={this.props.controllable}
             onAction={this.handleAction}
             users={this.props.users} 
-            style={{width: '100%', height: '16rem'}} 
+            style={{width: '100%', height: '100%'}} 
           />
         </TabPane>
       </Tabs>
