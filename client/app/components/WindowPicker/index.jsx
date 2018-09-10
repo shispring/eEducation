@@ -9,7 +9,7 @@ const {Meta} = Card
 class WindowItem extends React.Component {
   componentDidMount() {
     let img = document.querySelector(`#window-${this.props.windowId}`);
-    img.src = 'data:image/png;base64,'+this.props.bmpData;
+    img.src = 'data:image/png;base64,'+this.props.image;
   }
 
   render() {
@@ -39,7 +39,7 @@ WindowItem.propTypes = {
   active: PropTypes.bool,
   // bmpWidth: PropTypes.number,
   // bmpHeight: PropTypes.number,
-  bmpData: PropTypes.string
+  image: PropTypes.string
 }
 
 class WindowPicker extends React.Component {
@@ -107,7 +107,7 @@ WindowPicker.propTypes = {
       windowId: PropTypes.number,
       name: PropTypes.string,
       ownerName: PropTypes.string,
-      bmpData: PropTypes.string
+      image: PropTypes.string
     })
   ),
   onCancel: PropTypes.func,

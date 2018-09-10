@@ -294,13 +294,13 @@ class Classroom extends React.Component {
 
   handleShareScreen = () => {
     if (!this.state.isSharing) {
-      let list = this.$rtc.getShareWindowIds();
+      let list = this.$rtc.getScreenWindowsInfo();
       let windowList = list.map(item => {
         return {
           ownerName: item.ownerName,
           name: item.name,
           windowId: item.windowId,
-          bmpData: base64Encode(item.bmpData)
+          image: base64Encode(item.image)
         }
       })
       this.setState({
@@ -568,6 +568,18 @@ class Classroom extends React.Component {
       ButtonGroup.push((<Button key={2} onClick={this.handleRing} style={{margin: '0 8px'}} type="primary" shape="circle" icon="bell" />));
       ButtonGroup.push((<Button key={3} onClick={() => this.handleDemotion(this.$client.user.uid)} style={{margin: '0 8px'}} type="primary" shape="circle" icon="arrow-down" />))
     }
+
+    // let board = null;
+    // if (!this.state.isSharing) {
+    //   board = (
+        
+    //   )
+    // } else {
+    //   board = (
+    //     <div className="board" />
+    //   )
+    // }
+
     let Toolbar = (
       <div className="board-bar">
         {
