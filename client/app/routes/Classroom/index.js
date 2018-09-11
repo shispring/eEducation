@@ -5,6 +5,9 @@ import { isEqual } from 'lodash';
 import axios from 'axios'
 import ipcRenderer from 'electron';
 
+import { RoomWhiteboard } from 'white-react-sdk';
+import 'white-web-sdk/style/index.css';
+
 import {
   APP_ID
 } from '../../agora.config';
@@ -13,6 +16,7 @@ import TitleBar from '../../components/TitleBar';
 import WindowPicker from '../../components/WindowPicker';
 import { localStorage } from '../../utils/storage'
 import base64Encode from '../../utils/Base64Encode'
+import Whiteboard from '../../utils/Whiteboard';
 import './index.scss';
 
 const RECORDING_SERVICE = 'http://123.155.153.85:3233';
@@ -154,7 +158,7 @@ class Classroom extends React.Component {
       }
     });
     this.$client.on('screen-share-started', evt => {
-      let board = document.querySelector('.board');
+      let board = document.getElementById('shareboard');
       if (board) {
         // reclear board
         board.innerHTML = '';
@@ -170,7 +174,7 @@ class Classroom extends React.Component {
       };
     })
     this.$client.on('screen-share-stopped', () => {
-      let board = document.querySelector('.board');
+      let board = document.getElementById('shareboard');
       if(board) {
         board.innerHTML = '';
       };
@@ -569,16 +573,7 @@ class Classroom extends React.Component {
       ButtonGroup.push((<Button key={3} onClick={() => this.handleDemotion(this.$client.user.uid)} style={{margin: '0 8px'}} type="primary" shape="circle" icon="arrow-down" />))
     }
 
-    // let board = null;
-    // if (!this.state.isSharing) {
-    //   board = (
-        
-    //   )
-    // } else {
-    //   board = (
-    //     <div className="board" />
-    //   )
-    // }
+    const { room } = Whiteboard;
 
     let Toolbar = (
       <div className="board-bar">
@@ -633,7 +628,10 @@ class Classroom extends React.Component {
         </header>
         <section className="students-container">{students}</section>
         <section className="board-container">
-          <div className="board" />
+          <div className="board" id="whiteboard" style={{ display: this.state.isSharing ? 'none' : 'block' }}>
+            <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
+          </div>
+          <div className="board" id="shareboard" />
           {Toolbar}
         </section>
         <section className="teacher-container">

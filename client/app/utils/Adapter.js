@@ -2,9 +2,11 @@
 
  */
 import AgoraRtcEngine from 'agora-electron-sdk';
-import DataProvider from './ExampleDataProvider';
 import EventEmitter from 'events';
 import { clone, merge } from 'lodash';
+import DataProvider from './ExampleDataProvider';
+import Whiteboard from './Whiteboard';
+
 /**
  * Default screen-share stream's id
  * @constant SHARE_ID 
@@ -52,11 +54,11 @@ export default class Adapter extends EventEmitter {
    */
   initClass(appId, channel, user = {uid, username, role}) {
     return new Promise((resolve, reject) => {
-      if(!appId) {
+      if (!appId) {
         reject(new Error('appId cannot be empty!'));
       }
       // init local user info
-      if(!user.uid) {
+      if (!user.uid) {
         // if no uid, use ts instead
         user.uid = Number(String(new Date().getTime()).slice(7));
       }
@@ -73,11 +75,22 @@ export default class Adapter extends EventEmitter {
       this.userList = {};
       // subscribe data provider event
       this.subDataProviderEvents();
+
       // do connect
-      this.dataProvider.connect(appId, channel).then(() => {
+      this.dataProvider.connect(appId, channel).then(async () => {
+        // initialize whiteboard
+        if (user.role === 'teacher') {
+          const response = await Whiteboard.initialize(channel, { limit: 5 });
+          const { roomToken, room } = response;
+          await Whiteboard.join(room.uuid, roomToken);
+          console.log(`whiteboard initialized`);
+        } else {
+
+        }
+
         // dispatch action
-        this.dataProvider.dispatch('initClass', {appId, channel, user}).then(() => {
-          resolve({uid: user.uid});
+        return this.dataProvider.dispatch('initClass', { appId, channel, user }).then(() => {
+          return resolve({ uid: user.uid });
         }).catch(err => {
           reject(err);
         });
