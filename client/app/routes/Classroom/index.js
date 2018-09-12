@@ -14,6 +14,7 @@ import {
 import ClassControl from '../../components/ClassControl'
 import TitleBar from '../../components/TitleBar';
 import WindowPicker from '../../components/WindowPicker';
+import Toolbar from '../../components/Toolbar';
 import { localStorage } from '../../utils/storage'
 import base64Encode from '../../utils/Base64Encode'
 import Whiteboard from '../../utils/Whiteboard';
@@ -575,24 +576,24 @@ class Classroom extends React.Component {
 
     const { room } = Whiteboard;
 
-    let Toolbar = (
-      <div className="board-bar">
-        {
-          this.$client.user.role === 'teacher' ? (
-            <Button loading={this.state.waitSharing} 
-            onClick={this.handleShareScreen} 
-            type={this.state.isSharing ? "primary" : "default"} 
-            style={{margin: '0 8px'}} 
-            icon="laptop">Share Screen</Button>
-          ) : (<div></div>)
-        }
-        <div className="board-bar--toolbar">
-          {
-            ButtonGroup
-          }
-        </div>
-      </div>
-    )
+    // let Toolbar = (
+    //   <div className="board-bar">
+    //     {
+    //       this.$client.user.role === 'teacher' ? (
+    //         <Button loading={this.state.waitSharing} 
+    //         onClick={this.handleShareScreen} 
+    //         type={this.state.isSharing ? "primary" : "default"} 
+    //         style={{margin: '0 8px'}} 
+    //         icon="laptop">Share Screen</Button>
+    //       ) : (<div></div>)
+    //     }
+    //     <div className="board-bar--toolbar">
+    //       {
+    //         ButtonGroup
+    //       }
+    //     </div>
+    //   </div>
+    // )
 
     let windowPicker;
     if(this.state.showWindowPicker) {
@@ -632,7 +633,7 @@ class Classroom extends React.Component {
             <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
           </div>
           <div className="board" id="shareboard" />
-          {Toolbar}
+          <Toolbar />
         </section>
         <section className="teacher-container">
           {teacher}
