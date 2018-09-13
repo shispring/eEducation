@@ -600,6 +600,11 @@ class Classroom extends React.Component {
       windowPicker = <WindowPicker onSubmit={this.handleWindowPicker} onCancel={e => this.setState({showWindowPicker: false})} windowList={this.state.windowList} />
     };
 
+    let shareBtnState = this.state.isSharing ? 'sharing' : 'default';
+    if (this.state.waitSharing) {
+      shareBtnState = 'preparing';
+    }
+
     return (
       <div className="wrapper" id="classroom">
         <header className="title">
@@ -633,7 +638,7 @@ class Classroom extends React.Component {
             <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
           </div>
           <div className="board" id="shareboard" />
-          <Toolbar />
+          <Toolbar shareBtnState={shareBtnState} handleShareScreen={this.handleShareScreen} />
         </section>
         <section className="teacher-container">
           {teacher}

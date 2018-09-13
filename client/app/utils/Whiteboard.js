@@ -1,5 +1,6 @@
 import { WhiteWebSdk } from 'white-web-sdk';
 import axios from 'axios';
+import { EventEmitter } from 'events';
 import { WHITEBOARD_URL } from '../agora.config';
 
 console.log(`whiteboard server url: ${WHITEBOARD_URL}`);
@@ -8,8 +9,9 @@ const Ajax = axios.create({
   baseURL: WHITEBOARD_URL
 });
 
-class White {
+class White extends EventEmitter {
   constructor() {
+    super();
     this.sdk = new WhiteWebSdk();
     this.roomInfo = null;
     this.roomToken = null;
@@ -40,6 +42,10 @@ class White {
     return new Promise((resolve, reject) => {
       this.sdk.joinRoom({
         uuid, roomToken: token
+      }, {
+        onRoomStateChanged: modifyState => {
+          this.emit('roomStateChanged', modifyState);
+        }
       }).then(room => {
         this.room = room;
         return resolve();
@@ -47,21 +53,21 @@ class White {
         reject(e);
       });
     });
-      // Ajax.post('/v1/room', {
-      //   uuid
-      // }).then(response => {
-      //   const { data } = response;
-      //   debugger;
-      //   const { code, msg } = data;
-      //   if (code === 200) {
-      //     this.room = msg.room;
-      //     this.roomToken = msg.roomToken;
-      //     return resolve(msg);
-      //   }
-      //   throw new Error(msg);
-      // }).catch(e => {
-      //   reject(e);
-      // });
+    // Ajax.post('/v1/room', {
+    //   uuid
+    // }).then(response => {
+    //   const { data } = response;
+    //   debugger;
+    //   const { code, msg } = data;
+    //   if (code === 200) {
+    //     this.room = msg.room;
+    //     this.roomToken = msg.roomToken;
+    //     return resolve(msg);
+    //   }
+    //   throw new Error(msg);
+    // }).catch(e => {
+    //   reject(e);
+    // });
   }
 }
 
