@@ -82,8 +82,17 @@ class WindowPicker extends React.Component {
 
     return (
       <div className='window-picker' style={this.props.style || {}}>
+        <div className='header'>
+          <div className="title">请选择需要共享的内容</div>
+          <div className="cancelBtn"></div>
+        </div>
         <div className='screen-container'>
           {content}
+        </div>
+        <div className='footer'>
+          <div className="confirmBtn">
+            开始共享
+          </div>
         </div>
       </div>
     )
