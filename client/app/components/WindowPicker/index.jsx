@@ -2,33 +2,30 @@ import React from 'react';
 import {chunk} from 'lodash';
 import PropTypes from 'prop-types';
 import { Button, Card, Col, Row } from 'antd';
-// import './index.scss'
+import { merge } from 'lodash';
+import './index.scss';
 
 const {Meta} = Card
 
 class WindowItem extends React.Component {
   componentDidMount() {
-    let img = document.querySelector(`#window-${this.props.windowId}`);
-    img.src = 'data:image/png;base64,'+this.props.image;
+    // let img = document.querySelector(`#window-${this.props.windowId}`);
+    // img.src = 'data:image/png;base64,'+this.props.image;
   }
 
   render() {
-    let style = {width: 240}
-    if(this.props.active) {
-      style.borderColor = 'blue';
-    }
+    const className = this.props.active ? 'screen-item active' : 'screen-item';
+    let name = this.props.name || 'No Title';
+    name = name.length > 15 ? `${name.substring(0, 15)}...` : name;
     return (
-      <Card
-        hoverable
-        style={style}
-        cover={<img style={{height: '150px'}} id={`window-${this.props.windowId}`}/>}
-      >
-        <Meta
-          // title={this.props.ownerName}
-          description={this.props.name}
-        />
-      </Card>
-    )
+      <div className={className}>
+        <div className="screen-image">
+          <div className="content" style={{backgroundImage: `url(data:image/png;base64,${this.props.image})`}}>
+          </div>
+        </div>
+        <div className="screen-meta">{name}</div>
+      </div>
+    );
   }
 }
 
@@ -62,13 +59,19 @@ class WindowPicker extends React.Component {
   }
 
   render() {
-    let chunkList = chunk(this.props.windowList, 3);
+    let chunkList = chunk(this.props.windowList, 1);
 
     const content = chunkList.map((chunk, index) => {
       return (
         <Row key={index} style={{marginBottom:'10px'}}>
           {chunk.map(item => (
             <Col
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
               key={item.windowId}
               onClick={() => this.handleSelect(item.windowId)}
               span={8}><WindowItem active={item.windowId === this.state.currentWindowId} {...item}/></Col>
@@ -78,24 +81,10 @@ class WindowPicker extends React.Component {
     })
 
     return (
-      <div style={
-        {
-          width: '100%', height: '100%', position: 'fixed', zIndex: '9999', 
-          backgroundColor: 'rgba(222, 222, 222, .3)', display: 'flex',
-          justifyContent: 'center', alignItems: 'center'
-        }
-      }>
-        <Card 
-          title="Pick a window for sharing" 
-          bordered={false} 
-          style={{width: '800px'}}
-          bodyStyle={{ height: '300px', overflowY: 'auto'}}
-          extra={[
-            <Button key="cancel" onClick={this.handleCancel} style={{marginRight: '10px'}}>Cancel</Button>, 
-            <Button key="submit" disabled={this.state.currentWindowId === -1} onClick={this.handleSubmit} type="primary">Confirm</Button>
-          ]}>
+      <div className='window-picker' style={this.props.style || {}}>
+        <div className='screen-container'>
           {content}
-        </Card>
+        </div>
       </div>
     )
   }

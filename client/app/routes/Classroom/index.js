@@ -596,9 +596,13 @@ class Classroom extends React.Component {
     // )
 
     let windowPicker;
-    if(this.state.showWindowPicker) {
-      windowPicker = <WindowPicker onSubmit={this.handleWindowPicker} onCancel={e => this.setState({showWindowPicker: false})} windowList={this.state.windowList} />
-    };
+    if (this.state.showWindowPicker) {
+      windowPicker = <WindowPicker
+        onSubmit={this.handleWindowPicker}
+        onCancel={e => this.setState({showWindowPicker: false})}
+        windowList={this.state.windowList}
+      />
+    }
 
     let shareBtnState = this.state.isSharing ? 'sharing' : 'default';
     if (this.state.waitSharing) {
@@ -639,6 +643,7 @@ class Classroom extends React.Component {
           </div>
           <div className="board" id="shareboard" />
           <Toolbar shareBtnState={shareBtnState} handleShareScreen={this.handleShareScreen} />
+          { windowPicker }
         </section>
         <section className="teacher-container">
           {teacher}
@@ -652,8 +657,6 @@ class Classroom extends React.Component {
           messages={this.state.messageList.toArray()} 
           users={this.state.studentList.toArray()} 
         />
-
-        { windowPicker }
 
       </div>
     );
