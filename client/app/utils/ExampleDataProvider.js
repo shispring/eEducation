@@ -115,6 +115,8 @@ export default class ExampleDataProvider extends BaseDataProvider {
       return this.dispatchBroadcastMessage(payload);
     } else if (action === 'updateUserInfo') {
       return this.dispatchUpdateUserInfo(payload);
+    } else if (action === 'updateBoardInfo') {
+      return this.dispatchUpdateBoardInfo(payload);
     } else {
       // your custom events
     }
@@ -177,6 +179,16 @@ export default class ExampleDataProvider extends BaseDataProvider {
       }));
       // do promises
       Promise.all(promisesValidation).then(() => {
+        // promise for getting whiteboard uuid
+        promisesRegister.push(new Promise((resolve, reject) => {
+          this.channelStatusTunnel.get('board').once(data => {
+            if (data && data.uuid) {
+              return resolve(data.uuid);
+            }
+            return resolve(null);
+          });
+        }));
+
         // promise for add user
         promisesRegister.push(new Promise((resolve, reject) => {
           this.userTunnel.get(user.uid).put({
@@ -207,14 +219,17 @@ export default class ExampleDataProvider extends BaseDataProvider {
             });
           }));
         }
-        Promise.all(promisesRegister).then(() => {
+        Promise.all(promisesRegister).then(values => {
+          const boardId = values[0];
           if (user.role === 'teacher') {
             this.heartbeat = setInterval(() => {
               let currentTs = new Date().getTime();
               this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
             }, 60000);
           }
-          resolve();
+          resolve({
+            boardId
+          });
         }).catch(err => {
           reject(err);
         });
@@ -355,6 +370,32 @@ export default class ExampleDataProvider extends BaseDataProvider {
           }, 60000);
         }
         resolve();
+      }).catch(err => {
+        reject(err);
+      });
+    })
+  }
+
+  dispatchUpdateBoardInfo({ uuid }) {
+    return new Promise((resolve, reject) => {
+      if (!uuid) {
+        reject(new Error('User cannot be null'))
+      }
+      const promisesRegister = [];
+      // promise for add user
+      promisesRegister.push(new Promise((resolve, reject) => {
+        this.channelStatusTunnel.get('board').put({
+          uuid
+        }, ack => {
+          if (ack.err) {
+            reject(ack.err);
+          } else {
+            resolve();
+          }
+        });
+      }));
+      Promise.all(promisesRegister).then(() => {
+        return resolve();
       }).catch(err => {
         reject(err);
       });

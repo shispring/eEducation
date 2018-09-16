@@ -77,19 +77,26 @@ export default class Adapter extends EventEmitter {
       this.subDataProviderEvents();
 
       // do connect
-      this.dataProvider.connect(appId, channel).then(async () => {
-        // initialize whiteboard
-        if (user.role === 'teacher') {
-          const response = await Whiteboard.initialize(channel, { limit: 5 });
-          const { roomToken, room } = response;
+      this.dataProvider.connect(appId, channel).then(() => {
+        // dispatch action
+        return this.dataProvider.dispatch('initClass', { appId, channel, user }).then(async ({ boardId }) => {
+
+          // initialize whiteboard
+          let response = null;
+          let roomToken = null;
+          let room = null;
+          if (user.role === 'teacher') {
+            response = await Whiteboard.initialize(channel, { limit: 5 });
+            ({ roomToken, room } = response);
+            this.updateBoardInfo(room.uuid);
+          } else {
+            response = await Whiteboard.initialize(channel, { uuid: boardId });
+            ({ roomToken } = response);
+            room = { uuid: boardId };
+          }
           await Whiteboard.join(room.uuid, roomToken);
           console.log(`whiteboard initialized`);
-        } else {
 
-        }
-
-        // dispatch action
-        return this.dataProvider.dispatch('initClass', { appId, channel, user }).then(() => {
           return resolve({ uid: user.uid });
         }).catch(err => {
           reject(err);
@@ -345,6 +352,10 @@ export default class Adapter extends EventEmitter {
     let tempUser = clone(this.getUser(uid));
     let newUser = merge(tempUser, info);
     this.dataProvider.dispatch('updateUserInfo', {user: newUser});
+  }
+
+  updateBoardInfo(uuid) {
+    this.dataProvider.dispatch('updateBoardInfo', { uuid });
   }
 
   /**

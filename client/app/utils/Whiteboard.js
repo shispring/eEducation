@@ -20,21 +20,39 @@ class White extends EventEmitter {
   }
   initialize(name, opts) {
     return new Promise((resolve, reject) => {
-      Ajax.post('/v1/room', {
-        name,
-        limit: opts.limit || 5
-      }).then(response => {
-        const { data } = response;
-        const { code, msg } = data;
-        if (code === 200) {
-          this.roomInfo = msg.room;
-          this.roomToken = msg.roomToken;
-          return resolve(msg);
-        }
-        throw new Error(msg);
-      }).catch(e => {
-        reject(e);
-      });
+      const { uuid } = opts;
+      if (!uuid) {
+        Ajax.post('/v1/room', {
+          name,
+          limit: opts.limit || 5
+        }).then(response => {
+          const { data } = response;
+          const { code, msg } = data;
+          if (code === 200) {
+            this.roomInfo = msg.room;
+            this.roomToken = msg.roomToken;
+            return resolve(msg);
+          }
+          throw new Error(msg);
+        }).catch(e => {
+          reject(e);
+        });
+      } else {
+        Ajax.post('/v1/room/join', {
+          uuid
+        }).then(response => {
+          const { data } = response;
+          const { code, msg } = data;
+          if (code === 200) {
+            this.room = msg.room;
+            this.roomToken = msg.roomToken;
+            return resolve(msg);
+          }
+          throw new Error(msg);
+        }).catch(e => {
+          reject(e);
+        });
+      }
     });
   }
 
@@ -53,21 +71,6 @@ class White extends EventEmitter {
         reject(e);
       });
     });
-    // Ajax.post('/v1/room', {
-    //   uuid
-    // }).then(response => {
-    //   const { data } = response;
-    //   debugger;
-    //   const { code, msg } = data;
-    //   if (code === 200) {
-    //     this.room = msg.room;
-    //     this.roomToken = msg.roomToken;
-    //     return resolve(msg);
-    //   }
-    //   throw new Error(msg);
-    // }).catch(e => {
-    //   reject(e);
-    // });
   }
 }
 
