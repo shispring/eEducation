@@ -84,13 +84,13 @@ class WindowPicker extends React.Component {
       <div className='window-picker' style={this.props.style || {}}>
         <div className='header'>
           <div className="title">请选择需要共享的内容</div>
-          <div className="cancelBtn"></div>
+          <div className="cancelBtn" onClick={this.props.onCancel}></div>
         </div>
         <div className='screen-container'>
           {content}
         </div>
         <div className='footer'>
-          <div className="confirmBtn">
+          <div className="confirmBtn" onClick={() => this.props.onSubmit(this.state.currentWindowId)}>
             开始共享
           </div>
         </div>
