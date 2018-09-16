@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Icon, Input, Modal, notification, Spin, Tooltip, message } from 'antd';
+import { Button, Pagination, notification, Spin, Tooltip, message } from 'antd';
 import { List } from 'immutable';
 import { isEqual } from 'lodash';
 import axios from 'axios'
@@ -45,14 +45,16 @@ class Classroom extends React.Component {
       enableAudio: true,
       waitSharing: false,
       showWindowPicker: false,
-      windowList: []
+      windowList: [],
+      totalPage: 1,
+      currentPage: 1
     };
     this.enableChat = true;
   }
 
   componentDidMount() {
     this.$client.enterClass()
-    if(this.$client.user.role === 'teacher') {
+    if (this.$client.user.role === 'teacher') {
       this.$client.prepareScreenShare()
     }
     this.subscribeClientEvents()
@@ -297,6 +299,30 @@ class Classroom extends React.Component {
     });
   }
 
+  onChangePage = (value) => {
+    const { room } = Whiteboard;
+    this.setState({
+      currentPage: value
+    });
+    room.setGlobalState({
+      currentSceneIndex: value - 1,
+    });
+  }
+
+  handleAddingPage = () => {
+    const { room } = Whiteboard;
+    const newPageIndex = this.state.totalPage + 1;
+    const newTotalPage = this.state.totalPage + 1;
+    this.setState({
+      currentPage: newPageIndex,
+      totalPage: newTotalPage
+    });
+    room.insertNewPage(newPageIndex - 1);
+    room.setGlobalState({
+      currentSceneIndex: newPageIndex - 1,
+    });
+  }
+
   handleShareScreen = () => {
     if (!this.state.isSharing) {
       let list = this.$rtc.getScreenWindowsInfo();
@@ -410,7 +436,7 @@ class Classroom extends React.Component {
     this.setState({
       enableVideo: !this.state.enableVideo
     }, () => {
-      if(this.state.enableVideo) {
+      if (this.state.enableVideo) {
         this.$client.unmuteVideo()
       } else {
         this.$client.muteVideo()
@@ -604,6 +630,11 @@ class Classroom extends React.Component {
       />
     }
 
+    // let pagination;
+    // if (this.state.totalPage > 1) {
+    //   pagination = ;
+    // }
+
     let shareBtnState = this.state.isSharing ? 'sharing' : 'default';
     if (this.state.waitSharing) {
       shareBtnState = 'preparing';
@@ -642,8 +673,21 @@ class Classroom extends React.Component {
             <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
           </div>
           <div className="board" id="shareboard" />
-          <Toolbar shareBtnState={shareBtnState} handleShareScreen={this.handleShareScreen} />
+          <Toolbar
+            shareBtnState={shareBtnState}
+            handleShareScreen={this.handleShareScreen}
+            handleAddingPage={this.handleAddingPage}
+          />
           { windowPicker }
+          <div className="pagination">
+            <Pagination 
+              defaultCurrent={1}
+              current={this.state.currentPage}
+              total={this.state.totalPage}
+              pageSize={1}
+              onChange={this.onChangePage}
+            />
+          </div>
         </section>
         <section className="teacher-container">
           {teacher}

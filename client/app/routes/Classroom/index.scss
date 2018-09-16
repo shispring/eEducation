@@ -84,6 +84,12 @@
     position: relative;
     border-radius: 0.25rem;
     overflow: hidden;
+    .pagination {
+      position: absolute;
+      right: 30px;
+      bottom: 20px;
+      z-index: 10;
+    }
     .board-bar {
       width: 100%;
       position: absolute;
