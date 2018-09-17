@@ -672,6 +672,9 @@ class Classroom extends React.Component {
         <section className="students-container">{students}</section>
         <section className="board-container">
           <div className="board" id="whiteboard" style={{ display: this.state.isSharing ? 'none' : 'block' }}>
+            { this.$client.user.role === 'audience' ? <div className="board-mask"></div>
+              : ''
+            }
             <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
           </div>
           <div className="board" id="shareboard" />
