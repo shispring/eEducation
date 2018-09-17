@@ -86,9 +86,21 @@
     overflow: hidden;
     .pagination {
       position: absolute;
-      right: 30px;
+      left: 50%;
       bottom: 20px;
       z-index: 10;
+      margin: 0 auto;
+    }
+    .float-button-group {
+      display: flex;
+      z-index: 10;
+      flex-flow: column;
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 40px;
+      justify-content: center;
+      align-items: center;
     }
     .board-bar {
       width: 100%;

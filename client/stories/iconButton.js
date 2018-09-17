@@ -2,6 +2,7 @@ import React from 'react';
 import { storiesOf, addDecorator } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import IconButton from '../app/components/IconButton';
+import SimpleIconButton from '../app/components/SimpleIconButton';
 
 const styles = {
   position: 'fixed',
@@ -29,5 +30,13 @@ storiesOf('Icon Buttons', module)
     />
   ))
   .add('active pencil', () => (
-    <IconButton type="pencil" active={1}/>
+    <IconButton type="pencil" active={true}/>
+  ))
+  .add('hand-up', () => (
+    <SimpleIconButton 
+      type="hand-up"
+    />
+  ))
+  .add('active hand-up', () => (
+    <SimpleIconButton type="hand-up" active={true}/>
   ));

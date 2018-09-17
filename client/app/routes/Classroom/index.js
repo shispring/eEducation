@@ -14,6 +14,7 @@ import {
 import ClassControl from '../../components/ClassControl'
 import TitleBar from '../../components/TitleBar';
 import WindowPicker from '../../components/WindowPicker';
+import SimpleIconButton from '../../components/SimpleIconButton';
 import Toolbar from '../../components/Toolbar';
 import { localStorage } from '../../utils/storage'
 import base64Encode from '../../utils/Base64Encode'
@@ -579,25 +580,26 @@ class Classroom extends React.Component {
 
     // Toolbar
     let ButtonGroup= [];
+
     if (this.$client.user.role === 'audience') {
       ButtonGroup = [
         (
-          <Button key={0} onClick={this.handleRequestPromotion} style={{margin: '0 8px'}} type='primary' shape="circle" icon="arrow-up" />
+          <SimpleIconButton style={{marginBottom: '6px'}} key={0} onClick={this.handleRequestPromotion} type="promote" />
         )
       ]
     } else {
       ButtonGroup = [
         (
-          <Button key={0} onClick={this.handleToggleVideo} style={{margin: '0 8px'}} type={this.state.enableVideo?'primary':'default'} shape="circle" icon="video-camera" />
+          <SimpleIconButton style={{marginBottom: '6px'}} key={0} active={this.state.enableVideo} onClick={this.handleToggleVideo} type="video" />
         ),
         (
-          <Button key={1} onClick={this.handleToggleAudio} style={{margin: '0 8px'}} type={this.state.enableAudio?'primary':'default'} shape="circle" icon="sound" />
+          <SimpleIconButton style={{marginBottom: '6px'}} key={1} active={this.state.enableAudio} onClick={this.handleToggleAudio} type="audio" />
         )
       ]
     }
+
     if (this.$client.user.role === 'student') {
-      ButtonGroup.push((<Button key={2} onClick={this.handleRing} style={{margin: '0 8px'}} type="primary" shape="circle" icon="bell" />));
-      ButtonGroup.push((<Button key={3} onClick={() => this.handleDemotion(this.$client.user.uid)} style={{margin: '0 8px'}} type="primary" shape="circle" icon="arrow-down" />))
+      ButtonGroup.push((<SimpleIconButton style={{marginBottom: '6px'}} key={2} onClick={this.handleRing} type="hand-up" />));
     }
 
     const { room } = Whiteboard;
@@ -673,11 +675,14 @@ class Classroom extends React.Component {
             <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
           </div>
           <div className="board" id="shareboard" />
-          <Toolbar
-            shareBtnState={shareBtnState}
-            handleShareScreen={this.handleShareScreen}
-            handleAddingPage={this.handleAddingPage}
-          />
+          {
+            this.$client.user.role === 'audience' ? '' 
+            : <Toolbar
+                shareBtnState={shareBtnState}
+                handleShareScreen={this.handleShareScreen}
+                handleAddingPage={this.handleAddingPage}
+              />
+          }
           { windowPicker }
           <div className="pagination">
             <Pagination 
@@ -687,6 +692,9 @@ class Classroom extends React.Component {
               pageSize={1}
               onChange={this.onChangePage}
             />
+          </div>
+          <div className="float-button-group">
+            { ButtonGroup }
           </div>
         </section>
         <section className="teacher-container">

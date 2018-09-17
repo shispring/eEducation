@@ -112,8 +112,8 @@ class ToolBar extends React.Component {
       <div className="sidebar">
         <div className={maskClass} onClick={this.onHideTool} />
         <div className="bar-container">
-          {tools.map(tool => (
-            <ToolBarBtn type="tool" name={tool} selected={this.state.selected === tool} onToolSelected={this.onToolSelected} />
+          {tools.map((tool, index) => (
+            <ToolBarBtn key={index} type="tool" name={tool} selected={this.state.selected === tool} onToolSelected={this.onToolSelected} />
             ))}
           <Popover
             placement="right"
