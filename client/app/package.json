@@ -1,7 +1,7 @@
 {
   "name": "agora-education-demo",
   "productName": "agora-education-demo",
-  "version": "2.0.0-beta.2",
+  "version": "3.0.0-alpha.1",
   "description": "agora-education-demo",
   "main": "./main.prod.js",
   "author": "Hao Yang <haoyang@agora.io> (https://github.com/menthays)",
@@ -11,7 +11,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "agora-electron-sdk": "^2.0.7-rc.6"
+    "agora-electron-sdk": "^2.0.7-rc.7"
   },
   "devDependencies": {}
 }
