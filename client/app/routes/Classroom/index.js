@@ -22,10 +22,10 @@ import Whiteboard from '../../utils/Whiteboard';
 import './index.scss';
 
 const RECORDING_SERVICE = 'http://123.155.153.85:3233';
+
 notification.config({
   placement: 'bottomLeft'
-})
-
+});
 
 class Classroom extends React.Component {
   constructor(props) {
@@ -58,7 +58,8 @@ class Classroom extends React.Component {
     if (this.$client.user.role === 'teacher') {
       this.$client.prepareScreenShare()
     }
-    this.subscribeClientEvents()
+    this.subscribeClientEvents();
+    this.subcribeWhiteboardEvents();
   }
 
   componentWillUnmount() {
@@ -201,6 +202,36 @@ class Classroom extends React.Component {
     });
   }
 
+  subcribeWhiteboardEvents = () => {
+    Whiteboard.on('roomStateChanged', modifyState => {
+      if (modifyState.globalState) {
+        // globalState changed
+        let newGlobalState = modifyState.globalState;
+        let currentSceneIndex = newGlobalState.currentSceneIndex;
+        if ((currentSceneIndex + 1) > this.state.totalPage) {
+          this.setState({
+            totalPage: currentSceneIndex + 1,
+            currentPage: currentSceneIndex + 1
+          });
+        } else {
+          this.setState({
+            currentPage: currentSceneIndex + 1
+          });
+        }
+      }
+      if (modifyState.memberState) {
+        // memberState changed
+        // let newMemberState = modifyState.memberState;
+        return;
+      }
+      if (modifyState.broadcastState) {
+        // broadcastState changed
+        // let broadcastState = modifyState.broadcastState;
+        return;
+      }
+    })
+  }
+
   handleRemoteControl = (type, action, uid, from) => {
     let isLocal = (uid === this.$client.user.uid);
     if (type === 'chat') {
@@ -259,7 +290,8 @@ class Classroom extends React.Component {
   }
 
   handleExit = () => {
-    this.$client.leaveClass()
+    this.$client.leaveClass();
+    Whiteboard.leave()
     message.info('Left the classroom...');
     window.location.hash = ''
   }
