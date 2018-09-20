@@ -1,0 +1,116 @@
+{"message":"start in undefined master mode","level":"info"}
+[2018-07-30T14:00:09.871Z] [whiteboard] info: start in undefined master mode
+[2018-07-30T14:07:03.470Z] [whiteboard] info: start in undefined master mode
+[2018-07-30T14:07:06.205Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"uid":"1234","name":"test"}
+[2018-07-30T14:09:37.828Z] [whiteboard] info: start in undefined master mode
+[2018-07-30T14:09:46.921Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"我的第一个 White 房间","limit":100,"width":1024,"height":768}
+[2018-07-30T14:10:01.007Z] [whiteboard] info: start in undefined master mode
+[2018-07-30T14:10:02.328Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"我的第一个 White 房间","limit":100,"width":1024,"height":768}
+[2018-07-30T14:10:43.752Z] [whiteboard] info: start in undefined master mode
+[2018-07-30T14:10:44.150Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"我的第一个 White 房间","limit":100,"width":1024,"height":768}
+[2018-07-31T03:35:51.667Z] [whiteboard] info: start in undefined master mode
+[2018-07-31T03:36:15.879Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"我的第一个 White 房间","limit":100,"width":1024,"height":768}
+[2018-07-31T03:38:01.808Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"我的第一个 White 房间","limit":100,"width":1024,"height":768}
+[2018-07-31T03:38:27.281Z] [whiteboard] info: incoming restful request: POST, /v1/room/join, {"uuid":"WHITEcGFydG5lcl9pZD1zTHlGOTlHNFlTbkx1Y3Fna2E0a3Z5cnlmQTJxZjdoaFNXNDYmc2lnPWFmNWExOTczOTg4ZmNkYjFlYzk3MmY4ODdjY2MyY2NmYWM5Zjc4NDk6YWRtaW5JZD0xNSZyb29tSWQ9YzY4YzM4ZGM2NjYzNGFjYjkwODE4YmMwMjY4MWVlNmMmdGVhbUlkPTIzJmV4cGlyZV90aW1lPTE1NjQ1NjUyMzQmYWs9c0x5Rjk5RzRZU25MdWNxZ2thNGt2eXJ5ZkEycWY3aGhTVzQ2JmNyZWF0ZV90aW1lPTE1MzMwMDgyODImbm9uY2U9MTUzMzAwODI4MjA2MjAwJnJvbGU9cHVibGlzaGVy"}
+[2018-07-31T03:43:06.820Z] [whiteboard] info: incoming restful request: POST, /v1/room/join, {"uuid":"c68c38dc66634acb90818bc02681ee6c"}
+[2018-07-31T03:43:22.777Z] [whiteboard] info: incoming restful request: POST, /v1/room/close, {"uuid":"c68c38dc66634acb90818bc02681ee6c"}
+[2018-07-31T03:44:05.227Z] [whiteboard] info: start in undefined master mode
+[2018-07-31T03:44:08.081Z] [whiteboard] info: incoming restful request: POST, /v1/room/close, {"uuid":"c68c38dc66634acb90818bc02681ee6c"}
+[2018-07-31T03:44:23.650Z] [whiteboard] info: start in undefined master mode
+[2018-08-01T02:49:06.413Z] [whiteboard] info: start in undefined master mode
+[2018-08-01T03:24:34.138Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:24:34.182Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:24:39.291Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:24:39.334Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:25:06.784Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:25:06.815Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:26:44.608Z] [whiteboard] info: start in undefined master mode
+[2018-08-01T03:27:04.918Z] [whiteboard] info: start in undefined master mode
+[2018-08-01T03:45:00.664Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:00.730Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:45:06.166Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:06.200Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:45:20.846Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:20.866Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:45:25.511Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:25.538Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:45:33.195Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:33.220Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:45:40.239Z] [whiteboard] info: start in undefined master mode
+[2018-08-01T03:45:44.211Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:44.261Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:45:57.757Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:45:57.765Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:46:08.836Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:46:08.844Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:46:17.852Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:46:17.863Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:47:40.773Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:47:40.783Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:48:18.020Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:48:18.028Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:48:48.979Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:48:49.008Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:48:54.535Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:48:54.553Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:56:38.504Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:56:38.542Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:57:41.426Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:57:41.432Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:58:20.510Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:58:20.521Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:58:24.240Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:58:24.280Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-08-01T03:58:41.312Z] [whiteboard] info: incoming restful request: OPTIONS, /v1/room, {}
+[2018-08-01T03:58:41.349Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-10T06:09:22.250Z] [whiteboard] info: start in undefined master mode
+[2018-09-10T06:10:06.668Z] [whiteboard] info: start in undefined master mode
+[2018-09-11T05:24:59.332Z] [whiteboard] info: start in undefined master mode
+[2018-09-11T05:25:51.143Z] [whiteboard] info: incoming restful request: POST, /v1/room, {}
+[2018-09-11T05:26:09.910Z] [whiteboard] info: incoming restful request: POST, /v1/room, {}
+[2018-09-11T05:26:43.419Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:27:42.191Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:31:18.301Z] [whiteboard] info: start in undefined master mode
+[2018-09-11T05:31:33.088Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:31:55.741Z] [whiteboard] info: start in undefined master mode
+[2018-09-11T05:31:59.767Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:32:18.196Z] [whiteboard] info: start in undefined master mode
+[2018-09-11T05:32:20.461Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:33:03.664Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:35:25.227Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-11T05:36:37.527Z] [whiteboard] info: start in undefined master mode
+[2018-09-11T05:36:41.808Z] [whiteboard] info: incoming restful request: POST, /v1/room, {"name":"test"}
+[2018-09-18T11:35:45.101Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T11:37:19.770Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T11:39:21.234Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T11:39:24.506Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T11:46:52.950Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T11:46:59.697Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T11:47:27.101Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T11:49:29.394Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T11:50:07.855Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:02:20.752Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:02:34.107Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:02:49.979Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:02:53.960Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:03:02.830Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:03:21.263Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:03:22.985Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:05:12.332Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:05:14.835Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:08:53.870Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:08:55.604Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:09:07.858Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:09:10.938Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:10:41.445Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:10:51.618Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T12:47:00.027Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T12:47:04.343Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T14:04:16.829Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T14:04:36.363Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T14:04:37.831Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-18T14:07:53.484Z] [whiteboard] info: start in undefined master mode
+[2018-09-18T14:07:56.316Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-20T08:30:26.772Z] [whiteboard] info: start in undefined master mode
+[2018-09-20T08:30:52.292Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
+[2018-09-20T08:31:02.041Z] [whiteboard] info: incoming restful request: POST, /v1/doc/convert, {}
