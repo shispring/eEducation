@@ -711,22 +711,26 @@ class Classroom extends React.Component {
           <div className="board" id="shareboard" />
           {
             this.$client.user.role === 'audience' ? '' 
-            : <Toolbar
+            : <React.Fragment>
+              <Toolbar
+                enableShareScreen={this.$client.user.role === 'teacher'}
                 shareBtnState={shareBtnState}
                 handleShareScreen={this.handleShareScreen}
                 handleAddingPage={this.handleAddingPage}
               />
+              { windowPicker }
+              <div className="pagination">
+                <Pagination 
+                  defaultCurrent={1}
+                  current={this.state.currentPage}
+                  total={this.state.totalPage}
+                  pageSize={1}
+                  onChange={this.onChangePage}
+                />
+              </div>
+            </React.Fragment>
           }
-          { windowPicker }
-          <div className="pagination">
-            <Pagination 
-              defaultCurrent={1}
-              current={this.state.currentPage}
-              total={this.state.totalPage}
-              pageSize={1}
-              onChange={this.onChangePage}
-            />
-          </div>
+
           <div className="float-button-group">
             { ButtonGroup }
           </div>

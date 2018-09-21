@@ -125,7 +125,10 @@ class ToolBar extends React.Component {
           </Popover>
           <ToolBarBtn type="color" onToolSelected={this.onToolSelected} />
           <ToolBarBtn type="add" onToolSelected={this.onToolSelected} />
-          <ToolBarBtn type="share" selected={this.props.shareBtnState !== 'default'} onToolSelected={this.onToolSelected} state={this.props.shareBtnState} />
+          { 
+            this.props.enableShareScreen ? (<ToolBarBtn type="share" selected={this.props.shareBtnState !== 'default'} onToolSelected={this.onToolSelected} state={this.props.shareBtnState} />)
+              : null
+          }
         </div>
         <div className={colorClass}>
           <SketchPicker onChangeComplete={this.onColorChanged} />
