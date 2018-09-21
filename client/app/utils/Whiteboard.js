@@ -73,16 +73,6 @@ class White extends EventEmitter {
       });
     });
   }
-
-  leave() {
-    return new Promise((resolve, reject) => {
-      this.room.leaveRoom().then(res => {
-        resolve(res);
-      }).catch(err => {
-        reject(err);
-      })
-    })
-  }
 }
 
 const Whiteboard = new White();

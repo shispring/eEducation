@@ -291,7 +291,6 @@ class Classroom extends React.Component {
 
   handleExit = () => {
     this.$client.leaveClass();
-    Whiteboard.leave()
     message.info('Left the classroom...');
     window.location.hash = ''
   }
