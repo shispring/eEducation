@@ -389,12 +389,16 @@ export default class ExampleDataProvider extends BaseDataProvider {
           });
         }));
       }
+
       Promise.all(promisesRegister).then(() => {
         if (user.role === 'teacher') {
+          if (this.heartbeat) {
+            clearInterval(this.heartbeat)
+          }
           this.heartbeat = setInterval(() => {
             let currentTs = new Date().getTime();
             this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
-          }, 60000);
+          }, 20000);
         }
         resolve();
       }).catch(err => {
