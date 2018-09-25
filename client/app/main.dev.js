@@ -64,10 +64,10 @@ app.on('ready', async () => {
     frame: false
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.webContents.openDevTools();
-    // await installExtensions();
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   // await installExtensions();
+  // }
+  mainWindow.webContents.openDevTools();
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
