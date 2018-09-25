@@ -90,7 +90,7 @@ export default class Adapter extends EventEmitter {
             ({ roomToken } = response);
             room = { uuid: boardId };
           } else {
-            response = await Whiteboard.initialize(channel, { limit: 5 });
+            response = await Whiteboard.initialize(channel);
             ({ roomToken, room } = response);
             this.updateBoardInfo(room.uuid);
           }
