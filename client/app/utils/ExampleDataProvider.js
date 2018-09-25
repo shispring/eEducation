@@ -147,7 +147,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
                 ts = 0
               }
               // min
-              if ((now - ts) / 1000 > 60000) {
+              if ((now - ts) / 1000 > 60) {
                 resolve();
               } else {
                 reject(new Error('Teacher exists!'));
@@ -170,7 +170,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
               if (isNaN(ts)) {
                 // do nothing 
               } else {
-                if ((now - ts) / 1000 < 60000) {
+                if ((now - ts) / 1000 < 60) {
                   if (user.role === 'teacher') {
                     unique = info.role !== 'teacher';
                   } else {
@@ -253,7 +253,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
               this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
             }
             this.userTunnel.get(user.uid).get('ts').put(currentTs)
-          }, 20000);
+          }, 10000);
           resolve({
             boardId
           });
@@ -398,7 +398,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
           this.heartbeat = setInterval(() => {
             let currentTs = new Date().getTime();
             this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
-          }, 20000);
+          }, 10000);
         }
         resolve();
       }).catch(err => {
