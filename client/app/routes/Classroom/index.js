@@ -177,11 +177,17 @@ class Classroom extends React.Component {
         this.$rtc.setupViewContentMode('videosource', 1);
         this.$rtc.setupViewContentMode(String(evt.shareId), 1);
       };
+      this.setState({
+        isSharing: true
+      });
     })
     this.$client.on('screen-share-stopped', () => {
       let board = document.getElementById('shareboard');
       if(board) {
         board.innerHTML = '';
+        this.setState({
+          isSharing: false
+        });
       };
     })
     this.$client.on('message-received', evt => {
@@ -635,25 +641,6 @@ class Classroom extends React.Component {
 
     const { room } = Whiteboard;
 
-    // let Toolbar = (
-    //   <div className="board-bar">
-    //     {
-    //       this.$client.user.role === 'teacher' ? (
-    //         <Button loading={this.state.waitSharing} 
-    //         onClick={this.handleShareScreen} 
-    //         type={this.state.isSharing ? "primary" : "default"} 
-    //         style={{margin: '0 8px'}} 
-    //         icon="laptop">Share Screen</Button>
-    //       ) : (<div></div>)
-    //     }
-    //     <div className="board-bar--toolbar">
-    //       {
-    //         ButtonGroup
-    //       }
-    //     </div>
-    //   </div>
-    // )
-
     let windowPicker;
     if (this.state.showWindowPicker) {
       windowPicker = <WindowPicker
@@ -662,11 +649,6 @@ class Classroom extends React.Component {
         windowList={this.state.windowList}
       />
     }
-
-    // let pagination;
-    // if (this.state.totalPage > 1) {
-    //   pagination = ;
-    // }
 
     let shareBtnState = this.state.isSharing ? 'sharing' : 'default';
     if (this.state.waitSharing) {
@@ -707,6 +689,15 @@ class Classroom extends React.Component {
               : ''
             }
             <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
+            <div className="pagination">
+              <Pagination 
+                defaultCurrent={1}
+                current={this.state.currentPage}
+                total={this.state.totalPage}
+                pageSize={1}
+                onChange={this.onChangePage}
+              />
+            </div>
           </div>
           <div className="board" id="shareboard" />
           {
@@ -719,15 +710,6 @@ class Classroom extends React.Component {
                 handleAddingPage={this.handleAddingPage}
               />
               { windowPicker }
-              <div className="pagination">
-                <Pagination 
-                  defaultCurrent={1}
-                  current={this.state.currentPage}
-                  total={this.state.totalPage}
-                  pageSize={1}
-                  onChange={this.onChangePage}
-                />
-              </div>
             </React.Fragment>
           }
 
