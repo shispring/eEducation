@@ -147,7 +147,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
                 ts = 0
               }
               // min
-              if ((now - ts) / 1000 > 15) {
+              if ((now - ts) / 1000 > 60000) {
                 resolve();
               } else {
                 reject(new Error('Teacher exists!'));
@@ -164,10 +164,19 @@ export default class ExampleDataProvider extends BaseDataProvider {
         let unique = true
         this.userTunnel.once().map(info => {
           if (info) {
+            let now = new Date().getTime();
             if (user.role === 'teacher') {
-              unique = !(info.username === user.username && info.role === user.role);
+              let ts = Number(info.ts)
+              if (isNaN(ts)) {
+                ts = 0
+              }
+              unique = !(info.username === user.username && info.role === user.role && ((now - ts) / 1000 < 60000));
             } else {
-              unique = !(info.username === user.username && info.role !== 'teacher');
+              let ts = Number(info.ts)
+              if (isNaN(ts)) {
+                ts = 0
+              }
+              unique = !(info.username === user.username && info.role !== 'teacher' && ((now - ts) / 1000 < 60000));
             }
           }
         });
@@ -183,7 +192,15 @@ export default class ExampleDataProvider extends BaseDataProvider {
         promisesRegister.push(new Promise((resolve, reject) => {
           this.channelStatusTunnel.get('board').once(data => {
             if (data && data.uuid) {
-              return resolve(data.uuid);
+              let now = new Date().getTime();
+              let ts = Number(data.ts)
+              if (isNaN(ts)) {
+                ts = 0
+              }
+              // min
+              if ((now - ts) / 3600000 < 24) {
+                return resolve(data.uuid);
+              }
             }
             return resolve(null);
           });
@@ -225,7 +242,8 @@ export default class ExampleDataProvider extends BaseDataProvider {
             this.heartbeat = setInterval(() => {
               let currentTs = new Date().getTime();
               this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
-            }, 60000);
+              this.userTunnel.get(user.username).get('ts').put(currentTs)
+            }, 20000);
           }
           resolve({
             boardId
@@ -385,7 +403,8 @@ export default class ExampleDataProvider extends BaseDataProvider {
       // promise for add user
       promisesRegister.push(new Promise((resolve, reject) => {
         this.channelStatusTunnel.get('board').put({
-          uuid
+          uuid: uuid,
+          ts: new Date().getTime()
         }, ack => {
           if (ack.err) {
             reject(ack.err);

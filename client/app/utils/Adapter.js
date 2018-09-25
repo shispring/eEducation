@@ -85,15 +85,24 @@ export default class Adapter extends EventEmitter {
           let response = null;
           let roomToken = null;
           let room = null;
-          if (user.role === 'teacher') {
-            response = await Whiteboard.initialize(channel, { limit: 5 });
-            ({ roomToken, room } = response);
-            this.updateBoardInfo(room.uuid);
-          } else {
+          if (boardId) {
             response = await Whiteboard.initialize(channel, { uuid: boardId });
             ({ roomToken } = response);
             room = { uuid: boardId };
+          } else {
+            response = await Whiteboard.initialize(channel, { limit: 5 });
+            ({ roomToken, room } = response);
+            this.updateBoardInfo(room.uuid);
           }
+          // if (user.role === 'teacher') {
+          //   response = await Whiteboard.initialize(channel, { limit: 5 });
+          //   ({ roomToken, room } = response);
+          //   this.updateBoardInfo(room.uuid);
+          // } else {
+          //   response = await Whiteboard.initialize(channel, { uuid: boardId });
+          //   ({ roomToken } = response);
+          //   room = { uuid: boardId };
+          // }
           await Whiteboard.join(room.uuid, roomToken);
           console.log(`whiteboard initialized`);
 
