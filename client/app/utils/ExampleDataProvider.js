@@ -164,20 +164,24 @@ export default class ExampleDataProvider extends BaseDataProvider {
         let unique = true
         this.userTunnel.once().map(info => {
           if (info) {
-            let now = new Date().getTime();
-            if (user.role === 'teacher') {
+            if (info.username === user.username) {
+              let now = new Date().getTime();
               let ts = Number(info.ts)
               if (isNaN(ts)) {
-                ts = 0
+                // do nothing 
+              } else {
+                if ((now - ts) / 1000 < 60000) {
+                  if (user.role === 'teacher') {
+                    unique = info.role !== 'teacher';
+                  } else {
+                    unique = info.role === 'teacher';
+                  }
+                } else {
+                  unique = true
+                }
               }
-              unique = !(info.username === user.username && info.role === user.role && ((now - ts) / 1000 < 60000));
-            } else {
-              let ts = Number(info.ts)
-              if (isNaN(ts)) {
-                ts = 0
-              }
-              unique = !(info.username === user.username && info.role !== 'teacher' && ((now - ts) / 1000 < 60000));
             }
+
           }
         });
         if (unique) {
@@ -208,9 +212,11 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
         // promise for add user
         promisesRegister.push(new Promise((resolve, reject) => {
+          let ts = new Date().getTime();
           this.userTunnel.get(user.uid).put({
             username: user.username,
-            role: user.role
+            role: user.role,
+            ts
           }, ack => {
             if(ack.err) {
               reject(ack.err);
@@ -219,6 +225,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
             }
           })
         }));
+
         // promise for add teacher
         if (user.role === 'teacher') {
           promisesRegister.push(new Promise((resolve, reject) => {
@@ -236,6 +243,8 @@ export default class ExampleDataProvider extends BaseDataProvider {
             });
           }));
         }
+
+ 
         Promise.all(promisesRegister).then(values => {
           const boardId = values[0];
           this.heartbeat = setInterval(() => {
@@ -243,7 +252,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
             if (user.role === 'teacher') {
               this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
             }
-            this.userTunnel.get(user.username).get('ts').put(currentTs)
+            this.userTunnel.get(user.uid).get('ts').put(currentTs)
           }, 20000);
           resolve({
             boardId
