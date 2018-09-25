@@ -84,6 +84,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
     this.userTunnel.off();
     this.messageTunnel.off();
     this.channelStatusTunnel.off();
+    this.heartbeat && clearInterval(this.heartbeat);
     this.removeAllListeners();
   }
 
@@ -164,24 +165,19 @@ export default class ExampleDataProvider extends BaseDataProvider {
         let unique = true
         this.userTunnel.once().map(info => {
           if (info) {
-            if (info.username === user.username) {
-              let now = new Date().getTime();
-              let ts = Number(info.ts)
-              if (isNaN(ts)) {
-                // do nothing 
-              } else {
-                if ((now - ts) / 1000 < 60) {
-                  if (user.role === 'teacher') {
-                    unique = info.role !== 'teacher';
-                  } else {
-                    unique = info.role === 'teacher';
-                  }
+            let now = new Date().getTime();
+            let ts = Number(info.ts);
+            if (isNaN(ts) || (now - ts) / 1000 > 60) {
+              // do nothing
+            } else {
+              if (info.username === user.username) {
+                if (user.role === 'teacher') {
+                  unique = info.role !== 'teacher';
                 } else {
-                  unique = true
+                  unique = info.role === 'teacher';
                 }
               }
             }
-
           }
         });
         if (unique) {
@@ -273,9 +269,9 @@ export default class ExampleDataProvider extends BaseDataProvider {
    */
   dispatchLeaveClass({user}) {
     if(user) {
+      this.heartbeat && clearInterval(this.heartbeat);
       if(user.role === 'teacher') {
         this.channelStatusTunnel.get('teacher').put(null);
-        clearInterval(this.heartbeat);
       }
       this.userTunnel.get(user.uid).put(null);
     }

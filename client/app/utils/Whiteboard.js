@@ -19,13 +19,15 @@ class White extends EventEmitter {
     this.uuid = '';
   }
 
-  initialize(name, opts) {
+  initialize(name, opts = {
+    limit: 5
+  }) {
     return new Promise((resolve, reject) => {
-      const { uuid } = opts || {};
+      const { uuid } = opts ;
       if (!uuid) {
         Ajax.post('/v1/room', {
           name,
-          limit: opts.limit || 5
+          limit: opts.limit
         }).then(response => {
           const { data } = response;
           const { code, msg } = data;
