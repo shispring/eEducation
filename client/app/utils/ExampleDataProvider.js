@@ -238,13 +238,13 @@ export default class ExampleDataProvider extends BaseDataProvider {
         }
         Promise.all(promisesRegister).then(values => {
           const boardId = values[0];
-          if (user.role === 'teacher') {
-            this.heartbeat = setInterval(() => {
-              let currentTs = new Date().getTime();
+          this.heartbeat = setInterval(() => {
+            let currentTs = new Date().getTime();
+            if (user.role === 'teacher') {
               this.channelStatusTunnel.get('teacher').get('ts').put(currentTs);
-              this.userTunnel.get(user.username).get('ts').put(currentTs)
-            }, 20000);
-          }
+            }
+            this.userTunnel.get(user.username).get('ts').put(currentTs)
+          }, 20000);
           resolve({
             boardId
           });
