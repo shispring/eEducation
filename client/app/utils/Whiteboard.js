@@ -21,7 +21,7 @@ class White extends EventEmitter {
 
   initialize(name, opts) {
     return new Promise((resolve, reject) => {
-      const { uuid } = opts;
+      const { uuid } = opts || {};
       if (!uuid) {
         Ajax.post('/v1/room', {
           name,

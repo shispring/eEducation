@@ -108,6 +108,7 @@ export default class Adapter extends EventEmitter {
 
           return resolve({ uid: user.uid });
         }).catch(err => {
+          this.leaveClass()
           reject(err);
         });
       }).catch(err => {
