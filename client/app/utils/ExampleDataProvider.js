@@ -162,29 +162,45 @@ export default class ExampleDataProvider extends BaseDataProvider {
 
       // if username unique
       promisesValidation.push(new Promise((resolve, reject) => {
-        let unique = true
+        let throttle = setTimeout(() => {
+          resolve()
+        }, 800)
         this.userTunnel.once().map(info => {
+          clearTimeout(throttle)
+          throttle = setTimeout(() => {
+            resolve()
+          }, 800)
           if (info) {
+            // console.warn('C O M P A R I N G')
+            const isNotTeacher = (role) => {
+              return role === 'audience' || role === 'student'
+            }
             let now = new Date().getTime();
             let ts = Number(info.ts);
             if (isNaN(ts) || (now - ts) / 1000 > 60) {
               // do nothing
             } else {
-              if (info.username === user.username) {
-                if (user.role === 'teacher') {
-                  unique = info.role !== 'teacher';
-                } else {
-                  unique = info.role === 'teacher';
+              if (user.role === 'teacher' && info.role === 'teacher') {
+                if (info.username === user.username) {
+                  reject(new Error('Username exists!'))
                 }
+              } else if (isNotTeacher(user.role) && isNotTeacher(info.role)) {
+                if (info.username === user.username) {
+                  reject(new Error('Username exists!'))
+                }
+              } else {
+                // do nothing
               }
             }
           }
         });
-        if (unique) {
-          resolve();
-        } else {
-          reject(new Error('Username exists!'));
-        }
+        // if (unique) {
+        //   console.warn('resolve')
+        //   resolve();
+        // } else {
+        //   console.warn('reject')
+        //   reject(new Error('Username exists!'));
+        // }
       }));
       // do promises
       Promise.all(promisesValidation).then(() => {
@@ -270,9 +286,9 @@ export default class ExampleDataProvider extends BaseDataProvider {
   dispatchLeaveClass({user}) {
     if(user) {
       this.heartbeat && clearInterval(this.heartbeat);
-      if(user.role === 'teacher') {
-        this.channelStatusTunnel.get('teacher').put(null);
-      }
+      // if(user.role === 'teacher') {
+      //   this.channelStatusTunnel.get('teacher').put(null);
+      // }
       this.userTunnel.get(user.uid).put(null);
     }
   }
