@@ -198,7 +198,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
                 ts = 0
               }
               // min
-              if ((now - ts) / 3600000 < 24) {
+              if ((now - ts) / 3600000 < 1) {
                 return resolve(data.uuid);
               }
             }
