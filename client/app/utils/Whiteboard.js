@@ -20,7 +20,7 @@ class White extends EventEmitter {
   }
 
   initialize(name, opts = {
-    limit: 5
+    limit: 100
   }) {
     return new Promise((resolve, reject) => {
       const { uuid } = opts ;
