@@ -46,7 +46,7 @@ function ClusterApi(app) {
         }
     });
 
-    app.post("/v1/room", (req, res) => {
+    app.post("/v1/room", (req, res, next) => {
         const { body } = req;
         let name = body.name || "";
         let limit = body.limit || 5;
@@ -85,7 +85,7 @@ function ClusterApi(app) {
         });
     });
 
-    app.post("/v1/room/close", (req, res) => {
+    app.post("/v1/room/close", (req, res, next) => {
         const { body } = req;
         let uuid = body.uuid || "";
 
