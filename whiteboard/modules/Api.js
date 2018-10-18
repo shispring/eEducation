@@ -69,7 +69,7 @@ function ClusterApi(app) {
         });
     });
 
-    app.post("/v1/room/join", (req, res) => {
+    app.post("/v1/room/join", (req, res, next) => {
         const { body } = req;
         let uuid = body.uuid || "";
         request({
@@ -107,7 +107,7 @@ function ClusterApi(app) {
     });
 
     app.use((err, req, res, next) => {
-        console.error(err.stack)
+        logger.error(err.stack)
         res.status(500).send({
             err: err
         })
