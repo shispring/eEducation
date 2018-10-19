@@ -1,21 +1,27 @@
 osx_image: xcode8.3
-
 dist: trusty
 sudo: false
-
 language: node_js
-node_js: "8"
-
+node_js: '8'
 env:
   global:
-    - ELECTRON_CACHE=$HOME/.cache/electron
-    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
-    - USE_HARD_LINKS=true
-
+  - ELECTRON_CACHE=$HOME/.cache/electron
+  - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+  - USE_HARD_LINKS=true
 os:
-  - osx
-
+- osx
 script:
-  - cd client 
-  - npm run write-config
-  - npm install && npm run package-mac:publish
+- cd client
+- npm run write-config
+- npm install && npm run package-mac
+deploy:
+  provider: releases
+  name: Agora-eEducation-$TRAVIS_TAG
+  skip_cleanup: true
+  file_glob: true
+  file: release/**/*.zip
+  on:
+    repo: AgoraIO/ARD-eEducation-with-Electron
+    tags: true
+  api-key:
+    secure: rBaYc8eJNrda6cLVrgE2Rpeu6FEVfAIB8LC1RFKtdGQJr7yl31vLdq2x0NsLLqo3+oUeRApr0EBmxSidCg/074w7S32GAbtK0mTcXhlkDZePs8MwpUcd36UuyNVJK+0H/xKDgX6O1PxuS9RyVOO/j6xGA1iy3Rax50K/QGpJJwy8FBARDt8Yc2K0aFvGLB7vZoDzJm0t85mfNNCQMrjVXrXQXn6EYiHPYt3Zlf5yboK3S7rLF8BG5/G2hQe/ZmgriwaiLS8rz52UL6S5pueTho/bKuefH7HYDWWPcGYTHwz54IPZYwNBzQJQaukGbnUvJk3MuSwpLnF69RWNlg/7TFR+V0qew7nGU8A8A2NMUHXoyR0bEmBJF2X+iOq5u3TPao4e4jlGnRErmwC0AxWDXs4w1rqW2g0dfKOWTD2+VEMxKL+RoD9Yga/v7aeoLdtjmbVJ3XRNRylobAzq7SU8ndflmeT6NYwYBndOqB9JDLewzFMMVr+OaLoMTPZREbRxb8UH9HyI60nKST3o8hW8hVQuFIZIqnVc+YJi4gBB1NESABL7ftNx4/AInxqmBZRYVKDss8Qu2KpEHzMjRrmWLbIBL9Y2hbYX+xiX/wdoOydt1siKgwVdsm8trunFSCyn2ajaU2YmVA7kbC+sXJkSTdibuMNQo3A5kKJ6mDA+NBY=

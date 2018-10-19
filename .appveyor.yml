@@ -13,4 +13,19 @@ install:
 build_script:
   - cd client 
   - npm run write-config
-  - npm install && npm run package-win:publish
+  - npm install && npm run package-win
+
+artifacts:
+  - path: './client/release/*.exe'
+
+deploy:
+  tag: $(APPVEYOR_REPO_TAG_NAME)
+  release: Agora-eEducation-$(APPVEYOR_REPO_TAG_NAME)
+  provider: GitHub
+  auth_token:
+    secure: 4eCPhRh4IXN/K2g7ppzy7obDrKbRvh3pwTtUTSayX9RiI+7dul28cLBR6nYXpksc
+  artifact: /.*\.exe/
+  draft: false
+  prerelease: false
+  on:
+    appveyor_repo_tag: true
