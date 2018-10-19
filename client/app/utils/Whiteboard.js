@@ -1,9 +1,8 @@
 import { WhiteWebSdk } from 'white-web-sdk';
 import axios from 'axios';
 import { EventEmitter } from 'events';
-import { WHITEBOARD_URL } from '../agora.config';
 
-console.log(`whiteboard server url: ${WHITEBOARD_URL}`);
+const WHITEBOARD_URL = 'http://123.155.153.85:3785';
 
 const Ajax = axios.create({
   baseURL: WHITEBOARD_URL
