@@ -67,7 +67,7 @@ app.on('ready', async () => {
   // if (process.env.NODE_ENV === 'development') {
   //   // await installExtensions();
   // }
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
