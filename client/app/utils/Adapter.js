@@ -80,27 +80,7 @@ export default class Adapter extends EventEmitter {
       this.dataProvider.connect(appId, channel).then(() => {
         // dispatch action
         return this.dataProvider.dispatch('initClass', { appId, channel, user }).then(async ({ boardId }) => {
-
-          // initialize whiteboard
-          let response = null;
-          let roomToken = null;
-          let room = null;
-          try {
-            if (boardId) {
-              response = await Whiteboard.initialize(channel, { uuid: boardId });
-              ({ roomToken } = response);
-              room = { uuid: boardId };
-            } else {
-              response = await Whiteboard.initialize(channel);
-              ({ roomToken, room } = response);
-              this.updateBoardInfo(room.uuid);
-            }
-            await Whiteboard.join(room.uuid, roomToken);
-            console.log(`whiteboard initialized`);
-          } catch (err) {
-            console.warning('whiteboard failed to initialize')
-          }
-          return resolve({ uid: user.uid });
+          return resolve({ uid: user.uid, boardId: boardId });
         }).catch(err => {
           this.leaveClass()
           reject(err);
@@ -109,6 +89,32 @@ export default class Adapter extends EventEmitter {
         reject(err);
       });
     })
+  }
+
+  /**
+   * init whiteboard service independently
+   */
+  async initWhiteboard(channel, boardId) {
+    // initialize whiteboard
+    let response = null;
+    let roomToken = null;
+    let room = null;
+    try {
+      if (boardId) {
+        response = await Whiteboard.initialize(channel, { uuid: boardId });
+        ({ roomToken } = response);
+        room = { uuid: boardId };
+      } else {
+        response = await Whiteboard.initialize(channel);
+        ({ roomToken, room } = response);
+        this.updateBoardInfo(room.uuid);
+      }
+      await Whiteboard.join(room.uuid, roomToken);
+      console.log(`whiteboard initialized`);
+    } catch (err) {
+      console.warn('whiteboard failed to initialize')
+      throw(err)
+    }
   }
 
   /**

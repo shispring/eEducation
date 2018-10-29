@@ -108,7 +108,9 @@ class Index extends React.Component {
       isLogining: true
     })
     // you can do auth before init class to generate your custom uid
-    this.$client.initClass(APP_ID, channel, {uid: undefined, username, role}).then(() => {
+    this.$client.initClass(APP_ID, channel, {uid: undefined, username, role}).then(({uid, boardId}) => {
+      // try to init whiteboard
+      this.$client.initWhiteboard(channel, boardId)
       this.$client.initProfile(role === 'audience')
       this.setState({
         isLogining: false

@@ -685,25 +685,36 @@ class Classroom extends React.Component {
         <section className="students-container">{students}</section>
         <section className="board-container">
           <div className="board" id="whiteboard" style={{ display: this.state.isSharing ? 'none' : 'block' }}>
-            { this.$client.user.role === 'audience' ? <div className="board-mask"></div>
-              : ''
+            { 
+              Whiteboard.readyState === false ? (
+              <div className="board-mask">
+                <span>Something wrong with Whiteboard service</span>
+              </div>
+              )
+              : (
+                <React.Fragment>
+                  <div style={{display: this.$client.user.role === 'audience'?'flex':'none'}} className="board-mask"></div>
+                  <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
+                  <div className="pagination">
+                    <Pagination 
+                      defaultCurrent={1}
+                      current={this.state.currentPage}
+                      total={this.state.totalPage}
+                      pageSize={1}
+                      onChange={this.onChangePage}
+                    />
+                  </div>
+                </React.Fragment>
+              )
             }
-            <RoomWhiteboard room={room} style={{ width: '100%', height: '100vh' }} />
-            <div className="pagination">
-              <Pagination 
-                defaultCurrent={1}
-                current={this.state.currentPage}
-                total={this.state.totalPage}
-                pageSize={1}
-                onChange={this.onChangePage}
-              />
-            </div>
+          
           </div>
           <div className="board" id="shareboard" />
           {
             this.$client.user.role === 'audience' ? '' 
             : <React.Fragment>
               <Toolbar
+                whiteboard={Whiteboard.readyState}
                 enableShareScreen={this.$client.user.role === 'teacher'}
                 shareBtnState={shareBtnState}
                 handleShareScreen={this.handleShareScreen}

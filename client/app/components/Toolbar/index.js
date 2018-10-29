@@ -34,7 +34,7 @@ class ToolBarBtn extends React.Component {
     const category = this.getCategory();
     const className = `sidebar-btn ${category} ${this.props.selected ? 'selected' : ''}`;
     return (
-      <div className={className} onClick={this.onClick}>
+      <div style={this.props.style} className={className} onClick={this.onClick}>
         <div className="sidebar-btn-content" />
       </div>
     )
@@ -112,21 +112,26 @@ class ToolBar extends React.Component {
       <div className="sidebar">
         <div className={maskClass} onClick={this.onHideTool} />
         <div className="bar-container">
-          {tools.map((tool, index) => (
-            <ToolBarBtn key={index} type="tool" name={tool} selected={this.state.selected === tool} onToolSelected={this.onToolSelected} />
-            ))}
-          <Popover
-            placement="right"
-            content={<InputNumber min={12} max={64} defaultValue={15} onChange={this.onTextSizeChange} />}
-            title="字体大小"
-            visible={this.state.fontPickerVisible}
-          >
-            <ToolBarBtn type="font" onToolSelected={this.onToolSelected} />
-          </Popover>
-          <ToolBarBtn type="color" onToolSelected={this.onToolSelected} />
-          <ToolBarBtn type="add" onToolSelected={this.onToolSelected} />
+          <div className={this.props.whiteboard?'':'unusable'}>
+            {tools.map((tool, index) => (
+              <ToolBarBtn key={index} type="tool" name={tool} selected={this.state.selected === tool} onToolSelected={this.onToolSelected} />
+              ))}
+            <Popover
+              placement="right"
+              content={<InputNumber min={12} max={64} defaultValue={15} onChange={this.onTextSizeChange} />}
+              title="字体大小"
+              visible={this.state.fontPickerVisible}
+            >
+              <ToolBarBtn type="font" onToolSelected={this.onToolSelected} />
+            </Popover>
+            <ToolBarBtn type="color" onToolSelected={this.onToolSelected} />
+            <ToolBarBtn type="add" onToolSelected={this.onToolSelected} />
+          </div>
+
           { 
-            this.props.enableShareScreen ? (<ToolBarBtn type="share" selected={this.props.shareBtnState !== 'default'} onToolSelected={this.onToolSelected} state={this.props.shareBtnState} />)
+            this.props.enableShareScreen ? (<ToolBarBtn 
+              // just a workaround, need refactor here
+              type="share" selected={this.props.shareBtnState !== 'default'} onToolSelected={this.onToolSelected} state={this.props.shareBtnState} />)
               : null
           }
         </div>

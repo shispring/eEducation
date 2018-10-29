@@ -16,6 +16,7 @@ class White extends EventEmitter {
     this.roomToken = null;
     this.room = null;
     this.uuid = '';
+    this.readyState = false
   }
 
   initialize(name, opts = {
@@ -68,6 +69,7 @@ class White extends EventEmitter {
         }
       }).then(room => {
         this.room = room;
+        this.readyState = true
         return resolve();
       }).catch(e => {
         reject(e);
