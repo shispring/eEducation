@@ -12,16 +12,11 @@ const RadioGroup = Radio.Group;
 class Index extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.adapter;
-    this.state = {
-      role: 'student',
-      isLogining: false
-    };
   }
 
   render() {
     let loading;
-    if (this.state.isLogining) {
+    if (this.props.isLogining) {
       loading = (
         <div className="mask">
           <Spin size="large" />
@@ -40,7 +35,7 @@ class Index extends React.Component {
               <img src={require('../../assets/images/logo.png')} alt="" />
             </header>
             <main>
-              <Form onSubmit={this.handleSubmit}>
+              <Form onSubmit={this.props.handleSubmit}>
                 <FormItem label="Classroom Name" colon={false}>
                   <Input id="channel" />
                 </FormItem>
@@ -48,7 +43,7 @@ class Index extends React.Component {
                   <Input id="username" />
                 </FormItem>
                 <FormItem>
-                  <RadioGroup onChange={this.handleRole} id="role" defaultValue="student">
+                  <RadioGroup onChange={this.props.handleRole} id="role" defaultValue="student">
                     <Radio value="teacher">Teacher</Radio>
                     <Radio value="student">Student</Radio>
                     <Radio value="audience">Audience</Radio>
@@ -81,7 +76,7 @@ class Index extends React.Component {
 
     let channel = document.querySelector('#channel').value,
       username = document.querySelector('#username').value,
-      role = this.state.role;
+      role = this.props.role;
 
     if (!/^[0-9a-zA-Z]+$/.test(username)) {
       return message.error('Username can only consist a-z | A-Z | 0-9!');
