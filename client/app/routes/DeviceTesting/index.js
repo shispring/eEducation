@@ -12,60 +12,28 @@ const Option = Select.Option;
 class DeviceTesting extends React.Component {
   constructor(props) {
     super(props);
-    this.$client = props.adapter
-    this.$rtc = this.$client.rtcEngine
-    this.outputVolume = this.$rtc.getAudioPlaybackVolume();
+    this._client = props._client;
+    this._rtc = this._client.rtcEngine;
     this.state = {
       inputVolume: 0,
-      videoDevices: this.$rtc.getVideoDevices(),
-      audioDevices: this.$rtc.getAudioRecordingDevices(),
-      audioPlaybackDevices: this.$rtc.getAudioPlaybackDevices()
-    };
+      videoDevices: this._rtc.getVideoDevices(),
+      audioDevices: this._rtc.getAudioRecordingDevices(),
+      audioPlaybackDevices: this._rtc.getAudioPlaybackDevices()
+    }
   }
 
   componentDidMount() {
+    this.props.setUpRTC(this._rtc, this._client);
     // console log devices
-    console.info('videoDevices', this.state.videoDevices)
-    console.info('audioDevices', this.state.audioDevices)
-    console.info('audioPlaybackDevices', this.state.audioPlaybackDevices)
-
-    this.$rtc.setupLocalVideo(document.querySelector('.preview-window'));
-    this.$rtc.startPreview();
-    this.$rtc.startAudioRecordingDeviceTest(100);
-    this.$rtc.on('audiovolumeindication', (...args) => this.inputVolumeIndicate(...args));
-    this.$rtc.on('audiodevicestatechanged', (...args) => {
-      this.setState({
-        audioDevices: this.$rtc.getAudioRecordingDevices(),
-        audioPlaybackDevices: this.$rtc.getAudioPlaybackDevices()
-      });
-    });
-    this.$rtc.on('videodevicestatechanged', (...args) => {
-      this.setState({
-        videoDevices: this.$rtc.getVideoDevices()
-      });
-    });
-    this.$rtc.on('audiodevicevolumechanged', (device, volume, muted) => {
-      console.log(JSON.stringify({
-        device,
-        volume,
-        muted
-      }))
-    })
-    // this.$rtc.startEchoTest()
-  }
-
-  inputVolumeIndicate = (uid, volume, speaker, totalVolume) => {
-    this.setState({
-      inputVolume: parseInt(totalVolume / 255 * 100, 10)
-    });
+    // this._rtc.startEchoTest()
   }
 
   componentWillUnmount() {
-    this.$rtc.stopPreview();
-    this.$rtc.stopAudioRecordingDeviceTest();
-    this.$rtc.removeAllListeners('audiovolumeindication');
-    this.$rtc.stopAudioPlaybackDeviceTest();
-    // this.$rtc.stopEchoTest()
+    this._rtc.stopPreview();
+    this._rtc.stopAudioRecordingDeviceTest();
+    this._rtc.removeAllListeners('audiovolumeindication');
+    this._rtc.stopAudioPlaybackDeviceTest();
+    // this._rtc.stopEchoTest()
   }
 
   componentDidCatch(err, info) {
@@ -149,23 +117,23 @@ class DeviceTesting extends React.Component {
   handleAudioDeviceChange = (val) => {
     console.info('setAudioRecordingDevice')
     console.info(val)
-    this.$rtc.setAudioRecordingDevice(this.state.audioDevices[val].deviceid);
+    this._rtc.setAudioRecordingDevice(this.state.audioDevices[val].deviceid);
   }
 
   handleVideoDeviceChange = (val) => {
     console.info('setVideoDevice')
     console.info(val)
-    this.$rtc.setVideoDevice(this.state.videoDevices[val].deviceid);
+    this._rtc.setVideoDevice(this.state.videoDevices[val].deviceid);
   }
 
   handlePlaybackDeviceChange = (val) => {
     console.info('setAudioPlaybackDevice')
     console.info(val)
-    this.$rtc.setAudioPlaybackDevice(this.state.audioPlaybackDevices[val].deviceid);
+    this._rtc.setAudioPlaybackDevice(this.state.audioPlaybackDevices[val].deviceid);
   }
 
   handlePlaybackVolume = (val) => {
-    this.$rtc.setAudioPlaybackVolume(val);
+    this._rtc.setAudioPlaybackVolume(val);
   }
 
   playMusic = () => {
@@ -176,9 +144,9 @@ class DeviceTesting extends React.Component {
       } else {
         filepath = path.join(process.env.APP_PATH, '../app', 'static/music.mp3');
       }
-      this.$rtc.startAudioPlaybackDeviceTest(filepath);
+      this._rtc.startAudioPlaybackDeviceTest(filepath);
     } else {
-      this.$rtc.stopAudioPlaybackDeviceTest();
+      this._rtc.stopAudioPlaybackDeviceTest();
     }
     this._playMusic = !this._playMusic;
   }

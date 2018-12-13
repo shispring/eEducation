@@ -16,7 +16,7 @@ class White extends EventEmitter {
     this.roomToken = null;
     this.room = null;
     this.uuid = '';
-    this.readyState = false
+    this.readyState = false;
   }
 
   initialize(name, opts = {
@@ -61,6 +61,7 @@ class White extends EventEmitter {
 
   join(uuid, token) {
     return new Promise((resolve, reject) => {
+      console.log('join in... [uuid: %s, token: %s]', uuid, token)
       this.sdk.joinRoom({
         uuid, roomToken: token
       }, {
@@ -70,11 +71,12 @@ class White extends EventEmitter {
       }).then(room => {
         this.room = room;
         this.readyState = true
+        this.emit('whiteStateChanged', this);
         return resolve();
       }).catch(e => {
-        reject(e);
-      });
-    });
+        return reject(e)
+      })
+    })
   }
 }
 

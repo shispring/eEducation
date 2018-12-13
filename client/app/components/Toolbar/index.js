@@ -2,39 +2,30 @@ import React, { PropTypes } from 'react';
 import { Popover, InputNumber } from 'antd';
 import { merge } from 'lodash';
 import { SketchPicker } from 'react-color';
-import Whiteboard from '../../utils/Whiteboard';
 import './index.scss';
 
 class ToolBarBtn extends React.Component {
-  getCategory() {
-    let category = this.props.name;
-    if (this.props.type === 'share') {
-      category = 'share';
-    } else if (this.props.type === 'color') {
-      category = 'color';
-    } else if (this.props.type === 'font') {
-      category = 'font';
-    } else if (this.props.type === 'add') {
-      category = 'add';
-    }
-    return category;
+
+  constructor (props) {
+    super(props);
+    this.setMemberState = props.setMemberState;
+    this.onClick = this.onClick.bind(this)
   }
-  onClick = () => {
-    const category = this.getCategory();
-    const { room } = Whiteboard;
-    if (this.props.type === 'tool') {
+
+  onClick () {
+    const category = this.props.type;
+    if (category === 'tool') {
       //update member state applicance name if type of tool
-      room.setMemberState({
+      this.setMemberState({
         currentApplianceName: category
       });
     }
-    this.props.onToolSelected(category, this.props.type);
-  };
+    this.props.onToolSelected(category, category);
+  }
+
   render() {
-    const category = this.getCategory();
-    const className = `sidebar-btn ${category} ${this.props.selected ? 'selected' : ''}`;
     return (
-      <div style={this.props.style} className={className} onClick={this.onClick}>
+      <div style={this.props.style} className={this.props.className} onClick={this.onClick}>
         <div className="sidebar-btn-content" />
       </div>
     )
@@ -43,13 +34,14 @@ class ToolBarBtn extends React.Component {
 
 
 class ToolBar extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       selected: 'pencil',
       colorPickerVisible: false,
-      fontPickerVisible: false
+      fontPickerVisible: false,
     };
+    this.setMemberState = props.setMemberState;
   }
 
   onToolSelected = (category, type) => {
@@ -57,38 +49,43 @@ class ToolBar extends React.Component {
       colorPickerVisible: false,
       fontPickerVisible: false
     };
-    if (type === 'tool') {
-      state = merge(state, {
-        selected: category
-      });
-    } else if (type === 'share') {
-      this.props.handleShareScreen();
-    } else if (type === 'color') {
-      state = merge(state, {
-        colorPickerVisible: true
-      });
-    } else if (type === 'font') {
-      state = merge(state, {
-        fontPickerVisible: true
-      });
-    } else if (type === 'add') {
-      this.props.handleAddingPage();
+    switch (type) {
+      case 'tool':
+        state = merge(state, {
+          selected: category
+        })
+        break;
+      case 'share':
+        this.props.handleShareScreen();
+        break;
+      case 'color':
+        state = merge(state, {
+          colorPickerVisible: true
+        })
+        break;
+      case 'font':
+        state = merge(state, {
+          fontPickerVisible: true
+        })
+        break;
+      case 'add':
+        this.props.handleAddingPage();
+        break;
     }
+    console.log('onToolSelected state category', category);
     this.setState(state);
   }
 
   onColorChanged = (color) => {
     const { rgb } = color;
     const { r, g, b } = rgb;
-    const { room } = Whiteboard;
-    room.setMemberState({
+    this.setMemberState({
       strokeColor: [r, g, b]
     });
   }
 
   onTextSizeChange = value => {
-    const { room } = Whiteboard;
-    room.setMemberState({
+    this.setMemberState({
       textSize: value
     });
   }
@@ -104,36 +101,107 @@ class ToolBar extends React.Component {
     });
   }
 
+  menuTools = () =>  {
+    const props = {
+      onToolSelected: this.onToolSelected, setMemberState: this.setMemberState
+    }
+    const tools = [
+      {
+        name: 'selector',
+        type: 'tool'
+      },
+      {
+        name: 'pencil',
+        type: 'tool'
+      },
+      {
+        name: 'rectangle',
+        type: 'tool'
+      },
+      {
+        name: 'ellipse',
+        type: 'tool'
+      },
+      {
+        name: 'eraser',
+        type: 'tool'
+      },
+      {
+        name: 'text',
+        type: 'tool'
+      },
+      {
+        name: 'font',
+        type: 'font',
+        font: true,
+      },
+      {
+        name: 'color',
+        type: 'color',
+      },
+      {
+        name: 'add',
+        type: 'add'
+      },
+      {
+        name: 'share',
+        type: 'share',
+        need: {
+          enableShareScreen: true 
+        }
+      }
+    ]
+    return (tools.map((item, index) => {
+      const btnClassName = this.state.selected === item.name ? `sidebar-btn ${item.name} selected` : `sidebar-btn ${item.name}`
+      if (item.font) {
+        return (
+          <Popover
+            key={index}
+            placement="right"
+            content={<InputNumber min={12} max={64}
+              defaultValue={15}
+              onChange={this.onTextSizeChange} 
+            />}
+            title="字体大小"
+            visible={this.state.fontPickerVisible}
+          >
+            <ToolBarBtn className={btnClassName}
+              key={index} type={item.type}
+              name={item.name} {...props} />
+          </Popover>
+        )
+      } else if (item.need) {
+        if (this.props.enableShareScreen == item.need.enableShareScreen) {
+          return (<ToolBarBtn key={index}
+            className={btnClassName}
+            name={item.name}
+            type={item.type}
+            selected={this.props.shareBtnState !== 'default'}
+            onToolSelected={this.onToolSelected}
+            state={this.props.shareBtnState} />
+          )
+        }
+      } else {
+        return (
+          <ToolBarBtn className={btnClassName}
+            key={index} type={item.type}
+            name={item.name} {...props} />
+        )
+      }
+    }))
+  }
+
   render() {
-    const tools = ['selector', 'pencil', 'rectangle', 'ellipse', 'eraser', 'text'];
     const colorClass = this.state.colorPickerVisible ? 'color-picker' : 'color-picker hidden';
     const maskClass = this.toolEnabled() ? 'mask' : 'mask hidden';
+
     return (
-      <div className="sidebar">
+      <div className="sidebar" category={this.state.selected}>
         <div className={maskClass} onClick={this.onHideTool} />
         <div className="bar-container">
-          <div className={this.props.whiteboard?'':'unusable'}>
-            {tools.map((tool, index) => (
-              <ToolBarBtn key={index} type="tool" name={tool} selected={this.state.selected === tool} onToolSelected={this.onToolSelected} />
-              ))}
-            <Popover
-              placement="right"
-              content={<InputNumber min={12} max={64} defaultValue={15} onChange={this.onTextSizeChange} />}
-              title="字体大小"
-              visible={this.state.fontPickerVisible}
-            >
-              <ToolBarBtn type="font" onToolSelected={this.onToolSelected} />
-            </Popover>
-            <ToolBarBtn type="color" onToolSelected={this.onToolSelected} />
-            <ToolBarBtn type="add" onToolSelected={this.onToolSelected} />
+          <div className={this.props.readyState?'':'unusable'}>
+            {this.menuTools()}
           </div>
-
-          { 
-            this.props.enableShareScreen ? (<ToolBarBtn 
-              // just a workaround, need refactor here
-              type="share" selected={this.props.shareBtnState !== 'default'} onToolSelected={this.onToolSelected} state={this.props.shareBtnState} />)
-              : null
-          }
         </div>
         <div className={colorClass}>
           <SketchPicker onChangeComplete={this.onColorChanged} />

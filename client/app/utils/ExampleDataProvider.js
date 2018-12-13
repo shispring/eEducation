@@ -5,7 +5,7 @@ import BaseDataProvider from './BaseDataProvider';
  * room control service urls
  * @constant SERVER_URLS
  */
-const SERVER_URLS = ["http://123.155.153.85:8888/gun"];
+const SERVER_URLS = ["http://127.0.0.1:8888/gun"];
 
 /**
  * By default, we use gun (a real-time database) for data exchange
@@ -67,6 +67,7 @@ export default class ExampleDataProvider extends BaseDataProvider {
           resolve();
         })
         .catch(err => {
+          debugger
           // do nothing
           this.emit('error', err);
           // reject
