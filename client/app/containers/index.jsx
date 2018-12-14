@@ -3,7 +3,7 @@ import { Container } from 'unstated';
 import {APP_ID} from '../agora.config'
 import { message } from 'antd';
 
-import _ from 'lodash';
+import _, {merge}from 'lodash';
 
 export default class MainContainer extends Container {
 
@@ -13,13 +13,12 @@ export default class MainContainer extends Container {
         this.state = {
             rtc: null,
             isLogining: false,
-            role: 'student',
             clientConfig: {
-                APP_ID: null,
-                channel: null,
-                username: null,
+                APP_ID: APP_ID,
+                channel: 'agora',
+                username: 'test1',
                 uid: null,
-                role: null,
+                role: 'student',
                 boardId: null
             },
             videoDevices: [],
@@ -27,7 +26,6 @@ export default class MainContainer extends Container {
             audioPlaybackDevices: []
         }
         this._client = new AdapterClient();
-        this.handleRole = this.handleRole.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.destroyRTC = this.destroyRTC.bind(this);
         this.setUpRTC = this.setUpRTC.bind(this);
@@ -43,18 +41,30 @@ export default class MainContainer extends Container {
         new AdapterClient();
     }
 
-    handleRole (e) {
-        this.setState({
-            role: e.target.value
-        });
+    handleRole = (e) => {
+        const clientConfig = {...this.state.clientConfig}
+        clientConfig.role = e.target.value;
+        this.setState({clientConfig});
     }
 
-    handleSubmit (e) {
+    handleChannel = (e) => {
+        const clientConfig = {...this.state.clientConfig}
+        clientConfig.channel = e.target.value;
+        this.setState({clientConfig})
+    }
+
+    handleUsername = (e) => {
+        const clientConfig = {...this.state.clientConfig}
+        clientConfig.username = e.target.value;
+        this.setState({clientConfig})
+    }
+
+    handleSubmit = (e) => {
         e.preventDefault();
 
-        let channel = document.querySelector('#channel').value,
-            username = document.querySelector('#username').value,
-            role = this.state.role;
+        let {channel, username, role} = this.state.clientConfig;
+
+        console.log('clientConfig.....', this.state.clientConfig);
 
         if (!/^[0-9a-zA-Z]+$/.test(username)) {
             return message.error('Username can only consist a-z | A-Z | 0-9!');
@@ -81,26 +91,27 @@ export default class MainContainer extends Container {
             isLogining: true
         })
         // you can do auth before init class to generate your custom uid
+
         const _config = {
-            APP_ID,
-            channel,
-            uid: undefined,
-            username,
-            role
+            ...this.state.clientConfig
         }
+
+        merge(_config, {channel, username, role});
+
+        this.setState({
+            clientConfig: _config
+        }, () => {
+            console.log('clientConfig', this.state.clientConfig)
+        })
+
         const client = this.client();
         client.initClass(_config.APP_ID, _config.channel, _.pick(_config, ['uid', 'username', 'role'])).then(({uid, boardId}) => {
-            Object.assign(_config, {
-                uid, boardId
-            })
-            this.setState({
-                clientConfig: _config
-            }, () => {
-                console.log('clientConfig', this.state.clientConfig)
-            })
+            let config = {...this.state.clientConfig}
+            merge(config, {uid, boardId})
             client.initProfile(role === 'audience')
             this.setState({
-                isLogining: false
+                isLogining: false,
+                clientConfig: config,
             }, () => {
                 if(role === 'audience') {
                     window.location.hash = 'classroom'

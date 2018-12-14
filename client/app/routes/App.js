@@ -8,8 +8,8 @@ import Classroom from './Classroom';
 import AdapterClient from '../utils/Adapter'
 
 class App extends Component {
-  constructor() {
-    super()
+  constructor(props) {
+    super(props);
     this.client = new AdapterClient()
     this.state = {
       style: { visibility: 'hidden' }

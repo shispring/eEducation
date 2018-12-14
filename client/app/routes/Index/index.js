@@ -38,13 +38,13 @@ class Index extends React.Component {
             <main>
               <Form onSubmit={this.props.handleSubmit}>
                 <FormItem label="Classroom Name" colon={false}>
-                  <Input id="channel" />
+                  <Input id="channel" onChange={this.props.handleChannel} value={this.props.state.clientConfig.channel} />
                 </FormItem>
                 <FormItem label="Your Name" colon={false}>
-                  <Input id="username" />
+                  <Input id="username" onChange={this.props.handleUsername} value={this.props.state.clientConfig.username} />
                 </FormItem>
                 <FormItem>
-                  <RadioGroup onChange={this.props.handleRole} id="role" defaultValue="student">
+                  <RadioGroup onChange={this.props.handleRole} id="role" defaultValue={this.props.state.clientConfig.role}>
                     <Radio value="teacher">Teacher</Radio>
                     <Radio value="student">Student</Radio>
                     <Radio value="audience">Audience</Radio>
