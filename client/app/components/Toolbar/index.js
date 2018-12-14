@@ -6,21 +6,13 @@ import './index.scss';
 
 class ToolBarBtn extends React.Component {
 
-  constructor (props) {
-    super(props);
-    this.setMemberState = props.setMemberState;
-    this.onClick = this.onClick.bind(this)
-  }
-
-  onClick () {
-    const category = this.props.type;
-    if (category === 'tool') {
-      //update member state applicance name if type of tool
-      this.setMemberState({
-        currentApplianceName: category
+  onClick = () => {
+    if (this.props.type === 'tool') {
+      this.props.setMemberState({
+        currentApplianceName: this.props.name
       });
     }
-    this.props.onToolSelected(category, category);
+    this.props.onToolSelected(this.props);
   }
 
   render() {
@@ -44,7 +36,7 @@ class ToolBar extends React.Component {
     this.setMemberState = props.setMemberState;
   }
 
-  onToolSelected = (category, type) => {
+  onToolSelected = ({name, type}) => {
     let state = {
       colorPickerVisible: false,
       fontPickerVisible: false
@@ -52,7 +44,7 @@ class ToolBar extends React.Component {
     switch (type) {
       case 'tool':
         state = merge(state, {
-          selected: category
+          selected: name
         })
         break;
       case 'share':
@@ -72,7 +64,6 @@ class ToolBar extends React.Component {
         this.props.handleAddingPage();
         break;
     }
-    console.log('onToolSelected state category', category);
     this.setState(state);
   }
 
