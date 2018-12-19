@@ -52,6 +52,7 @@ class Classroom extends React.Component {
     this._rtc = this._client.rtcEngine;
     this.state = {
       teacher: '',
+      channel: this.props.state.clientConfig.channel,
       networkQuality: 2,
       isRecording: false,
       recordBtnLoading: false,
@@ -117,7 +118,7 @@ class Classroom extends React.Component {
             username: info.username,
             role: info.role
           }),
-          teacher: info.username
+          teacher: info.username,
         })
       } else if (info.role === 'student') {
         // set to low stream
