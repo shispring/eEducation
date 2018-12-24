@@ -1,6 +1,6 @@
 # Agora e-Education Demo with Electron
 
-Agora e-Edu 2.0 releases! Go to [Doc Center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) for more detail.
+Agora e-Edu 2.0 releases! Go to [Doc Center](https://agoraio-usecase.github.io/eEducation-with-Electron/#/) for more detail.
 
 ## Background
 
@@ -11,7 +11,7 @@ Agora e-Edu 2.0 releases! Go to [Doc Center](https://agoraio.github.io/ARD-eEduc
 
 ## Quick Start
 
-You can [download](https://github.com/AgoraIO/ARD-eEducation-with-Electron/releases) installation package(both mac and windows) to have a try.
+You can [download](https://github.com/AgoraIO-Usecase/eEducation-with-Electron/releases) installation package(both mac and windows) to have a try.
 
 ## Development
 
@@ -33,7 +33,7 @@ Update 'agora.config.js' under './app/'.
 - client  
   Client-side demo by React and Electron.
 - room_control  
-  Provide service for data exchange with `Data Provider`(Go to [Doc Center](https://agoraio.github.io/ARD-eEducation-with-Electron/#/) for detail) to control room status.
+  Provide service for data exchange with `Data Provider`(Go to [Doc Center](https://agoraio-usecase.github.io/eEducation-with-Electron/#/) for detail) to control room status.
 - recording  
   Agora Recording Service on Linux Server.
 
@@ -41,8 +41,7 @@ Room control and recording service are for reference only, you can integrate the
   
 ## Contact Us
 - Full API document is under constructing
-- You can file bugs about this demo at [issue](https://github.com/AgoraIO/ARD-eEducation-with-Electron/issues)
+- You can file bugs about this demo at [issue](https://github.com/AgoraIO-Usecase/eEducation-with-Electron/issues)
 
 ## License
 The MIT License (MIT).
-
