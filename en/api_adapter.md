@@ -16,7 +16,7 @@
 ## Functions
 
 <dl>
-<dt><a href="#initProfile">initProfile(audience, videoProfile, swapWidthAndHeight)</a></dt>
+<dt><a href="#/en/initProfile">initProfile(audience, videoProfile, swapWidthAndHeight)</a></dt>
 <dd><p>Encapsulation regular profile you need to set</p>
 </dd>
 <dt><a href="#initClass">initClass(appId, channel, user)</a></dt>
