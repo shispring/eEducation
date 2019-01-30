@@ -64,6 +64,10 @@ app.on('ready', async () => {
     frame: false
   });
 
+  ipcMain.on("errorInWindow", function (event, data) {
+    console.error(data)
+  });
+
   // if (process.env.NODE_ENV === 'development') {
   //   // await installExtensions();
   // }

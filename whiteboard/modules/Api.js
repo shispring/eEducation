@@ -36,7 +36,6 @@ function ClusterApi(app) {
             aliservice.uploadToOSS(filename, buffer).then(result => {
                 const filesrc = result.name;
                 aliservice.convert(filename, filesrc).then(result => {
-                    debugger;
                 }).catch(e => {
                     next(e);
                 });

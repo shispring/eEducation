@@ -2,15 +2,17 @@
   "name": "barrel",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
     "express": "^4.16.3",
-    "gun": "^0.9.9993"
+    "gun": "^0.9.9993",
+    "nodemon": "^1.18.9"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node .",
+    "dev": "nodemon ."
   },
   "author": "",
   "license": "ISC"

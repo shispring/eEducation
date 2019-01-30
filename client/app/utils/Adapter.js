@@ -92,32 +92,6 @@ export default class Adapter extends EventEmitter {
   }
 
   /**
-   * init whiteboard service independently
-   */
-  async initWhiteboard(channel, boardId) {
-    // initialize whiteboard
-    let response = null;
-    let roomToken = null;
-    let room = null;
-    try {
-      if (boardId) {
-        response = await Whiteboard.initialize(channel, { uuid: boardId });
-        ({ roomToken } = response);
-        room = { uuid: boardId };
-      } else {
-        response = await Whiteboard.initialize(channel);
-        ({ roomToken, room } = response);
-        this.updateBoardInfo(room.uuid);
-      }
-      await Whiteboard.join(room.uuid, roomToken);
-      console.log(`whiteboard initialized`);
-    } catch (err) {
-      console.warn('whiteboard failed to initialize')
-      throw(err)
-    }
-  }
-
-  /**
    * actually join media channel to make stream ready
    * @param {string} token - token calculated by app id & app cert
    * @param {string} info - extra info to be broadcast when joinned channel
@@ -362,10 +336,6 @@ export default class Adapter extends EventEmitter {
     let tempUser = clone(this.getUser(uid));
     let newUser = merge(tempUser, info);
     this.dataProvider.dispatch('updateUserInfo', {user: newUser});
-  }
-
-  updateBoardInfo(uuid) {
-    this.dataProvider.dispatch('updateBoardInfo', { uuid });
   }
 
   /**
