@@ -22,7 +22,7 @@ deploy:
   release: Agora-eEducation-$(APPVEYOR_REPO_TAG_NAME)
   provider: GitHub
   auth_token:
-    secure: 4eCPhRh4IXN/K2g7ppzy7obDrKbRvh3pwTtUTSayX9RiI+7dul28cLBR6nYXpksc
+    secure: 7Cf7+F2TbDOW0PdEs4i02LYogxAr9fSvTXdA4G31YP5skKK3PO8NTeZufbVV9aHf
   artifact: /.*\.exe/
   draft: false
   prerelease: false
