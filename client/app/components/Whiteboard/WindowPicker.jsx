@@ -3,7 +3,7 @@ import {chunk} from 'lodash';
 import PropTypes from 'prop-types';
 import { Button, Card, Col, Row } from 'antd';
 import { merge } from 'lodash';
-import './index.scss';
+import './WindowPicker.scss';
 
 const {Meta} = Card
 

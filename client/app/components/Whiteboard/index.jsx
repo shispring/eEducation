@@ -1,12 +1,13 @@
-import React, { Component } from "react";
-import White from "../../utils/Whiteboard";
-import "white-web-sdk/style/index.css";
-import { RoomWhiteboard } from "white-react-sdk";
 import { Pagination, Spin } from "antd";
-import Toolbar from "../Toolbar";
-import WindowPicker from "../WindowPicker";
-import SimpleIconButton from "../SimpleIconButton";
+import React, { Component } from "react";
+import { RoomWhiteboard } from "white-react-sdk";
+import "white-web-sdk/style/index.css";
+
 import base64Encode from "../../utils/Base64Encode";
+import SimpleIconButton from "../SimpleIconButton";
+import Toolbar from "./Toolbar";
+import WhiteboardAPI from "./WhiteboardAPI";
+import WindowPicker from "./WindowPicker";
 
 function retry(thunk, ms = 1000, maxRetries = 5) {
   return new Promise((resolve, reject) => {
@@ -104,15 +105,15 @@ export default class Whiteboard extends Component {
     let room = null;
     try {
       if (boardId) {
-        response = await White.initialize(channel, { uuid: boardId });
+        response = await WhiteboardAPI.initialize(channel, { uuid: boardId });
         ({ roomToken } = response);
         room = { uuid: boardId };
       } else {
-        response = await White.initialize(channel);
+        response = await WhiteboardAPI.initialize(channel);
         ({ roomToken, room } = response);
         this.updateBoardInfo(room.uuid);
       }
-      await retry(() => White.join(room.uuid, roomToken));
+      await retry(() => WhiteboardAPI.join(room.uuid, roomToken));
       console.log(`whiteboard initialized`);
     } catch (err) {
       console.warn("whiteboard failed to initialize");
@@ -210,7 +211,7 @@ export default class Whiteboard extends Component {
   }
 
   handleAddingPage = () => {
-    const { room } = White;
+    const { room } = WhiteboardAPI;
     const newPageIndex = this.state.totalPage + 1;
     const newTotalPage = this.state.totalPage + 1;
     this.setState({
@@ -224,13 +225,13 @@ export default class Whiteboard extends Component {
   };
 
   subcribeWhiteboardEvents = () => {
-    White.on("whiteStateChanged", ({ readyState, room }) => {
+    WhiteboardAPI.on("whiteStateChanged", ({ readyState, room }) => {
       this.setState({
         whiteReadyState: readyState,
         room
       });
     });
-    White.on("roomStateChanged", modifyState => {
+    WhiteboardAPI.on("roomStateChanged", modifyState => {
       if (modifyState.globalState) {
         // globalState changed
         let newGlobalState = modifyState.globalState;

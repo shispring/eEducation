@@ -5,7 +5,6 @@ import AgoraRtcEngine from 'agora-electron-sdk';
 import EventEmitter from 'events';
 import { clone, merge } from 'lodash';
 import DataProvider from './ExampleDataProvider';
-import Whiteboard from './Whiteboard';
 
 /**
  * Default screen-share stream's id

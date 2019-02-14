@@ -2,7 +2,7 @@ import React, { PropTypes } from 'react';
 import { Popover, InputNumber } from 'antd';
 import { merge } from 'lodash';
 import { SketchPicker } from 'react-color';
-import './index.scss';
+import './Toolbar.scss';
 
 class ToolBarBtn extends React.Component {
 
