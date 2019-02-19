@@ -86,7 +86,7 @@ class RecorderManager {
                 //ok
             } else {
                 logger.error(`process not running: ${JSON.stringify(process)}, removing..`);
-                delete manager.recordings[sid];
+                this.onStopRecording(sid)
             }
         });
     }
@@ -143,7 +143,6 @@ class RecorderManager {
         });
     }
     stop(appid, channel, sid) {
-        let manager = this;
         let recorder = this.recordings[sid];
 
         if (!recorder) {
@@ -159,11 +158,38 @@ class RecorderManager {
             var script = `bash stop_record_jsmpeg.sh -i ${appid} -c ${channel} -s ${sid}`;
             logger.info(script);
             exec(script, (error, stdout, stderr) => {
-                logger.info(`service stopped: ${JSON.stringify(recorder)}`);
-                delete manager.recordings[sid];
+                this.onStopRecording(sid)
                 resolve();
             })
         });
+    }
+
+    onStopRecording(sid) {
+        let recorder = this.recordings[sid];
+        logger.info(`service stopped: ${JSON.stringify(recorder)}`);
+        this.convert(recorder.path)
+        delete this.recordings[sid];
+    }
+
+    convert(folder) {
+        let lockpath = path.resolve(folder, 'convert.lock')
+        logger.info(`start converting video at ${folder}`)
+        try {
+            logger.info('check convert.lock');
+            fs.accessSync(lockpath, fs.constants.R_OK);
+            logger.info('lock exists, failed to acquire, skip');
+        } catch (err) {
+            // if lock file not exists
+            logger.info(`acquire convert.lock`)
+            fs.writeFile(lockpath, null, err => {
+                logger.info(`convert.lock acquired`)
+                var script = `cd ${path.resolve(__dirname, '../Agora_EDU_Recording_SDK_for_Linux/tools')} && python video_convert.py -f ${folder}`;
+                logger.info(script);
+                exec(script, (error, stdout, stderr) => {
+                    logger.info(`convert done`)
+                })
+            })
+        }
     }
 }
 
