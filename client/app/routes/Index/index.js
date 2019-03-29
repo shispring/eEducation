@@ -13,11 +13,18 @@ class Index extends React.Component {
   constructor(props) {
     super(props);
     this.$client = props.client;
+    this.state = {
+      isLogining: props.state.isLogining
+    }
+  }
+
+  componentWillReceiveProps(props) {
+    this.setState({ isLogining: props.state.isLogining })
   }
 
   render() {
     let loading;
-    if (this.props.isLogining) {
+    if (this.state.isLogining) {
       loading = (
         <div className="mask">
           <Spin size="large" />

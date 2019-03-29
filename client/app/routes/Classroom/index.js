@@ -690,12 +690,12 @@ class Window extends React.Component {
     let name = this.props.uid;
     name = this.props.isLocal ? "local" : name;
 
-    const render = this._rtc.streams[name];
+    const render = this._rtc.streams.get(`${name}`);
     if (render) {
       if (render.firstFrameRender) {
         this.setState({ loading: false });
       } else {
-        render.event.on("ready", () => {
+        render.self.event.on("ready", () => {
           this.setState({ loading: false });
         });
       }
@@ -708,7 +708,7 @@ class Window extends React.Component {
       return (
         <div className="teacher-window">
           <div className="teacher-video" id={`video-${this.props.uid}`}>
-            <Spin className={loaderClass} />
+            {this.state.loading ? <Spin className={loaderClass} /> : null}
           </div>
           <div className="teacher-bar">Teacher: {this.props.username}</div>
         </div>
@@ -717,7 +717,7 @@ class Window extends React.Component {
       return (
         <div className="student-window">
           <div className="student-video" id={`video-${this.props.uid}`}>
-            <Spin className={loaderClass} />
+            {this.state.loading ? <Spin className={loaderClass} /> : null}
           </div>
           <div className="student-bar">{this.props.username}</div>
         </div>
