@@ -54,49 +54,55 @@ export default class Whiteboard extends Component {
     this.props._client.dataProvider.dispatch("updateBoardInfo", { uuid });
   }
 
-  handleShareScreen = () => {
-    if (!this.state.isSharing) {
-      let list = this.props._client.rtcEngine.getScreenWindowsInfo();
-      let windowList = list.map(item => {
-        return {
-          ownerName: item.ownerName,
-          name: item.name,
-          windowId: item.windowId,
-          image: base64Encode(item.image)
-        };
-      });
-      this.setState({
-        showWindowPicker: true,
-        windowList
-      });
-      return;
-      // this._client.startScreenShare();
-    }
-    this.props._client.stopScreenShare();
-    this.setState({
-      waitSharing: true,
-      isSharing: !this.state.isSharing
-    });
-    setTimeout(() => {
-      this.setState({
-        waitSharing: false
-      });
-    }, 300);
-  };
+  // handleShareScreen = () => {
+  //   if (!this.state.isSharing) {
+  //     let list = this.props._client.rtcEngine.getScreenWindowsInfo();
+  //     let windowList = list.map(item => {
+  //       return {
+  //         ownerName: item.ownerName,
+  //         name: item.name,
+  //         windowId: item.windowId,
+  //         image: base64Encode(item.image)
+  //       };
+  //     });
+  //     this.setState({
+  //       showWindowPicker: true,
+  //       windowList
+  //     });
+  //     return;
+  //     // this._client.startScreenShare();
+  //   }
+  //   this.props._client.stopScreenShare();
+  //   this.setState({
+  //     waitSharing: true,
+  //     isSharing: !this.state.isSharing
+  //   });
+  //   setTimeout(() => {
+  //     this.setState({
+  //       waitSharing: false
+  //     });
+  //   }, 300);
+  // };
 
-  handleWindowPicker = windowId => {
-    this.props._client.startScreenShare(windowId);
+  // handleWindowPicker = windowId => {
+  //   this.props._client.startScreenShare(windowId);
+  //   this.setState({
+  //     waitSharing: true,
+  //     showWindowPicker: false,
+  //     isSharing: !this.state.isSharing
+  //   });
+  //   setTimeout(() => {
+  //     this.setState({
+  //       waitSharing: false
+  //     });
+  //   }, 300);
+  // };
+  componentWillReceiveProps(props) {
     this.setState({
-      waitSharing: true,
-      showWindowPicker: false,
-      isSharing: !this.state.isSharing
-    });
-    setTimeout(() => {
-      this.setState({
-        waitSharing: false
-      });
-    }, 300);
-  };
+      ...this.state,
+      ...props
+    })
+  }
 
   async initWhiteboard(channel, boardId) {
     // initialize whiteboard
@@ -141,7 +147,7 @@ export default class Whiteboard extends Component {
     if (this.state.showWindowPicker) {
       windowPicker = (
         <WindowPicker
-          onSubmit={this.handleWindowPicker}
+          onSubmit={this.props.handleWindowPicker}
           onCancel={e => this.setState({ showWindowPicker: false })}
           windowList={this.state.windowList}
         />
@@ -199,7 +205,7 @@ export default class Whiteboard extends Component {
               readyState={this.state.whiteReadyState}
               enableShareScreen={this.state.role === "teacher"}
               shareBtnState={shareBtnState}
-              handleShareScreen={this.handleShareScreen}
+              handleShareScreen={this.props.handleShareScreen}
               handleAddingPage={this.handleAddingPage}
             />
             {windowPicker}
@@ -214,7 +220,7 @@ export default class Whiteboard extends Component {
     const { room } = WhiteboardAPI;
     const newPageIndex = this.state.totalPage + 1;
     const newTotalPage = this.state.totalPage + 1;
-    this.setState({
+    this.props.handleAddingPage({
       currentPage: newPageIndex,
       totalPage: newTotalPage
     });

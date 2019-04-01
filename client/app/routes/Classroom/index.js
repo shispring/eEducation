@@ -7,6 +7,7 @@ import ClassControl from "../../components/ClassControl";
 import TitleBar from "../../components/TitleBar";
 import Whiteboard from "../../components/Whiteboard";
 import SimpleIconButton from "../../components/SimpleIconButton";
+import base64Encode from "../../utils/Base64Encode";
 import "./index.scss";
 
 const RECORDING_SERVICE = "http://123.155.153.85:3233";
@@ -68,7 +69,9 @@ class Classroom extends React.Component {
       enableAudio: true,
       windowList: [],
       totalPage: 1,
-      currentPage: 1
+      currentPage: 1,
+      waitSharing: false,
+      showWindowPicker: false
     };
     this.subscribeRTCEvents();
     this.enableChat = true;
@@ -363,6 +366,58 @@ class Classroom extends React.Component {
     });
   };
 
+  handleShareScreen = () => {
+    if (!this.state.isSharing) {
+      let list = this.props._client.rtcEngine.getScreenWindowsInfo();
+      let windowList = list.map(item => {
+        return {
+          ownerName: item.ownerName,
+          name: item.name,
+          windowId: item.windowId,
+          image: base64Encode(item.image)
+        };
+      });
+      this.setState({
+        showWindowPicker: true,
+        windowList
+      });
+      return;
+      // this._client.startScreenShare();
+    }
+    this.props._client.stopScreenShare();
+    this.setState({
+      waitSharing: true,
+      isSharing: !this.state.isSharing
+    });
+    setTimeout(() => {
+      this.setState({
+        waitSharing: false
+      });
+    }, 300);
+  };
+
+  handleWindowPicker = windowId => {
+    this.props._client.startScreenShare(windowId);
+    this.setState({
+      waitSharing: true,
+      showWindowPicker: false,
+      isSharing: !this.state.isSharing
+    });
+    setTimeout(() => {
+      this.setState({
+        waitSharing: false
+      });
+    }, 300);
+  };
+
+  handleAddingPage = ({currentPage, totalPage}) => {
+    this.setState({
+      ...this.state,
+      currentPage,
+      totalPage
+    })
+  }
+
   handleStartRecording = () => {
     console.log("Start Recording...");
     this.setState({
@@ -643,7 +698,19 @@ class Classroom extends React.Component {
           onClick={this.handleExit}
         />
         <section className="students-container">{students}</section>
-        <Whiteboard {...this.props} floatButtonGroup={ButtonGroup} />
+        <Whiteboard
+          {...this.props}
+          floatButtonGroup={ButtonGroup}
+          handleAddingPage={this.handleAddingPage}
+          handleShareScreen={this.handleShareScreen}
+          handleWindowPicker={this.handleWindowPicker}
+          currentPage={this.state.currentPage}
+          totalPage={this.state.totalPage}
+          isSharing={this.state.isSharing}
+          waitSharing={this.state.waitSharing}
+          showWindowPicker={this.state.showWindowPicker}
+          windowList={this.state.windowList}
+        />
         <section className="teacher-container">{teacher}</section>
         <ClassControl
           className="channel-container"
