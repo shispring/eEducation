@@ -175,7 +175,7 @@
     "webpack-merge": "^4.1.4"
   },
   "dependencies": {
-    "antd": "^3.3.3",
+    "antd": "3.3.3",
     "axios": "^0.18.0",
     "electron-debug": "^1.5.0",
     "gun": "^0.9.99993",
