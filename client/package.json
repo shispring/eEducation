@@ -1,7 +1,7 @@
 {
   "name": "agora-education-demo",
   "productName": "agora-education-demo",
-  "version": "3.1.0-beta",
+  "version": "3.1.0-alpha",
   "description": "agora-education-demo",
   "scripts": {
     "build": "concurrently \"npm run build-main\" \"npm run build-renderer\"",

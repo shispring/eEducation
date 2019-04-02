@@ -1,7 +1,7 @@
 {
   "name": "agora-education-demo",
   "productName": "agora-education-demo",
-  "version": "3.0.0-beta.3",
+  "version": "3.1.1-alpha",
   "description": "agora-education-demo",
   "main": "./main.prod.js",
   "author": "Hao Yang <haoyang@agora.io> (https://github.com/menthays)",
