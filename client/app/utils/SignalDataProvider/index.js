@@ -1,3 +1,4 @@
+/* eslint-disable compat/compat */
 import BaseDataProvider from '../BaseDataProvider';
 import Signal from './AgoraSig';
 
@@ -28,10 +29,9 @@ export default class SignalDataProvider extends BaseDataProvider {
     // close all data tunnel
   }
 
-
   /**
    * log with prefix: `[Data Provider:]`
-   * @param {*} args 
+   * @param {*} args
    */
   log(...args) {
     console.log('[Data Provider:]', ...args);
@@ -54,6 +54,8 @@ export default class SignalDataProvider extends BaseDataProvider {
       return this.dispatchStopScreenShare(payload);
     } else if (action === 'broadcastMessage') {
       return this.dispatchBroadcastMessage(payload);
+    } else if (action === "updateBoardInfo") {
+      return this.dispatchUpdateBoardInfo(payload);
     } else {
       // your custom events
     }
@@ -62,10 +64,10 @@ export default class SignalDataProvider extends BaseDataProvider {
   /**
    * connect and get class info, do validation
    * @private
-   * @param {string} payload.appId - agora app id 
-   * @param {string} payload.channel - channel id 
-   * @param {Object} payload.user - user object 
-   * @returns {Promise<T>} 
+   * @param {string} payload.appId - agora app id
+   * @param {string} payload.channel - channel id
+   * @param {Object} payload.user - user object
+   * @returns {Promise<T>}
    */
   dispatchInitClass({ appId, channel, user }) {
     return new Promise((resolve, reject) => {
@@ -73,21 +75,35 @@ export default class SignalDataProvider extends BaseDataProvider {
       const { uid } = user;
       const session = signal.login(`${uid}`, '_no_need_token');
       session.onLoginSuccess = () => {
-        this.setUserAttributes(user).then(() => {
-          const chan = session.channelJoin(channel);
-          chan.onChannelJoined = () => {
-            this.emit('user-info-updated', { uid, info: user });
-            resolve();
-          };
-          chan.onChannelJoinFailed = () => {
-            reject();
-          };
-          this.chan = chan;
-          this.registerServerEvent();
-          return true;
-        }).catch(e => {
-          reject(e);
-        });
+        this.setUserAttributes(user)
+          .then(() => {
+            const chan = session.channelJoin(channel);
+            chan.onChannelJoined = () => {
+              const timer = setTimeout(() => {
+                resolve({ user, boardId: null });
+              }, 2000);
+
+              chan.onChannelAttrUpdated = (name, value, type) => {
+                if (type === 'update') {
+                  if (name === 'boardId') {
+                    clearTimeout(timer);
+                    resolve({ user, boardId: value });
+                  }
+                }
+              };
+              this.emit('user-info-updated', { uid, info: user });
+            };
+            chan.onChannelJoinFailed = () => {
+              reject();
+            };
+
+            this.chan = chan;
+            this.registerServerEvent();
+            return true;
+          })
+          .catch(e => {
+            reject(e);
+          });
       };
       session.onLoginFailed = () => {
         reject();
@@ -100,7 +116,7 @@ export default class SignalDataProvider extends BaseDataProvider {
   /**
    * leave the class and remove info
    * @private
-   * @param {Object} payload.user 
+   * @param {Object} payload.user
    */
   dispatchLeaveClass({ user }) {
     this.emit('user-info-removed', { uid: user.uid });
@@ -111,19 +127,21 @@ export default class SignalDataProvider extends BaseDataProvider {
    * @private
    * @param {number} payload.shareId - stream id for sharing stream
    * @param {number} payload.sharerId - the user who do the sharing
-   * @returns {Promise<T>} 
+   * @returns {Promise<T>}
    */
   dispatchStartScreenShare({ shareId, sharerId }) {
     return new Promise((resolve, reject) => {
       const { chan } = this;
-      this.setUserAttribute('shareId', shareId).then(() => {
-        const content = JSON.stringify({ shareId, sharerId });
-        const message = JSON.stringify({ type: 'share', content });
-        chan.messageChannelSend(message);
-        return resolve();
-      }).catch(e => {
-        reject(e);
-      });
+      this.setUserAttribute('shareId', shareId)
+        .then(() => {
+          const content = JSON.stringify({ shareId, sharerId });
+          const message = JSON.stringify({ type: 'share', content });
+          chan.messageChannelSend(message);
+          return resolve();
+        })
+        .catch(e => {
+          reject(e);
+        });
     });
   }
 
@@ -132,28 +150,30 @@ export default class SignalDataProvider extends BaseDataProvider {
    * @private
    * @param {number} payload.shareId - stream id for sharing stream
    * @param {number} payload.sharerId - the user who do the sharing
-   * @returns {Promise<T>} 
+   * @returns {Promise<T>}
    */
   dispatchStopScreenShare({ shareId, sharerId }) {
     return new Promise((resolve, reject) => {
       const { chan } = this;
-      this.setUserAttribute('shareId', null).then(() => {
-        const message = JSON.stringify({ type: 'unshare' });
-        chan.messageChannelSend(message);
-        return resolve();
-      }).catch(e => {
-        reject(e);
-      });
+      this.setUserAttribute('shareId', null)
+        .then(() => {
+          const message = JSON.stringify({ type: 'unshare' });
+          chan.messageChannelSend(message);
+          return resolve();
+        })
+        .catch(e => {
+          reject(e);
+        });
     });
   }
 
   /**
    * broadcast message in the class
    * @private
-   * @param {string} payload.message 
-   * @param {Object} payload.user 
+   * @param {string} payload.message
+   * @param {Object} payload.user
    * @param {string} payload.type - whether a 'str' or a 'json'
-   * @returns {Promise<T>} 
+   * @returns {Promise<T>}
    */
   dispatchBroadcastMessage({ message, user, type }) {
     let content = message;
@@ -161,9 +181,20 @@ export default class SignalDataProvider extends BaseDataProvider {
     if (type === 'json') {
       content = JSON.stringify(message);
     }
-    content = JSON.stringify(JSON.parse({ type: 'generic', content }));
+    content = JSON.stringify({ type: 'generic', content });
     chan.messageChannelSend(content);
     return Promise.resolve();
+  }
+
+  dispatchUpdateBoardInfo({ uuid }) {
+    return new Promise((resolve, reject) => {
+      if (!uuid) {
+        reject(new Error('BoardId cannot be null'));
+      }
+      this.chan.channelSetAttr('boardId', uuid, () => {
+        resolve();
+      });
+    });
   }
 
   /**
@@ -180,43 +211,58 @@ export default class SignalDataProvider extends BaseDataProvider {
     const { chan } = this;
     chan.onChannelUserList = users => {
       const accounts = users.map(user => user[0]);
-      this.getUsersAttributes(accounts).then(attributes => {
-        attributes.forEach(attr => {
-          const { json } = attr;
-          const parsedAttr = JSON.parse(json);
-          this.emit('user-info-updated', { uid: parsedAttr.uid, info: parsedAttr });
-          if (parsedAttr.shareId) {
-            this.emit('screen-share-started', { shareId: parsedAttr.shareId, sharerId: parsedAttr.uid });
-          }
+      this.getUsersAttributes(accounts)
+        .then(attributes => {
+          attributes.forEach(attr => {
+            const { json } = attr;
+            const parsedAttr = JSON.parse(json);
+            this.emit('user-info-updated', {
+              uid: parsedAttr.uid,
+              info: parsedAttr
+            });
+            if (parsedAttr.shareId) {
+              this.emit('screen-share-started', {
+                shareId: parsedAttr.shareId,
+                sharerId: parsedAttr.uid
+              });
+            }
+          });
+          return true;
+        })
+        .catch(e => {
+          this.log(`failed to get user attributes: ${e}`);
         });
-        return true;
-      }).catch(e => {
-        this.log(`failed to get user attributes: ${e}`);
-      });
     };
 
     chan.onChannelUserJoined = account => {
-      this.getUserAttributes(account).then(attrs => {
-        const { json } = attrs;
-        const parsedAttr = JSON.parse(json);
-        this.emit('user-info-updated', { uid: parsedAttr.uid, info: parsedAttr });
-        return true;
-      }).catch(e => {
-        this.log(`failed to get user attributes: ${e}`);
-      });
+      this.getUserAttributes(account)
+        .then(attrs => {
+          const { json } = attrs;
+          const parsedAttr = JSON.parse(json);
+          this.emit('user-info-updated', {
+            uid: parsedAttr.uid,
+            info: parsedAttr
+          });
+          return true;
+        })
+        .catch(e => {
+          this.log(`failed to get user attributes: ${e}`);
+        });
     };
 
     chan.onChannelUserLeaved = account => {
-      this.getUserAttributes(account).then(attrs => {
-        const { json } = attrs;
-        const parsedAttr = JSON.parse(json);
-        if (parsedAttr.shareId) {
-          this.emit('screen-share-stopped');
-        }
-        return true;
-      }).catch(e => {
-        this.log(`failed to get user attributes: ${e}`);
-      });
+      this.getUserAttributes(account)
+        .then(attrs => {
+          const { json } = attrs;
+          const parsedAttr = JSON.parse(json);
+          if (parsedAttr.shareId) {
+            this.emit('screen-share-stopped');
+          }
+          return true;
+        })
+        .catch(e => {
+          this.log(`failed to get user attributes: ${e}`);
+        });
     };
 
     chan.onMessageChannelReceive = (account, suid, message) => {
@@ -224,20 +270,27 @@ export default class SignalDataProvider extends BaseDataProvider {
       let { type } = JSON.parse(message);
 
       if (type === 'generic') {
-        this.getUserAttributes(account).then(attrs => {
-          const { json } = attrs;
-          const ts = new Date().getTime();
-          type = 'str';
-          const parsedAttr = JSON.parse(json);
-          const { uid, username, role } = parsedAttr;
-          const detail = {
-            message: content, ts, uid, username, role, type
-          };
-          this.emit('message-received', { detail });
-          return true;
-        }).catch(e => {
-          this.log(`failed to get user attributes: ${e}`);
-        });
+        this.getUserAttributes(account)
+          .then(attrs => {
+            const { json } = attrs;
+            const ts = new Date().getTime();
+            type = 'str';
+            const parsedAttr = JSON.parse(json);
+            const { uid, username, role } = parsedAttr;
+            const detail = {
+              message: content,
+              ts,
+              uid,
+              username,
+              role,
+              type
+            };
+            this.emit('message-received', { detail });
+            return true;
+          })
+          .catch(e => {
+            this.log(`failed to get user attributes: ${e}`);
+          });
       } else if (type === 'share') {
         const { shareId, sharerId } = JSON.parse(content);
         this.emit('screen-share-started', { shareId, sharerId });
@@ -247,11 +300,10 @@ export default class SignalDataProvider extends BaseDataProvider {
     };
   }
 
-
   setUserAttribute(name, value) {
     return new Promise((resolve, reject) => {
       const { session } = this;
-      session.invoke('io.agora.signal.user_set_attr', { name, value }, (err) => {
+      session.invoke('io.agora.signal.user_set_attr', { name, value }, err => {
         if (err) {
           reject();
         } else {
@@ -275,13 +327,17 @@ export default class SignalDataProvider extends BaseDataProvider {
   getUserAttributes(account) {
     return new Promise((resolve, reject) => {
       const { session } = this;
-      session.invoke('io.agora.signal.user_get_attr_all', { account }, (err, attrs) => {
-        if (err) {
-          reject();
-        } else {
-          resolve(attrs);
+      session.invoke(
+        'io.agora.signal.user_get_attr_all',
+        { account },
+        (err, attrs) => {
+          if (err) {
+            reject();
+          } else {
+            resolve(attrs);
+          }
         }
-      });
+      );
     });
   }
 
