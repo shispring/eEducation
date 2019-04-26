@@ -1,6 +1,6 @@
 {
-  "name": "education-web",
-  "version": "0.1.0",
+  "name": "agora-education-web",
+  "version": "4.0.0-alpha",
   "private": true,
   "homepage": ".",
   "dependencies": {
