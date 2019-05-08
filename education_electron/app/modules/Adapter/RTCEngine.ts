@@ -41,11 +41,13 @@ class RTCEngine {
     const isAudience = this.config.role === ClientRole.AUDIENCE
     client.setChannelProfile(1)
     client.setClientRole(isAudience ? 2 : 1, '');
-    client.setAudioProfile(0, 1);
     client.enableWebSdkInteroperability(true)
-    client.setParameters('{"che.audio.live_for_comm":true}');
-    client.setParameters('{"che.audio.enable.agc":false}');
+    // turn on UC mode introduced since 2.3.3
+    client.setParameters('{"rtc.force_unified_communication_mode":true}')
     // no longer needed in v2.4
+    // client.setAudioProfile(0, 1);
+    // client.setParameters('{"che.audio.live_for_comm":true}');
+    // client.setParameters('{"che.audio.enable.agc":false}');
     // client.setParameters('{"che.video.moreFecSchemeEnable":true}');
     if (!isAudience) {
       client.enableDualStreamMode(true);
