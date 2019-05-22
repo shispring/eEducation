@@ -1,6 +1,6 @@
 /// <reference path="../../proto/proto.d.ts" />
 
-import AgoraRtmSDK, { AgoraRtmChannel } from "agora-node-rtm";
+import AgoraRtmSDK, { AgoraRtmChannel } from "../../../agora-rtm-nodejs";
 import inMemoryCache from "./inMemoryCache";
 import { sentry as log } from "../../lib/logger";
 import Mutex from "../../lib/mutex";
