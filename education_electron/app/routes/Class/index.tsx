@@ -62,9 +62,8 @@ export default function(props: any) {
     // join class and add local user/stream
     adapter.rtcEngine.join();
     return () => {
-      adapter.rtcEngine.release();
-      adapter.signal.release();
-      dispatch({type: 'removeMember', uid})
+      adapter.release();
+      dispatch({type: 'clear'})
     };
   }, [0]);
 

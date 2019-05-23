@@ -83,8 +83,18 @@ function App() {
   };
 
   useEffect(() => {
+    const check = (e: any) => {
+      console.log(e)
+      if(e.oldURL.indexOf('classroom') !== -1 && e.newURL.indexOf('device_test') !== -1) {
+        window.location.hash = ''
+      }
+    }
     if (window.location.hash.length > 2) {
       initEngine();
+    }
+    window.addEventListener('hashchange', check)
+    return () => {
+      window.removeEventListener('hashchange', check)
     }
   }, []);
 

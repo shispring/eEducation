@@ -61,9 +61,8 @@ export default function(props: any) {
     // join class and add local user/stream
     adapter.rtcEngine.join();
     return () => {
-      adapter.rtcEngine.leave();
-      adapter.signal.release();
-      dispatch({type: 'removeMember', uid})
+      adapter.release()
+      dispatch({type: 'clear'})
     };
   }, [0]);
 
@@ -170,6 +169,7 @@ export default function(props: any) {
   }, [length])
 
   const studentStreams = useMemo(() => {
+    console.log(length, studentList, streamList)
     return studentList.toArray().map(([uid, info]) => {
       const { name, video, audio } = info;
       const index = streamList.findIndex(

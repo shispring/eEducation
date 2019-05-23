@@ -23,6 +23,9 @@ export default class Adapter {
   }
 
   public async initialize(config: AdapterConfig) {
+    if (this.initialized) {
+      return {};
+    }
     this.config = config;
     const {channel = '', name, role, streamId} = this.config
     this.rtcEngine.initialize(config);

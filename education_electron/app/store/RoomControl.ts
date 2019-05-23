@@ -15,6 +15,7 @@ export default EasyState({
     channelAttr: Map<string, string|number>(),
     studentList: Map<string, any>(),
     teacherList: Map<string, any>(),
+    audienceList: Map<string, any>(),
     messageList: [] as Array<{uid: string, content: string, username: string, local: boolean}>
   },
 
@@ -22,6 +23,7 @@ export default EasyState({
     addMember(state, { members }) {
       let tempStudentsList = state.studentList;
       let tempTeacherList = state.teacherList;
+      let tempAudienceList = state.audienceList;
       if (members instanceof Array) {
         for (let item of members) {
           if (Number(item.role) === 1) {
@@ -36,6 +38,9 @@ export default EasyState({
           if (Number(item.role) === 2) {
             // teacher
             tempTeacherList = tempTeacherList.set(item.uid, item);
+          }
+          if (Number(item.role) === 0) {
+            tempAudienceList = tempAudienceList.set(item.uid, item)
           }
         }
       } else {
@@ -53,48 +58,57 @@ export default EasyState({
             // teacher
             tempTeacherList = tempTeacherList.set(members.uid, members);
           }
+          if (Number(members.role)=== 0) {
+            // teacher
+            tempAudienceList = tempAudienceList.set(members.uid, members);
+          }
         }
       }
       return {
         channelAttr: state.channelAttr,
         messageList: state.messageList,
         teacherList: tempTeacherList,
-        studentList: tempStudentsList
+        studentList: tempStudentsList,
+        audienceList: tempAudienceList,
       };
     },
 
     updateMember(state, { uid, attr}) {
       let tempStudentsList = state.studentList;
       let tempTeacherList = state.teacherList;
+      let tempAudienceList = state.audienceList
       if (tempStudentsList.has(uid)) {
         tempStudentsList = tempStudentsList.update(uid, value => Object.assign({}, value, attr))
       } else if (tempTeacherList.has(uid)) {
         tempTeacherList = tempTeacherList.update(uid, value => Object.assign({}, value, attr))
+      } else if (tempAudienceList.has(uid)) {
+        tempAudienceList = tempAudienceList.update(uid, value => Object.assign({}, value, attr))
       }
       return {
         channelAttr: state.channelAttr,
         messageList: state.messageList,
         teacherList: tempTeacherList,
-        studentList: tempStudentsList
+        studentList: tempStudentsList,
+        audienceList: tempAudienceList,
       };
     },
 
     removeMember(state, { uid }) {
       let tempStudentsList = state.studentList.delete(uid);
       let tempTeacherList = state.teacherList.delete(uid);
+      let tempAudienceList = state.audienceList.delete(uid);
       return {
         channelAttr: state.channelAttr,
         messageList: state.messageList,
         teacherList: tempTeacherList,
-        studentList: tempStudentsList
+        studentList: tempStudentsList,
+        audienceList: tempAudienceList,
       }
     },
 
     updateChannelAttr(state, {channelAttr}) {
       return {
-        studentList: state.studentList,
-        messageList: state.messageList,
-        teacherList: state.teacherList,
+        ...state,
         channelAttr: state.channelAttr.merge(channelAttr as typeof state.channelAttr)
       }
     },
@@ -102,32 +116,33 @@ export default EasyState({
     updateUserAttr(state, {uid, userAttr}) {
       let tempStudentsList = state.studentList;
       let tempTeacherList = state.teacherList;
+      let tempAudienceList = state.audienceList;
       if (tempStudentsList.has(uid)) {
         tempStudentsList = tempStudentsList.set(uid, userAttr)
       } else if (tempTeacherList.has(uid)) {
         tempTeacherList = tempTeacherList.set(uid, userAttr)
+      } else if (tempAudienceList.has(uid)) {
+        tempAudienceList = tempAudienceList.set(uid, userAttr)
       }
       return {
-        channelAttr: state.channelAttr,
-        messageList: state.messageList,
+        ...state,
         teacherList: tempTeacherList,
-        studentList: tempStudentsList
+        studentList: tempStudentsList,
+        audienceList: tempAudienceList,
       }
     },
 
     addChannelMessage(state, {uid, content, local}) {
-      const user = state.studentList.merge(state.teacherList).get(uid);
+      const user = state.studentList.merge(state.teacherList).merge(state.audienceList).get(uid);
       let name = 'unknown'
       if (user) {
         name = user.name
       }
       return {
-        channelAttr: state.channelAttr,
+        ...state,
         messageList: state.messageList.concat([{
           uid: uid, content, username: name, local
         }]),
-        teacherList: state.teacherList,
-        studentList: state.studentList
       }
     }
   }
