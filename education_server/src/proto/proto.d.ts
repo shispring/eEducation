@@ -20,19 +20,19 @@ declare namespace RoomControlRequest {
   //   name: "Leave";
   // }
 
-  export interface StartShare extends Request {
-    name: "StartShare";
-    args: {
-      uid: string | number;
-    };
-  }
+  // export interface StartShare extends Request {
+  //   name: "StartShare";
+  //   args: {
+  //     uid: string | number;
+  //   };
+  // }
 
-  export interface StopShare extends Request {
-    name: "StopShare";
-    args: {
-      uid: string | number;
-    };
-  }
+  // export interface StopShare extends Request {
+  //   name: "StopShare";
+  //   args: {
+  //     uid: string | number;
+  //   };
+  // }
 
   export interface Chat extends Request {
     name: "Chat";
