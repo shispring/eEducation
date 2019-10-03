@@ -1,6 +1,6 @@
 import React, { useMemo, FunctionComponent, useState, Fragment, useEffect } from 'react';
-import { RoomWhiteboard, Room } from "white-react-sdk";
-import "white-web-sdk/style/index.css";
+import { RoomWhiteboard, Room } from "@netless/white-react-sdk";
+import "@netless/white-web-sdk/style/index.css";
 import { Spin, Pagination } from "antd";
 import NativeStreamPlayer from "../../components/NativeStreamPlayer";
 

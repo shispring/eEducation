@@ -1,4 +1,4 @@
-import { WhiteWebSdk, Room } from 'white-web-sdk';
+import { WhiteWebSdk, Room } from '@netless/white-react-sdk';
 import axios from 'axios';
 import { EventEmitter } from 'events';
 
