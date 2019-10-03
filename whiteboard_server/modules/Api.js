@@ -1,6 +1,6 @@
 const logger = require("./logger").get("whiteboard");
 const request = require("request");
-const baseUrl = "https://cloudcapiv3.herewhite.com";
+const baseUrl = "https://scdncloudcapiv4.herewhite.com";
 const {WHITE_TOKEN} = require("./config");
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -12,7 +12,7 @@ const upload = multer({
     }
 });
 const AliService = require('./AliService');
-const aliservice = new AliService();
+// const aliservice = new AliService();
 
 
 

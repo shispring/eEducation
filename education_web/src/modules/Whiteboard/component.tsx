@@ -1,5 +1,5 @@
-import { RoomWhiteboard, Room } from "white-react-sdk";
-import "white-web-sdk/style/index.css";
+import { RoomWhiteboard, Room } from "@netless/white-react-sdk";
+import "@netless/white-web-sdk/style/index.css";
 import { Spin, Pagination } from "antd";
 import StreamPlayer from "agora-stream-player";
 
