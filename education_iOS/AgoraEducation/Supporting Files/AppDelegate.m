@@ -7,7 +7,7 @@
 //
 
 #import "AppDelegate.h"
-#import "SignalManager.h"
+#import "AppUpdateManager.h"
 
 @interface AppDelegate ()
 
@@ -17,7 +17,9 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-
+    
+    [AppUpdateManager checkAppUpdate];
+    
     return YES;
 }
 
