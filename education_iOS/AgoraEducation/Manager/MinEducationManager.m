@@ -83,50 +83,6 @@
     }];
 }
 
-- (void)queryOnlineStudentCountWithChannelName:(NSString *)channelName maxCount:(NSInteger)maxCount completeSuccessBlock:(void (^) (NSInteger count))successBlock completeFailBlock:(void (^) (void))failBlock {
-    
-    [self queryGlobalStateWithChannelName:channelName completeBlock:^(RolesInfoModel * _Nullable rolesInfoModel) {
-        
-        if(rolesInfoModel == nil || rolesInfoModel.studentModels == nil) {
-            if(failBlock != nil){
-                failBlock();
-            }
-        }
-        
-        NSInteger studentCount = rolesInfoModel.studentModels.count;
-        if(studentCount >= maxCount){
-            
-            NSMutableArray<NSString *> *uIds = [NSMutableArray array];
-            for(RolesStudentInfoModel *model in rolesInfoModel.studentModels){
-                [uIds addObject:model.attrKey];
-            }
-            [self.signalManager queryPeersOnlineStatus:uIds completion:^(NSArray<AgoraRtmPeerOnlineStatus *> *peerOnlineStatus, AgoraRtmQueryPeersOnlineErrorCode errorCode) {
-                
-                if(errorCode == AgoraRtmQueryPeersOnlineErrorOk) {
-                    
-                    NSInteger count = 0;
-                    for (AgoraRtmPeerOnlineStatus *status in peerOnlineStatus){
-                        if(status.isOnline) {
-                            count++;
-                        }
-                    }
-                    if(successBlock != nil){
-                        successBlock(count);
-                    }
-                } else {
-                    if(failBlock != nil){
-                        failBlock();
-                    }
-                }
-            }];
-        } else {
-            if(successBlock != nil){
-                successBlock(studentCount);
-            }
-        }
-    }];
-}
-
 - (void)sendMessageWithContent:(NSString *)text userName:(NSString *)name {
     
     NSString *messageBody = [GenerateSignalBody messageWithName:name content:text];
@@ -416,30 +372,20 @@
     [self.whiteManager initWhiteSDKWithBoardView:boardView config:[WhiteSdkConfiguration defaultConfig]];
 }
 
-- (void)joinWhiteRoomWithUuid:(NSString*)uuid completeSuccessBlock:(void (^) (WhiteRoom * _Nullable room))successBlock completeFailBlock:(void (^) (NSError * _Nullable error))failBlock {
+- (void)joinWhiteRoomWithBoardId:(NSString*)boardId boardToken:(NSString*)boardToken  completeSuccessBlock:(void (^) (WhiteRoom * _Nullable room))successBlock completeFailBlock:(void (^) (NSError * _Nullable error))failBlock {
     
-    WEAK(self);
-    [HttpManager POSTWhiteBoardRoomWithUuid:uuid token:^(NSString * _Nonnull token) {
-
-        WhiteRoomConfig *roomConfig = [[WhiteRoomConfig alloc] initWithUuid:uuid roomToken:token];
-        [weakself.whiteManager joinWhiteRoomWithWhiteRoomConfig:roomConfig completeSuccessBlock:^(WhiteRoom * _Nullable room) {
-            
-            if(successBlock != nil){
-                successBlock(room);
-            }
-            
-        } completeFailBlock:^(NSError * _Nullable error) {
-            
-            if(failBlock != nil){
-                failBlock(error);
-            }
-        }];
+    WhiteRoomConfig *roomConfig = [[WhiteRoomConfig alloc] initWithUuid:boardId roomToken:boardToken];
+    [self.whiteManager joinWhiteRoomWithWhiteRoomConfig:roomConfig completeSuccessBlock:^(WhiteRoom * _Nullable room) {
         
-    } failure:^(NSString * _Nonnull msg) {
-        if(failBlock != nil){
-            failBlock(nil);
+        if(successBlock != nil){
+            successBlock(room);
         }
-        NSLog(@"EducationManager Get Room Token Err:%@", msg);
+        
+    } completeFailBlock:^(NSError * _Nullable error) {
+        
+        if(failBlock != nil){
+            failBlock(error);
+        }
     }];
 }
 
