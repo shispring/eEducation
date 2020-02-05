@@ -26,6 +26,7 @@
 #import "ConfigModel.h"
 #import "EnterRoomAllModel.h"
 #import "UIView+Toast.h"
+#import "AppUpdateManager.h"
 
 @interface MainViewController ()<EEClassRoomTypeDelegate, SignalDelegate, UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UIView *baseView;
@@ -58,7 +59,8 @@
     WEAK(self);
     [self.activityIndicator startAnimating];
     [self.joinButton setEnabled:NO];
-    [HttpManager get:HTTP_GET_CONFIG params:nil headers:nil success:^(id responseObj) {
+    
+    [HttpManager getAppConfigWithSuccess:^(id responseObj) {
         
         [weakself.activityIndicator stopAnimating];
         [weakself.joinButton setEnabled:YES];
@@ -66,8 +68,10 @@
         ConfigModel *model = [ConfigModel yy_modelWithDictionary:responseObj];
         if(model.code == 0){
             
-            weakself.configInfoModel = model.data;
-            [KeyCenter setAgoraAppid:model.data.appId];
+            [AppUpdateManager checkAppUpdateWithModel:model];
+            
+            weakself.configInfoModel = model.data.config;
+            [KeyCenter setAgoraAppid:weakself.configInfoModel.appId];
             
             if(successBlock != nil){
                 successBlock();
@@ -134,6 +138,8 @@
     self.activityIndicator.color = [UIColor grayColor];
     self.activityIndicator.backgroundColor = [UIColor whiteColor];
     self.activityIndicator.hidesWhenStopped = YES;
+    
+    self.joinButton.layer.cornerRadius = 20;
 }
 
 - (void)addTouchedRecognizer {
@@ -173,8 +179,8 @@
 #pragma mark Click Event
 - (IBAction)joinRoom:(UIButton *)sender {
     
-    self.userNameTextFiled.text = @"test1";
-    self.passwordTextFiled.text = @"Jerry";
+    self.userNameTextFiled.text = @"jerry";
+    self.passwordTextFiled.text = @"6apLFG";
     
     if (self.userNameTextFiled.text.length == 0 || self.passwordTextFiled.text.length == 0 || ![self checkClassRoomText:self.userNameTextFiled.text]) {
         
@@ -198,24 +204,29 @@
     [self.joinButton setEnabled:YES];
     
     NSString *url = [NSString stringWithFormat:HTTP_POST_ENTER_ROOM, [KeyCenter agoraAppid]];
-
+    
+    NSDictionary *headers = @{
+        @"Authorization" : self.configInfoModel.authorization,
+    };
+    
     NSMutableDictionary *params = [NSMutableDictionary dictionary];
     params[@"userName"] = self.userNameTextFiled.text;
     params[@"password"] = self.passwordTextFiled.text;
     params[@"role"] = @(2);
+    params[@"uuid"] = [UIDevice currentDevice].identifierForVendor.UUIDString;
     
     WEAK(self);
-    [HttpManager post:url params:params headers:nil success:^(id responseObj) {
+    [HttpManager post:url params:params headers:headers success:^(id responseObj) {
         
         EnterRoomAllModel *model = [EnterRoomAllModel yy_modelWithDictionary:responseObj];
         if(model.code == 0){
             
             weakself.enterRoomInfoModel = model.data;
-            [KeyCenter setWhiteBoardId:weakself.enterRoomInfoModel.room.whiteId];
-            [KeyCenter setWhiteBoardToken:weakself.enterRoomInfoModel.room.whiteToken];
+            [KeyCenter setWhiteBoardId:weakself.enterRoomInfoModel.room.boardId];
+            [KeyCenter setWhiteBoardToken:weakself.enterRoomInfoModel.room.boardToken];
             [KeyCenter setAgoraRTMToken:weakself.enterRoomInfoModel.user.rtmToken];
             [KeyCenter setAgoraRTCToken:weakself.enterRoomInfoModel.user.rtcToken];
-        
+            
             if (weakself.enterRoomInfoModel.room.type == 1) {
                 [weakself join1V1RoomWithIdentifier:@"oneToOneRoom"];
             } else if (weakself.enterRoomInfoModel.room.type == 2){
@@ -249,7 +260,7 @@
 - (void)join1V1RoomWithIdentifier:(NSString*)identifier {
     
     NSString *uid = @(self.enterRoomInfoModel.user.uid).stringValue;
-
+    
     WEAK(self);
     SignalModel *model = [SignalModel new];
     model.appId = [KeyCenter agoraAppid];
@@ -303,7 +314,7 @@
 - (void)joinMinRoomWithIdentifier:(NSString*)identifier {
     
     NSString *uid = [NSNumber numberWithInteger:self.enterRoomInfoModel.user.uid].stringValue;
-
+    
     WEAK(self);
     SignalModel *model = [SignalModel new];
     model.appId = [KeyCenter agoraAppid];
@@ -336,7 +347,7 @@
 - (void)joinBigRoomWithIdentifier:(NSString*)identifier {
     
     NSString *uid = [NSNumber numberWithInteger:self.enterRoomInfoModel.user.uid].stringValue;
-
+    
     WEAK(self);
     SignalModel *model = [SignalModel new];
     model.appId = [KeyCenter agoraAppid];

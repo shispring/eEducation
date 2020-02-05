@@ -37,7 +37,6 @@
 		78C9E2DB23E417B500DE7A01 /* JsonParseUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 78C9E2D223E417B500DE7A01 /* JsonParseUtil.m */; };
 		78C9E2DC23E417B500DE7A01 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 78C9E2D623E417B500DE7A01 /* UIView+Toast.m */; };
 		78C9E2E323E419A900DE7A01 /* AppUpdateManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 78C9E2DE23E419A900DE7A01 /* AppUpdateManager.m */; };
-		78C9E2E423E419A900DE7A01 /* AppVersionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 78C9E2E123E419A900DE7A01 /* AppVersionModel.m */; };
 		78D7307223B3638B00D2146C /* SignalManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 78D7306423B3638B00D2146C /* SignalManager.m */; };
 		78D7307423B3638B00D2146C /* RTCManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 78D7306723B3638B00D2146C /* RTCManager.m */; };
 		78D7307523B3638B00D2146C /* WhiteManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 78D7306C23B3638B00D2146C /* WhiteManager.m */; };
@@ -183,8 +182,6 @@
 		78C9E2D523E417B500DE7A01 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		78C9E2D623E417B500DE7A01 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
 		78C9E2DE23E419A900DE7A01 /* AppUpdateManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppUpdateManager.m; sourceTree = "<group>"; };
-		78C9E2E023E419A900DE7A01 /* AppVersionModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppVersionModel.h; sourceTree = "<group>"; };
-		78C9E2E123E419A900DE7A01 /* AppVersionModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppVersionModel.m; sourceTree = "<group>"; };
 		78C9E2E223E419A900DE7A01 /* AppUpdateManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppUpdateManager.h; sourceTree = "<group>"; };
 		78D7305B23B35ADB00D2146C /* AgoraEducation.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AgoraEducation.pch; sourceTree = "<group>"; };
 		78D7306323B3638B00D2146C /* SignalManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SignalManager.h; sourceTree = "<group>"; };
@@ -599,9 +596,9 @@
 		78C9E2BE23E4177900DE7A01 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				78C9E2C123E4177900DE7A01 /* EnterRoomAllModel.h */,
 				78C9E2BF23E4177900DE7A01 /* EnterRoomAllModel.m */,
 				78C9E2C023E4177900DE7A01 /* ConfigModel.h */,
-				78C9E2C123E4177900DE7A01 /* EnterRoomAllModel.h */,
 				78C9E2C223E4177900DE7A01 /* ConfigModel.m */,
 			);
 			path = Model;
@@ -664,20 +661,10 @@
 		78C9E2DD23E419A900DE7A01 /* AppUpdateManager */ = {
 			isa = PBXGroup;
 			children = (
-				78C9E2DE23E419A900DE7A01 /* AppUpdateManager.m */,
-				78C9E2DF23E419A900DE7A01 /* Model */,
 				78C9E2E223E419A900DE7A01 /* AppUpdateManager.h */,
+				78C9E2DE23E419A900DE7A01 /* AppUpdateManager.m */,
 			);
 			path = AppUpdateManager;
-			sourceTree = "<group>";
-		};
-		78C9E2DF23E419A900DE7A01 /* Model */ = {
-			isa = PBXGroup;
-			children = (
-				78C9E2E023E419A900DE7A01 /* AppVersionModel.h */,
-				78C9E2E123E419A900DE7A01 /* AppVersionModel.m */,
-			);
-			path = Model;
 			sourceTree = "<group>";
 		};
 		78D7306123B3638B00D2146C /* Signal */ = {
@@ -1098,7 +1085,6 @@
 				78D731AA23BB103B00D2146C /* BigEducationManager.m in Sources */,
 				78D730F023B3889D00D2146C /* EEPageControlView.m in Sources */,
 				78C9E2C323E4177900DE7A01 /* EnterRoomAllModel.m in Sources */,
-				78C9E2E423E419A900DE7A01 /* AppVersionModel.m in Sources */,
 				78D7310F23B388B100D2146C /* MCStudentVideoCell.m in Sources */,
 				787E7A3923A9FE97005F8F0C /* ReplayControlView.m in Sources */,
 				78D731C223BCE4EA00D2146C /* BCViewController.m in Sources */,
@@ -1337,9 +1323,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 5.0.0;
-				PRODUCT_BUNDLE_IDENTIFIER = io.agora.AgoraEducationDis;
+				PRODUCT_BUNDLE_IDENTIFIER = io.agora.AgoraEducationDisGY;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = AgoraEducationAppRelease;
+				PROVISIONING_PROFILE_SPECIFIER = AgoraEducationGongYiAppStoreRelease;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				TARGETED_DEVICE_FAMILY = 1;
 				VALID_ARCHS = "arm64 arm64e armv7s armv7";

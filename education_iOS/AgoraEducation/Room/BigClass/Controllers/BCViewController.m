@@ -653,6 +653,7 @@
             [self.navigationView updateSignalImageName:@"icon-signal1"];
             break;
         default:
+            [self.navigationView updateSignalImageName:@"icon-signal1"];
             break;
     }
 }

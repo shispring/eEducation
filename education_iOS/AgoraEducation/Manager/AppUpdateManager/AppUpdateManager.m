@@ -9,7 +9,6 @@
 #import "AppUpdateManager.h"
 #import "AlertViewUtil.h"
 #import "HttpManager.h"
-#import "AppVersionModel.h"
 
 #define ITUNES_URL @"https://itunes.apple.com/cn/app/id1496783878"
 
@@ -36,28 +35,26 @@ static AppUpdateManager *manager = nil;
     return self;
 }
 
++ (void)checkAppUpdateWithModel:(ConfigModel *)model {
+    if(model.code == 0) {
+        
+        if(model.data.reviewing == 0){
+            if(model.data.forcedUpgrade == 2) {
+                [AppUpdateManager.shareManager showAppUpdateAlertView:NO];
+            } else if(model.data.forcedUpgrade == 3) {
+                [AppUpdateManager.shareManager showAppUpdateAlertView:YES];
+            }
+        }
+    }
+}
+
 + (void)checkAppUpdate {
     
-    NSInteger deviceType = 3;
-    if (UIUserInterfaceIdiomPhone == [UIDevice currentDevice].userInterfaceIdiom) {
-        deviceType = 1;
-    } else if(UIUserInterfaceIdiomPad == [UIDevice currentDevice].userInterfaceIdiom) {
-        deviceType = 2;
-    }
-    
-    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
-    
-    NSDictionary *params = @{
-        @"appCode" : @"edu-demo",
-        @"osType" : @(1),// 1.ios 2.android
-        @"terminalType" : @(deviceType),//1.phone 2.pad
-        @"appVersion" : app_Version
-    };
-    [HttpManager get:HTTP_GET_APP_VERSION params:params headers:nil success:^(id responseObj) {
+    [HttpManager getAppConfigWithSuccess:^(id responseObj) {
         
-        AppVersionModel *model = [AppVersionModel yy_modelWithDictionary:responseObj];
-        if(model.code == 0){
+        ConfigModel *model = [ConfigModel yy_modelWithDictionary:responseObj];
+        if(model.code == 0) {
+            
             if(model.data.reviewing == 0){
                 if(model.data.forcedUpgrade == 2) {
                     [AppUpdateManager.shareManager showAppUpdateAlertView:NO];
@@ -66,8 +63,9 @@ static AppUpdateManager *manager = nil;
                 }
             }
         }
+        
     } failure:^(NSError *error) {
-
+        
     }];
 }
 
@@ -114,3 +112,4 @@ static AppUpdateManager *manager = nil;
 }
 
 @end
+

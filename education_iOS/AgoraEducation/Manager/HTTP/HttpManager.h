@@ -11,10 +11,11 @@
 #define HTTP_BASE_URL @"http://115.231.168.26:8080/edu"
 
 // http: get app version
-#define HTTP_GET_APP_VERSION @""HTTP_BASE_URL"/v1/app/version"
+//#define HTTP_GET_APP_VERSION @""HTTP_BASE_URL"/v1/app/version"
 
 // http: get app config
-#define HTTP_GET_CONFIG @""HTTP_BASE_URL"/v1/room/config"
+#define HTTP_GET_CONFIG @""HTTP_BASE_URL"/v1/app/version"
+//@""HTTP_BASE_URL"/v1/room/config"
 
 // http: get global state when enter room
 #define HTTP_POST_ENTER_ROOM @""HTTP_BASE_URL"/v2/apps/%@/room/entry"
@@ -26,5 +27,7 @@
 + (void)post:(NSString *)url params:(NSDictionary *)params headers:(NSDictionary<NSString*, NSString*> *)headers success:(void (^)(id responseObj))success failure:(void (^)(NSError *error))failure;
 
 + (void)POSTWhiteBoardRoomWithUuid:(NSString *)uuid token:(void (^)(NSString *token))token failure:(void (^)(NSString *msg))failure;
+
++ (void)getAppConfigWithSuccess:(void (^)(id responseObj))success failure:(void (^)(NSError *error))failure;
 
 @end

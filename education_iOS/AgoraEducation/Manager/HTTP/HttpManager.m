@@ -45,10 +45,11 @@ static HttpManager *manager = nil;
         }
     }
     
-    NSLog(@"============>Get HTTP Start<============");
-    NSLog(@"url==>%@", url);
-    NSLog(@"headers==>%@", headers);
-    NSLog(@"params==>%@", params);
+    NSLog(@"\n============>Get HTTP Start<============\n\
+          \nurl==>\n%@\n\
+          \nheaders==>\n%@\n\
+          \nparams==>\n%@\n\
+          ", url, headers, params);
     
     [HttpManager.shareManager.sessionManager GET:url parameters:params progress:^(NSProgress * _Nonnull downloadProgress) {
         
@@ -56,14 +57,17 @@ static HttpManager *manager = nil;
         if (success) {
             success(responseObject);
         }
-        NSLog(@"Result==>%@", responseObject);
-        NSLog(@"============>Get HTTP Success<============");
+        
+        NSLog(@"\n============>Get HTTP Success<============\n\
+              \nResult==>\n%@\n\
+              ", responseObject);
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         if (failure) {
             failure(error);
         }
-        NSLog(@"Error==>%@", error.description);
-        NSLog(@"============>Get HTTP Error<============");
+        NSLog(@"\n============>Get HTTP Error<============\n\
+              \nError==>\n%@\n\
+              ", error.description);
     }];
 }
 
@@ -75,23 +79,28 @@ static HttpManager *manager = nil;
             [HttpManager.shareManager.sessionManager.requestSerializer setValue:headers[key] forHTTPHeaderField:key];
         }
     }
-    NSLog(@"============>Post HTTP Start<============");
-    NSLog(@"url==>%@", url);
-    NSLog(@"headers==>%@", headers);
-    NSLog(@"params==>%@", params);
+    NSLog(@"\n============>Post HTTP Start<============\n\
+          \nurl==>\n%@\n\
+          \nheaders==>\n%@\n\
+          \nparams==>\n%@\n\
+          ", url, headers, params);
     
     [HttpManager.shareManager.sessionManager POST:url parameters:params progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         if (success) {
             success(responseObject);
         }
-        NSLog(@"Result==>%@", responseObject);
-        NSLog(@"============>Post HTTP Success<============");
+        
+        NSLog(@"\n============>Post HTTP Success<============\n\
+              \nResult==>\n%@\n\
+              ", responseObject);
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         if (failure) {
           failure(error);
         }
-        NSLog(@"Error==>%@", error.description);
-        NSLog(@"============>Post HTTP Error<============");
+        
+        NSLog(@"\n============>Post HTTP Error<============\n\
+              \nError==>\n%@\n\
+              ", error.description);
     }];
 }
 
@@ -112,6 +121,38 @@ static HttpManager *manager = nil;
     } failure:^(NSError *error) {
         if (failure) {
             failure(@"Get roomToken error");
+        }
+    }];
+}
+
++ (void)getAppConfigWithSuccess:(void (^)(id responseObj))success failure:(void (^)(NSError *error))failure {
+    
+    NSInteger deviceType = 0;
+    if (UIUserInterfaceIdiomPhone == [UIDevice currentDevice].userInterfaceIdiom) {
+        deviceType = 2;
+    } else if(UIUserInterfaceIdiomPad == [UIDevice currentDevice].userInterfaceIdiom) {
+        deviceType = 1;
+    }
+    
+    NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
+    NSString *app_Version = [infoDictionary objectForKey:@"CFBundleShortVersionString"];
+    
+    NSDictionary *params = @{
+        @"appCode" : @"edu-saas",
+        @"osType" : @(1),// 1.ios 2.android
+        @"terminalType" : @(deviceType),//1.pad 2.phone
+        @"appVersion" : app_Version
+    };
+    
+    [HttpManager get:HTTP_GET_CONFIG params:params headers:nil success:^(id responseObj) {
+        
+        if(success != nil){
+            success(responseObj);
+        }
+    } failure:^(NSError *error) {
+        
+        if(failure != nil) {
+            failure(error);
         }
     }];
 }

@@ -7,12 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ConfigModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface AppUpdateManager : NSObject
 
 + (void)checkAppUpdate;
++ (void)checkAppUpdateWithModel:(ConfigModel *)model;
 
 @end
 

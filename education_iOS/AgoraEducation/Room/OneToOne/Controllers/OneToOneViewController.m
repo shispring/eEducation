@@ -190,6 +190,7 @@
     self.studentView.defaultImageView.hidden = studentModel.video == 0 ? NO : YES;
     [self.studentView updateCameraImageWithLocalVideoMute:studentModel.video == 0 ? YES : NO];
     [self.studentView updateMicImageWithLocalVideoMute:studentModel.audio == 0 ? YES : NO];
+    [self.studentView updateUserName:studentModel.account];
     
     [self.educationManager enableRTCLocalVideo:studentModel.video == 0 ? NO : YES];
     [self.educationManager enableRTCLocalAudio:studentModel.audio == 0 ? NO : YES];
@@ -466,6 +467,7 @@
             [self.navigationView updateSignalImageName:@"icon-signal1"];
             break;
         default:
+            [self.navigationView updateSignalImageName:@"icon-signal1"];
             break;
     }
 }
