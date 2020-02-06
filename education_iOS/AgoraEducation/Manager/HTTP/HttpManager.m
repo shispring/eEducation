@@ -129,9 +129,9 @@ static HttpManager *manager = nil;
     
     NSInteger deviceType = 0;
     if (UIUserInterfaceIdiomPhone == [UIDevice currentDevice].userInterfaceIdiom) {
-        deviceType = 2;
-    } else if(UIUserInterfaceIdiomPad == [UIDevice currentDevice].userInterfaceIdiom) {
         deviceType = 1;
+    } else if(UIUserInterfaceIdiomPad == [UIDevice currentDevice].userInterfaceIdiom) {
+        deviceType = 2;
     }
     
     NSDictionary *infoDictionary = [[NSBundle mainBundle] infoDictionary];
@@ -140,7 +140,7 @@ static HttpManager *manager = nil;
     NSDictionary *params = @{
         @"appCode" : @"edu-saas",
         @"osType" : @(1),// 1.ios 2.android
-        @"terminalType" : @(deviceType),//1.pad 2.phone
+        @"terminalType" : @(deviceType),//1.phone 2.pad
         @"appVersion" : app_Version
     };
     

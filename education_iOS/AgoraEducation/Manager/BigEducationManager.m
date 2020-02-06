@@ -96,6 +96,55 @@
     }];
 }
 
+- (void)queryOnlineStudentCountWithChannelName:(NSString *)channelName maxCount:(NSInteger)maxCount excludeUids:(NSArray<NSString *> *) excludeUids completeSuccessBlock:(void (^) (NSInteger count))successBlock completeFailBlock:(void (^) (void))failBlock {
+    
+    WEAK(self);
+    [self.signalManager getChannelAllAttributes:channelName completeBlock:^(NSArray<AgoraRtmChannelAttribute *> * _Nullable attributes) {
+        
+        RolesInfoModel *rolesInfoModel = [weakself filterRolesInfoModelWithAttributes:attributes];
+        if(rolesInfoModel == nil || rolesInfoModel.studentModels == nil) {
+            if(failBlock != nil){
+                failBlock();
+            }
+        }
+        
+        NSInteger studentCount = rolesInfoModel.studentModels.count;
+        if(studentCount >= maxCount){
+            
+            NSMutableArray<NSString *> *uIds = [NSMutableArray array];
+            for(RolesStudentInfoModel *model in rolesInfoModel.studentModels){
+                if(excludeUids == nil || ![excludeUids containsObject:model.attrKey]){
+                    [uIds addObject:model.attrKey];
+                }
+            }
+            
+            [weakself.signalManager queryPeersOnlineStatus:uIds completion:^(NSArray<AgoraRtmPeerOnlineStatus *> *peerOnlineStatus, AgoraRtmQueryPeersOnlineErrorCode errorCode) {
+                
+                if(errorCode == AgoraRtmQueryPeersOnlineErrorOk) {
+                    
+                    NSInteger count = 0;
+                    for (AgoraRtmPeerOnlineStatus *status in peerOnlineStatus){
+                        if(status.isOnline) {
+                            count++;
+                        }
+                    }
+                    if(successBlock != nil){
+                        successBlock(count);
+                    }
+                } else {
+                    if(failBlock != nil){
+                        failBlock();
+                    }
+                }
+            }];
+        } else {
+            if(successBlock != nil){
+                successBlock(studentCount);
+            }
+        }
+    }];
+}
+
 - (void)sendMessageWithContent:(NSString *)text userName:(NSString *)name {
     
     NSString *messageBody = [GenerateSignalBody messageWithName:name content:text];
@@ -612,8 +661,15 @@ The RoomState property in the room will trigger this callback when it changes.
     
     for (RTCVideoSessionModel *model in self.rtcVideoSessionModels){
         model.videoCanvas.view = nil;
-        model.videoCanvas = nil;
+        
+        if(model.uid == self.signalManager.messageModel.uid.integerValue) {
+            [self.rtcManager setupLocalVideo:model.videoCanvas];
+        } else {
+            [self.rtcManager setupRemoteVideo:model.videoCanvas];
+        }
     }
+    [self.rtcVideoSessionModels removeAllObjects];
+    
     [self initSessionModel];
     
     // release rtc

@@ -78,6 +78,7 @@
     self.studentView.delegate = self;
     self.navigationView.delegate = self;
     self.chatTextFiled.contentTextFiled.delegate = self;
+
     [self.navigationView updateClassName:self.paramsModel.className];
     
     [self.educationManager initSessionModel];

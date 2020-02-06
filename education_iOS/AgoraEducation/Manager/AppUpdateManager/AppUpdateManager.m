@@ -10,7 +10,7 @@
 #import "AlertViewUtil.h"
 #import "HttpManager.h"
 
-#define ITUNES_URL @"https://itunes.apple.com/cn/app/id1496783878"
+#define ITUNES_URL @"https://itunes.apple.com/cn/app/id1497655202"
 
 @interface AppUpdateManager()<UIApplicationDelegate>
 
@@ -36,12 +36,12 @@ static AppUpdateManager *manager = nil;
 }
 
 + (void)checkAppUpdateWithModel:(ConfigModel *)model {
-    if(model.code == 0) {
+    if(model.code == 0 && model.data != nil) {
         
         if(model.data.reviewing == 0){
-            if(model.data.forcedUpgrade == 2) {
+            if(model.data.forcedUpgrade == 1) {
                 [AppUpdateManager.shareManager showAppUpdateAlertView:NO];
-            } else if(model.data.forcedUpgrade == 3) {
+            } else if(model.data.forcedUpgrade == 2) {
                 [AppUpdateManager.shareManager showAppUpdateAlertView:YES];
             }
         }
@@ -53,7 +53,7 @@ static AppUpdateManager *manager = nil;
     [HttpManager getAppConfigWithSuccess:^(id responseObj) {
         
         ConfigModel *model = [ConfigModel yy_modelWithDictionary:responseObj];
-        if(model.code == 0) {
+        if(model.code == 0 && model.data != nil) {
             
             if(model.data.reviewing == 0){
                 if(model.data.forcedUpgrade == 2) {
