@@ -254,9 +254,9 @@
 
 - (void)updateChatViews {
     BOOL muteChat = self.educationManager.teacherModel != nil ? self.educationManager.teacherModel.mute_chat : NO;
-    if(self.educationManager.renderStudentModel != nil){
+    if(self.educationManager.studentModel != nil){
         if(!muteChat) {
-            muteChat = self.educationManager.renderStudentModel.chat == 0 ? YES : NO;
+            muteChat = self.educationManager.studentModel.chat == 0 ? YES : NO;
         }
     }
     
