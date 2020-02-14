@@ -148,19 +148,25 @@ export const RootProvider: React.FC<any> = ({children}) => {
     }
 
     const room = value.roomState;
+    // 业务TODO: 这里根据你的实际情况去保存变动的状态
     GlobalStorage.save('agora_room', {
       me: room.me,
       course: room.course,
       mediaDevice: room.mediaDevice,
+      liveRoom: room.liveRoom,
     });
-    // WARN: DEBUG ONLY MUST REMOVED IN PRODUCTION
+    // TODO WARN: 这里window自定义的状态在上线时建议用Symbol作为key或者直接删除
     //@ts-ignore
     window.room = roomState;
     //@ts-ignore
     window.state = globalState;
     //@ts-ignore
     window.whiteboard = whiteboardState;
-  }, [value, location]);
+  }, 
+  // 业务TODO: 这里的value是根据 
+  // 这里会观察globalState roomState whiteboardState三种状态变化触发useEffect里的回调函数
+    [value, location]
+  );
   return (
     <RootContext.Provider value={value}>
       {children}

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 import Nav from '../../components/nav';
 import RoomDialog from '../../components/dialog/room';
 import { AgoraStream } from '../../utils/types';
@@ -21,6 +21,10 @@ export const roomTypes = [
 export function RoomPage({ children }: any) {
 
   const history = useHistory();
+
+  const {course_id, room_id} = useParams();
+
+  console.log("[params]: course_id", course_id, "room_id", room_id);
 
   const lock = useRef<boolean>(false);
 
@@ -288,7 +292,7 @@ export function RoomPage({ children }: any) {
           console.info(`[agora-web] stream: ${uid} fallback: ${msg}`);
         })
         rtc.current = true;
-        // WARN: IF YOU ENABLED APP CERTIFICATE, PLEASE SIGN YOUR TOKEN IN YOUR SERVER SIDE AND OBTAIN IT FROM YOUR OWN TRUSTED SERVER API
+        // TODO: 可以根据您的业务场景去提供参数
         webClient
           .joinChannel({
             uid: +roomState.me.uid, 
@@ -377,7 +381,7 @@ export function RoomPage({ children }: any) {
           roomStore.removePeerUser(uid);
           roomStore.removeRemoteStream(uid);
         });
-        // WARN: IF YOU ENABLED APP CERTIFICATE, PLEASE SIGN YOUR TOKEN IN YOUR SERVER SIDE AND OBTAIN IT FROM YOUR OWN TRUSTED SERVER API
+        // TODO: 可以根据您的业务场景去提供参数
         nativeClient.joinChannel({
           uid: +roomState.me.uid, 
           channel: roomState.course.rid,
@@ -413,4 +417,5 @@ export function RoomPage({ children }: any) {
     </div>
   );
 }
+
 

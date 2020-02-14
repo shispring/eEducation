@@ -110,6 +110,20 @@ export type RtmState = {
   memberCount: number
 }
 
+export type RoomUser = {
+  name: string
+  rtmAccount: string
+  rtcUid?: number
+  muteVideo: boolean
+  muteAudio: boolean
+  muteChat: boolean
+}
+
+export type LiveRoomState = {
+  roomName: string
+  users: RoomUser
+}
+
 export type RoomState = {
   rtmLock: boolean
   me: AgoraUser
@@ -120,6 +134,8 @@ export type RoomState = {
   rtm: RtmState
   mediaDevice: MediaDeviceState
   messages: List<ChatMessage>
+  // TODO: 扩展你的业务状态
+  liveRoom: LiveRoomState
 }
 
 export type AgoraMediaStream = {
@@ -140,6 +156,7 @@ export class RoomStore {
   }
   public rtmClient: AgoraRTMClient = new AgoraRTMClient();
   public rtcClient: AgoraWebClient | AgoraElectronClient = isElectron ? new AgoraElectronClient () : new AgoraWebClient();
+  // 业务TODO: 此处可以根据你的业务状态给房间增加状态
   public readonly defaultState: RoomState = Object.freeze({
     rtmLock: false,
     me: {

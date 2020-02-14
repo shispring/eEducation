@@ -30,6 +30,11 @@ export default function () {
           <Route exact path="/device_test">
             <DeviceTest />
           </Route>
+          <Route exact path="/live/:course_id/:room_id/classroom/one-to-one">
+            <RoomPage >
+              <OneToOne />
+            </RoomPage>
+          </Route>
           <Route exact path="/classroom/one-to-one">
             <RoomPage >
               <OneToOne />

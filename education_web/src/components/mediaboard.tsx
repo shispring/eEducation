@@ -79,16 +79,16 @@ const MediaBoard: React.FC<MediaBoardProps> = ({
 
     if (platform === 'web') {
       const webClient = rtcClient as AgoraWebClient;
-      // WARN: IF YOU ENABLED APP CERTIFICATE, PLEASE SIGN YOUR TOKEN IN YOUR SERVER SIDE AND OBTAIN IT FROM YOUR OWN TRUSTED SERVER API
+      // TODO: 可以根据您的业务场景去提供参数
       const screenShareToken = '';
       webClient.startScreenShare(screenShareToken).then(() => {
         webClient.shareClient.on('onTokenPrivilegeWillExpire', (evt: any) => {
-          // WARN: IF YOU ENABLED APP CERTIFICATE, PLEASE SIGN YOUR TOKEN IN YOUR SERVER SIDE AND OBTAIN IT FROM YOUR OWN TRUSTED SERVER API
+          // TODO: 可以根据您的业务场景去提供参数
           const newToken = '';
           webClient.shareClient.renewToken(newToken);
         });
         webClient.shareClient.on('onTokenPrivilegeDidExpire', (evt: any) => {
-          // WARN: IF YOU ENABLED APP CERTIFICATE, PLEASE SIGN YOUR TOKEN IN YOUR SERVER SIDE AND OBTAIN IT FROM YOUR OWN TRUSTED SERVER API
+          // TODO: 可以根据您的业务场景去提供参数
           const newToken = '';
           webClient.shareClient.renewToken(newToken);
         });

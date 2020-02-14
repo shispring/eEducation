@@ -113,7 +113,7 @@ export default function NativeSharedWindowContainer() {
           if (platform === 'electron') {
             const rtcClient = roomStore.rtcClient;
             const nativeClient = rtcClient as AgoraElectronClient;
-            // WARN: IF YOU ENABLED APP CERTIFICATE, PLEASE SIGN YOUR TOKEN IN YOUR SERVER SIDE AND OBTAIN IT FROM YOUR OWN TRUSTED SERVER API
+            // TODO: 可以根据您的业务场景去提供参数
             const screenShareToken = '';
             let electronStream = await nativeClient.startScreenShare(windowId, screenShareToken);
             roomStore.addLocalSharedStream(new AgoraStream(electronStream, electronStream.uid, true));
