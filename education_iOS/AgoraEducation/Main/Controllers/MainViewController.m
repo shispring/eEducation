@@ -189,7 +189,7 @@
 
 #pragma mark Click Event
 - (IBAction)joinRoom:(UIButton *)sender {
-    
+
     if (self.userNameTextFiled.text.length == 0 || self.passwordTextFiled.text.length == 0 || ![self checkUserNameText:self.userNameTextFiled.text]) {
         
         [AlertViewUtil showAlertWithController:self title:@"User name must be within 11 digits or english characters"];

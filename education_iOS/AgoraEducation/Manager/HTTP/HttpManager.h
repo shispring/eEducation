@@ -14,7 +14,7 @@
 
 #else
 
-#define HTTP_BASE_URL @"https://room.sh.agoralab.co/edu"
+#define HTTP_BASE_URL @"https://solutions-api.sh.agoralab.co/edu"
 
 #endif
 
