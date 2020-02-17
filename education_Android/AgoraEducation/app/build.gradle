@@ -49,6 +49,10 @@ android {
             dimension "app"
             applicationId "io.agora.education"
         }
+        wuhan {
+            dimension "app"
+            applicationId "io.agora.education.wuhan"
+        }
     }
 
     sourceSets {
