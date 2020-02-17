@@ -28,6 +28,7 @@
 #import "SignalP2PModel.h"
 #import "MCStudentVideoCell.h"
 #import "KeyCenter.h"
+#import "UIView+Toast.h"
 
 #define kLandscapeViewWidth    222
 @interface MCViewController ()<UITextFieldDelegate,RoomProtocol, SignalDelegate, RTCDelegate, EEPageControlDelegate, EEWhiteboardToolDelegate, WhitePlayDelegate>
@@ -84,16 +85,18 @@
     self.navigationView.delegate = self;
     [self.navigationView updateClassName:self.paramsModel.className];
     
-    self.studentListView.userId = self.paramsModel.userId;
+    self.studentListView.userId = self.paramsModel.uid;
     
     [self.educationManager setSignalDelegate:self];
     [self.educationManager initSessionModel];
     
-    [self setupRTC];
-    [self setupSignal];
-    
     [self initSelectSegmentBlock];
     [self initStudentRenderBlock];
+    
+    [self setupSignalWithSuccessBolck:^{
+        [weakself setupRTC];
+        [weakself setupWhiteBoard];
+    }];
 }
 
 - (void)setupRTC {
@@ -101,7 +104,7 @@
     [self.educationManager initRTCEngineKitWithAppid:[KeyCenter agoraAppid] clientRole:RTCClientRoleBroadcaster dataSourceDelegate:self];
     
     WEAK(self);
-    [self.educationManager joinRTCChannelByToken:[KeyCenter agoraRTCToken] channelId:self.paramsModel.channelName info:nil uid:[self.paramsModel.userId integerValue] joinSuccess:^(NSString * _Nonnull channel, NSUInteger uid, NSInteger elapsed) {
+    [self.educationManager joinRTCChannelByToken:[KeyCenter agoraRTCToken] channelId:self.paramsModel.channelName info:nil uid:[self.paramsModel.uid integerValue] joinSuccess:^(NSString * _Nonnull channel, NSUInteger uid, NSInteger elapsed) {
         
         NSString *uidStr = [NSString stringWithFormat:@"%lu", (unsigned long)uid];
         [weakself.educationManager.rtcUids addObject:uidStr];
@@ -110,12 +113,12 @@
     }];
 }
 
-- (void)setupSignal {
+- (void)setupSignalWithSuccessBolck:(void (^)(void))successBlock {
     WEAK(self);
     [self.educationManager joinSignalWithChannelName:self.paramsModel.channelName completeSuccessBlock:^{
         
         StudentModel *model = [StudentModel new];
-        model.uid = weakself.paramsModel.userId;
+        model.uid = weakself.paramsModel.uid;
         model.account = weakself.paramsModel.userName;
         model.video = 1;
         model.audio = 1;
@@ -125,20 +128,27 @@
             
         } completeFailBlock:nil];
         
+        if(successBlock != nil){
+            successBlock();
+        }
+        
     } completeFailBlock:nil];
 }
 
-- (void)joinWhiteBoardRoomWithUID:(NSString *)uuid disableDevice:(BOOL)disableDevice {
-    
+- (void)setupWhiteBoard {
+
     WEAK(self);
     [self.educationManager releaseWhiteResources];
     [self.educationManager initWhiteSDK:self.boardView dataSourceDelegate:self];
-    [self.educationManager joinWhiteRoomWithUuid:uuid completeSuccessBlock:^(WhiteRoom * _Nullable room) {
+    
+    NSString *whiteId = [KeyCenter whiteBoardId];
+    NSString *whiteToken = [KeyCenter whiteBoardToken];
+    [self.educationManager joinWhiteRoomWithBoardId:whiteId boardToken:whiteToken completeSuccessBlock:^(WhiteRoom * _Nullable room) {
         
         CMTime cmTime = CMTimeMakeWithSeconds(0, 100);
         [weakself.educationManager seekWhiteToTime:cmTime completionHandler:^(BOOL finished) {
         }];
-        [weakself.educationManager disableWhiteDeviceInputs:disableDevice];
+        [weakself.educationManager disableWhiteDeviceInputs:NO];
         [weakself.educationManager currentWhiteScene:^(NSInteger sceneCount, NSInteger sceneIndex) {
             weakself.sceneCount = sceneCount;
             weakself.sceneIndex = sceneIndex;
@@ -147,8 +157,12 @@
         }];
         
     } completeFailBlock:^(NSError * _Nullable error) {
-        
+        [weakself showToast:@"white board join error"];
     }];
+}
+
+- (void)showToast:(NSString *)title {
+    [self.view makeToast:title];
 }
 
 - (void)updateTeacherViews:(TeacherModel*)teacherModel {
@@ -218,7 +232,7 @@
         model.videoView = cell.videoCanvasView;
         model.renderMode = RTCVideoRenderModeHidden;
 
-        if ([currentUid isEqualToString:weakself.paramsModel.userId]) {
+        if ([currentUid isEqualToString:weakself.paramsModel.uid]) {
            model.canvasType = RTCVideoCanvasTypeLocal;
            [weakself.educationManager setupRTCVideoCanvas:model];
         } else {
@@ -454,9 +468,6 @@
     {
         TeacherModel *sourceModel = sourceInfoModel.teacherModel;
         TeacherModel *currentModel = currentInfoModel.teacherModel;
-        if(![sourceModel.whiteboard_uid isEqualToString:currentModel.whiteboard_uid]) {
-            [self joinWhiteBoardRoomWithUID:currentModel.whiteboard_uid disableDevice:NO];
-        }
 
         if(sourceModel.class_state != currentModel.class_state) {
             currentModel.class_state ? [self.navigationView startTimer] : [self.navigationView stopTimer];
@@ -512,6 +523,7 @@
             [self.navigationView updateSignalImageName:@"icon-signal1"];
             break;
         default:
+            [self.navigationView updateSignalImageName:@"icon-signal1"];
             break;
     }
 }

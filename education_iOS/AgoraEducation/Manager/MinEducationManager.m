@@ -15,6 +15,8 @@
 #import "WhiteManager.h"
 #import "RTCManager.h"
 
+#import "AppDelegate.h"
+
 @interface MinEducationManager()<SignalManagerDelegate, WhiteManagerDelegate, RTCManagerDelegate>
 
 @property (nonatomic, strong) SignalManager *signalManager;
@@ -29,6 +31,18 @@
 @end
 
 @implementation MinEducationManager
+
+- (instancetype)init {
+    if (self = [super init]){
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onWillTerminate) name:NOTICE_KEY_ON_WILL_TERMINATE object:nil];
+    }
+    return self;
+}
+
+- (void)onWillTerminate {
+    [self releaseResources];
+}
 
 -(void)initSessionModel {
     self.teacherModel = [TeacherModel new];
@@ -83,10 +97,12 @@
     }];
 }
 
-- (void)queryOnlineStudentCountWithChannelName:(NSString *)channelName maxCount:(NSInteger)maxCount completeSuccessBlock:(void (^) (NSInteger count))successBlock completeFailBlock:(void (^) (void))failBlock {
+- (void)queryOnlineStudentCountWithChannelName:(NSString *)channelName maxCount:(NSInteger)maxCount excludeUids:(NSArray<NSString *> *) excludeUids completeSuccessBlock:(void (^) (NSInteger count))successBlock completeFailBlock:(void (^) (void))failBlock {
     
-    [self queryGlobalStateWithChannelName:channelName completeBlock:^(RolesInfoModel * _Nullable rolesInfoModel) {
+    WEAK(self);
+    [self.signalManager getChannelAllAttributes:channelName completeBlock:^(NSArray<AgoraRtmChannelAttribute *> * _Nullable attributes) {
         
+        RolesInfoModel *rolesInfoModel = [weakself filterRolesInfoModelWithAttributes:attributes];
         if(rolesInfoModel == nil || rolesInfoModel.studentModels == nil) {
             if(failBlock != nil){
                 failBlock();
@@ -98,9 +114,18 @@
             
             NSMutableArray<NSString *> *uIds = [NSMutableArray array];
             for(RolesStudentInfoModel *model in rolesInfoModel.studentModels){
-                [uIds addObject:model.attrKey];
+                if(excludeUids == nil || ![excludeUids containsObject:model.attrKey]){
+                    [uIds addObject:model.attrKey];
+                }
             }
-            [self.signalManager queryPeersOnlineStatus:uIds completion:^(NSArray<AgoraRtmPeerOnlineStatus *> *peerOnlineStatus, AgoraRtmQueryPeersOnlineErrorCode errorCode) {
+            if([uIds count] == 0){
+                if(successBlock != nil){
+                    successBlock(0);
+                }
+                return;
+            }
+            
+            [weakself.signalManager queryPeersOnlineStatus:uIds completion:^(NSArray<AgoraRtmPeerOnlineStatus *> *peerOnlineStatus, AgoraRtmQueryPeersOnlineErrorCode errorCode) {
                 
                 if(errorCode == AgoraRtmQueryPeersOnlineErrorOk) {
                     
@@ -280,6 +305,7 @@
                 [self.rtcManager setupRemoteVideo:videoSessionModel.videoCanvas];
             }
             removeSessionModel = videoSessionModel;
+
         } else if(videoSessionModel.uid == model.uid){
             videoSessionModel.videoCanvas.view = nil;
             if(videoSessionModel.uid == self.signalManager.messageModel.uid.integerValue) {
@@ -287,17 +313,17 @@
             } else {
                 [self.rtcManager setupRemoteVideo:videoSessionModel.videoCanvas];
             }
-            
             currentSessionModel = videoSessionModel;
         }
     }
+    
     if(removeSessionModel != nil){
         [self.rtcVideoSessionModels removeObject:removeSessionModel];
     }
     if(currentSessionModel != nil){
         [self.rtcVideoSessionModels removeObject:currentSessionModel];
     }
-    
+
     AgoraRtcVideoCanvas *videoCanvas = [[AgoraRtcVideoCanvas alloc] init];
     videoCanvas.uid = model.uid;
     videoCanvas.view = model.videoView;
@@ -314,16 +340,10 @@
         [self.rtcManager setupRemoteVideo: videoCanvas];
     }
     
-//    if(currentSessionModel != nil) {
-//        currentSessionModel.videoCanvas.view = nil;
-//        currentSessionModel.videoCanvas = videoCanvas;
-//        [self.rtcVideoSessionModels addObject:currentSessionModel];
-//    } else {
-        RTCVideoSessionModel *videoSessionModel = [RTCVideoSessionModel new];
-        videoSessionModel.uid = model.uid;
-        videoSessionModel.videoCanvas = videoCanvas;
-        [self.rtcVideoSessionModels addObject:videoSessionModel];
-//    }
+    RTCVideoSessionModel *videoSessionModel = [RTCVideoSessionModel new];
+    videoSessionModel.uid = model.uid;
+    videoSessionModel.videoCanvas = videoCanvas;
+    [self.rtcVideoSessionModels addObject:videoSessionModel];
 }
 
 - (void)removeRTCVideoCanvas:(NSUInteger) uid {
@@ -376,34 +396,36 @@
         [self.rtcDelegate rtcDidOfflineOfUid:uid];
     }
 }
-- (void)rtcEngine:(AgoraRtcEngineKit *_Nonnull)engine networkTypeChangedToType:(AgoraNetworkType)type {
+- (void)rtcEngine:(AgoraRtcEngineKit *)engine networkQuality:(NSUInteger)uid txQuality:(AgoraNetworkQuality)txQuality rxQuality:(AgoraNetworkQuality)rxQuality {
+    
+    // local user uid = 0
+    if(uid != 0){
+        return;
+    }
     
     RTCNetworkGrade grade = RTCNetworkGradeUnknown;
     
-    switch (type) {
-        case AgoraNetworkTypeUnknown:
-        case AgoraNetworkTypeMobile4G:
-        case AgoraNetworkTypeWIFI:
+    AgoraNetworkQuality quality = MAX(txQuality, rxQuality);
+    switch (quality) {
+        case AgoraNetworkQualityExcellent:
+        case AgoraNetworkQualityGood:
             grade = RTCNetworkGradeHigh;
             break;
-        case AgoraNetworkTypeMobile3G:
-        case AgoraNetworkTypeMobile2G:
+        case AgoraNetworkQualityPoor:
+        case AgoraNetworkQualityBad:
             grade = RTCNetworkGradeMiddle;
             break;
-        case AgoraNetworkTypeLAN:
-        case AgoraNetworkTypeDisconnected:
+        case AgoraNetworkQualityVBad:
+        case AgoraNetworkQualityDown:
             grade = RTCNetworkGradeLow;
             break;
         default:
             break;
     }
-    
     if([self.rtcDelegate respondsToSelector:@selector(rtcNetworkTypeGrade:)]) {
         [self.rtcDelegate rtcNetworkTypeGrade:grade];
     }
 }
-
-
 
 
 #pragma mark WhiteManager
@@ -416,30 +438,20 @@
     [self.whiteManager initWhiteSDKWithBoardView:boardView config:[WhiteSdkConfiguration defaultConfig]];
 }
 
-- (void)joinWhiteRoomWithUuid:(NSString*)uuid completeSuccessBlock:(void (^) (WhiteRoom * _Nullable room))successBlock completeFailBlock:(void (^) (NSError * _Nullable error))failBlock {
+- (void)joinWhiteRoomWithBoardId:(NSString*)boardId boardToken:(NSString*)boardToken  completeSuccessBlock:(void (^) (WhiteRoom * _Nullable room))successBlock completeFailBlock:(void (^) (NSError * _Nullable error))failBlock {
     
-    WEAK(self);
-    [HttpManager POSTWhiteBoardRoomWithUuid:uuid token:^(NSString * _Nonnull token) {
-
-        WhiteRoomConfig *roomConfig = [[WhiteRoomConfig alloc] initWithUuid:uuid roomToken:token];
-        [weakself.whiteManager joinWhiteRoomWithWhiteRoomConfig:roomConfig completeSuccessBlock:^(WhiteRoom * _Nullable room) {
-            
-            if(successBlock != nil){
-                successBlock(room);
-            }
-            
-        } completeFailBlock:^(NSError * _Nullable error) {
-            
-            if(failBlock != nil){
-                failBlock(error);
-            }
-        }];
+    WhiteRoomConfig *roomConfig = [[WhiteRoomConfig alloc] initWithUuid:boardId roomToken:boardToken];
+    [self.whiteManager joinWhiteRoomWithWhiteRoomConfig:roomConfig completeSuccessBlock:^(WhiteRoom * _Nullable room) {
         
-    } failure:^(NSString * _Nonnull msg) {
-        if(failBlock != nil){
-            failBlock(nil);
+        if(successBlock != nil){
+            successBlock(room);
         }
-        NSLog(@"EducationManager Get Room Token Err:%@", msg);
+        
+    } completeFailBlock:^(NSError * _Nullable error) {
+        
+        if(failBlock != nil){
+            failBlock(error);
+        }
     }];
 }
 
@@ -642,10 +654,20 @@ The RoomState property in the room will trigger this callback when it changes.
 }
 
 - (void)releaseResources {
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     for (RTCVideoSessionModel *model in self.rtcVideoSessionModels){
         model.videoCanvas.view = nil;
-        model.videoCanvas = nil;
+        
+        if(model.uid == self.signalManager.messageModel.uid.integerValue) {
+            [self.rtcManager setupLocalVideo:model.videoCanvas];
+        } else {
+            [self.rtcManager setupRemoteVideo:model.videoCanvas];
+        }
     }
+    [self.rtcVideoSessionModels removeAllObjects];
+    
     [self initSessionModel];
     
     // release rtc

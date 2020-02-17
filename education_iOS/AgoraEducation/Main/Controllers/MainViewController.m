@@ -22,18 +22,23 @@
 #import "NSString+MD5.h"
 #import "KeyCenter.h"
 
+#import "HttpManager.h"
+#import "ConfigModel.h"
+#import "EnterRoomAllModel.h"
+#import "UIView+Toast.h"
+#import "AppUpdateManager.h"
+
 @interface MainViewController ()<EEClassRoomTypeDelegate, SignalDelegate, UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UIView *baseView;
-@property (weak, nonatomic) IBOutlet UITextField *classNameTextFiled;
 @property (weak, nonatomic) IBOutlet UITextField *userNameTextFiled;
+@property (weak, nonatomic) IBOutlet UITextField *passwordTextFiled;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *textViewBottomCon;
-@property (weak, nonatomic) IBOutlet UIButton *roomType;
 @property (weak, nonatomic) IBOutlet UIButton *joinButton;
 
-@property (nonatomic, weak) EEClassRoomTypeView *classRoomTypeView;
 @property (nonatomic, strong) UIActivityIndicatorView * activityIndicator;
 
-@property (nonatomic, copy) NSString *uid;
+@property (nonatomic, strong) ConfigInfoModel *configInfoModel;
+@property (nonatomic, strong) EnterRoomInfoModel *enterRoomInfoModel;
 
 @end
 
@@ -42,16 +47,59 @@
 #pragma mark LifeCycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.uid = [self generateUserID];
+    
     [self setupView];
+    [self setupConfigWithSuccessBolck:nil];
     [self addTouchedRecognizer];
     [self addNotification];
+}
+
+- (void)setupConfigWithSuccessBolck:(void (^)(void))successBlock {
+    
+    WEAK(self);
+    [self.activityIndicator startAnimating];
+    [self.joinButton setEnabled:NO];
+    
+    [HttpManager getAppConfigWithSuccess:^(id responseObj) {
+        
+        [weakself.activityIndicator stopAnimating];
+        [weakself.joinButton setEnabled:YES];
+        
+        ConfigModel *model = [ConfigModel yy_modelWithDictionary:responseObj];
+        if(model.code == 0 && model.data != nil){
+            
+            [AppUpdateManager checkAppUpdateWithModel:model];
+            
+            weakself.configInfoModel = model.data.config;
+            [KeyCenter setAgoraAppid:weakself.configInfoModel.appId];
+            
+            if(successBlock != nil){
+                successBlock();
+            }
+        } else {
+            [weakself showToast:model.msg];
+        }
+        
+    } failure:^(NSError *error) {
+        
+        [weakself.activityIndicator stopAnimating];
+        [weakself.joinButton setEnabled:YES];
+        
+        [weakself showToast:@"network request failed"];
+        NSLog(@"HTTP GET CONFIG ERROR:%@", error.description);
+    }];
+}
+
+- (void)showToast:(NSString *)title {
+    if(title == nil || title.length == 0){
+        title = @"network request failed";
+    }
+    [self.view makeToast:title];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     self.navigationController.navigationBarHidden = YES;
-//    [self.educationManager setSignalDelegate:self];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -80,7 +128,6 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-//    [self.educationManager releaseResources];
 }
 
 #pragma mark Private Function
@@ -91,12 +138,8 @@
     self.activityIndicator.color = [UIColor grayColor];
     self.activityIndicator.backgroundColor = [UIColor whiteColor];
     self.activityIndicator.hidesWhenStopped = YES;
-
-    EEClassRoomTypeView *classRoomTypeView = [EEClassRoomTypeView initWithXib:CGRectMake(30, kScreenHeight - 300, kScreenWidth - 60, 150)];
-    [self.view addSubview:classRoomTypeView];
-    self.classRoomTypeView = classRoomTypeView;
-    classRoomTypeView.hidden = YES;
-    classRoomTypeView.delegate = self;
+    
+    self.joinButton.layer.cornerRadius = 20;
 }
 
 - (void)addTouchedRecognizer {
@@ -104,9 +147,8 @@
     [self.baseView addGestureRecognizer:touchedControl];
 }
 - (void)touchedBegan:(UIGestureRecognizer *)recognizer {
-    [self.classNameTextFiled resignFirstResponder];
     [self.userNameTextFiled resignFirstResponder];
-    self.classRoomTypeView.hidden  = YES;
+    [self.passwordTextFiled resignFirstResponder];
 }
 
 - (void)addNotification {
@@ -124,56 +166,100 @@
     self.textViewBottomCon.constant = 261;
 }
 
-- (NSString *)generateUserID {
-    NSDate *datenow = [NSDate date];
-    long lTime = (long)([datenow timeIntervalSince1970] * 1000) % 1000000;
-    NSString *uid = [NSString stringWithFormat:@"%ld", lTime];
-    return uid;
-}
-
-- (BOOL)checkClassRoomText:(NSString *)text {
-    NSString *regex = @"^[a-zA-Z0-9]*$";
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", regex];
-    if ([predicate evaluateWithObject:text] && text.length <= 11) {
+- (BOOL)checkUserNameText:(NSString *)text {
+    
+    int strlength = 0;
+    char *p = (char *)[text cStringUsingEncoding:NSUnicodeStringEncoding];
+    for (int i=0; i < [text lengthOfBytesUsingEncoding:NSUnicodeStringEncoding]; i++) {
+        if (*p) {
+            p++;
+            strlength++;
+        }
+        else {
+            p++;
+        }
+    }
+    
+    if(strlength <= 20){
         return YES;
     } else {
-        return NO;
+       return NO;
     }
 }
 
 #pragma mark Click Event
-- (IBAction)popupRoomType:(UIButton *)sender {
-    self.classRoomTypeView.hidden = NO;
+- (IBAction)joinRoom:(UIButton *)sender {
+
+    if (self.userNameTextFiled.text.length == 0 || self.passwordTextFiled.text.length == 0 || ![self checkUserNameText:self.userNameTextFiled.text]) {
+        
+        [AlertViewUtil showAlertWithController:self title:@"User name must be within 11 digits or english characters"];
+        return;
+    }
+    
+    WEAK(self);
+    if([KeyCenter agoraAppid].length == 0){
+        [self setupConfigWithSuccessBolck:^{
+            [weakself enterRoom];
+        }];
+    } else {
+        [self enterRoom];
+    }
 }
 
-- (IBAction)joinRoom:(UIButton *)sender {
+- (void)enterRoom {
     
-    if (self.classNameTextFiled.text.length <= 0 || self.userNameTextFiled.text.length <= 0 || ![self checkClassRoomText:self.classNameTextFiled.text] || ![self checkClassRoomText:self.userNameTextFiled.text]) {
-        
-        [AlertViewUtil showAlertWithController:self title:@"User name must be within 11 digits or English characters"];
-        return;
-    }
+    [self.activityIndicator startAnimating];
+    [self.joinButton setEnabled:YES];
     
-    NSString *className = self.classNameTextFiled.text;
-    if ([self.roomType.titleLabel.text isEqualToString:@"One-to-One"]) {
+    NSString *url = [NSString stringWithFormat:HTTP_POST_ENTER_ROOM, [KeyCenter agoraAppid]];
+    
+    NSDictionary *headers = @{
+        @"Authorization" : self.configInfoModel.authorization,
+    };
+    
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"userName"] = self.userNameTextFiled.text;
+    params[@"password"] = self.passwordTextFiled.text;
+    params[@"role"] = @(2);
+    params[@"uuid"] = [UIDevice currentDevice].identifierForVendor.UUIDString;
+    
+    WEAK(self);
+    [HttpManager post:url params:params headers:headers success:^(id responseObj) {
         
-        NSString *channelName = [NSString stringWithFormat:@"0%@", className.md5];
-        [self join1V1RoomWithChannelName:channelName maxStudentCount:1 vcIdentifier:@"oneToOneRoom"];
-
-    } else if ([self.roomType.titleLabel.text isEqualToString:@"Small Class"]) {
-
-        NSString *channelName = [NSString stringWithFormat:@"1%@", className.md5];
-        [self joinMinRoomWithChannelName:channelName maxStudentCount:16 vcIdentifier:@"mcRoom"];
+        EnterRoomAllModel *model = [EnterRoomAllModel yy_modelWithDictionary:responseObj];
+        if(model.code == 0){
+            
+            weakself.enterRoomInfoModel = model.data;
+            [KeyCenter setWhiteBoardId:weakself.enterRoomInfoModel.room.boardId];
+            [KeyCenter setWhiteBoardToken:weakself.enterRoomInfoModel.room.boardToken];
+            [KeyCenter setAgoraRTMToken:weakself.enterRoomInfoModel.user.rtmToken];
+            [KeyCenter setAgoraRTCToken:weakself.enterRoomInfoModel.user.rtcToken];
+            
+            if (weakself.enterRoomInfoModel.room.type == 0) {
+                [weakself join1V1RoomWithIdentifier:@"oneToOneRoom"];
+            } else if (weakself.enterRoomInfoModel.room.type == 1){
+                [weakself joinMinRoomWithIdentifier:@"mcRoom"];
+            } else if (weakself.enterRoomInfoModel.room.type == 2){
+                [weakself joinBigRoomWithIdentifier:@"bcroom"];
+            } else {
+                [weakself showToast:@"can not find room"];
+            }
+            
+        } else {
+            
+            [weakself.activityIndicator stopAnimating];
+            [weakself.joinButton setEnabled:YES];
+            [weakself showToast:model.msg];
+        }
         
-    } else if ([self.roomType.titleLabel.text isEqualToString:@"Large Class"]) {
-
-        NSString *channelName = [NSString stringWithFormat:@"2%@", className.md5];
-        [self joinBigRoomWithChannelName:channelName vcIdentifier:@"bcroom"];
+    } failure:^(NSError *error) {
         
-    } else {
-        [AlertViewUtil showAlertWithController:self title:@"Please select a room type"];
-        return;
-    }
+        [weakself.activityIndicator stopAnimating];
+        [weakself.joinButton setEnabled:YES];
+        
+        [weakself showToast:@"network request failed"];
+        NSLog(@"HTTP GET CONFIG ERROR:%@", error.description);
+    }];
 }
 
 - (IBAction)settingAction:(UIButton *)sender {
@@ -181,143 +267,169 @@
     [self.navigationController pushViewController:settingVC animated:YES];
 }
 
-
-- (void)join1V1RoomWithChannelName:(NSString *)channelName maxStudentCount:(NSInteger)maxCount vcIdentifier:(NSString*)identifier {
-        
+- (void)join1V1RoomWithIdentifier:(NSString*)identifier {
+    
+    NSInteger maxCount = self.configInfoModel.oneToOneStudentLimit.integerValue;
+    NSString *channelName = self.enterRoomInfoModel.room.channelName;
+    NSString *uid = @(self.enterRoomInfoModel.user.uid).stringValue;
+    
     WEAK(self);
     SignalModel *model = [SignalModel new];
     model.appId = [KeyCenter agoraAppid];
     model.token = [KeyCenter agoraRTMToken];
-    model.uid = self.uid;
+    model.uid = uid;
     OneToOneEducationManager *educationManager = [OneToOneEducationManager new];
     [educationManager initSignalWithModel:model dataSourceDelegate:nil completeSuccessBlock:^{
         
-        [weakself.activityIndicator startAnimating];
-        [weakself.joinButton setEnabled:NO];
-        
-        [educationManager queryOnlineStudentCountWithChannelName:channelName maxCount:maxCount completeSuccessBlock:^(NSInteger count) {
+        [educationManager queryOnlineStudentCountWithChannelName:channelName maxCount:maxCount excludeUids:@[uid] completeSuccessBlock:^(NSInteger count) {
             
             [weakself.activityIndicator stopAnimating];
             [weakself.joinButton setEnabled:YES];
             
             if (count < maxCount) {
-                
-                NSString *className = weakself.classNameTextFiled.text;
-                NSString *userName = weakself.userNameTextFiled.text;
-                
-                VCParamsModel *paramsModel = [VCParamsModel new];
-                paramsModel.className = className;
-                paramsModel.userName = userName;
-                paramsModel.userId = weakself.uid;
-                paramsModel.channelName = channelName;
-                
+                VCParamsModel *paramsModel = [weakself generateVCParamsModel];
                 UIStoryboard *story = [UIStoryboard storyboardWithName:@"Room" bundle:[NSBundle mainBundle]];
-               OneToOneViewController *vc = [story instantiateViewControllerWithIdentifier:identifier];
-               vc.modalPresentationStyle = UIModalPresentationFullScreen;
-               vc.paramsModel = paramsModel;
-               vc.educationManager = educationManager;
-               [weakself presentViewController:vc animated:YES completion:nil];
-                
-            } else {
-                [AlertViewUtil showAlertWithController:self title:@"The number is full, please change room name"];
-            }
-            
-        } completeFailBlock:^{
-            
-            [AlertViewUtil showAlertWithController:weakself title:@"Request failed"];
-            
-            [weakself.activityIndicator stopAnimating];
-            [weakself.joinButton setEnabled:YES];
-        }];
-        
-        
-    } completeFailBlock: nil];
-}
-
-- (void)joinMinRoomWithChannelName:(NSString *)channelName maxStudentCount:(NSInteger)maxCount vcIdentifier:(NSString*)identifier {
-        
-    WEAK(self);
-    SignalModel *model = [SignalModel new];
-    model.appId = [KeyCenter agoraAppid];
-    model.token = [KeyCenter agoraRTMToken];
-    model.uid = self.uid;
-    MinEducationManager *educationManager = [MinEducationManager new];
-    [educationManager initSignalWithModel:model dataSourceDelegate:nil completeSuccessBlock:^{
-        
-        [weakself.activityIndicator startAnimating];
-        [weakself.joinButton setEnabled:NO];
-        
-        [educationManager queryOnlineStudentCountWithChannelName:channelName maxCount:maxCount completeSuccessBlock:^(NSInteger count) {
-            
-            [weakself.activityIndicator stopAnimating];
-            [weakself.joinButton setEnabled:YES];
-            
-            if (count < maxCount) {
-                
-                NSString *className = weakself.classNameTextFiled.text;
-                NSString *userName = weakself.userNameTextFiled.text;
-                
-                VCParamsModel *paramsModel = [VCParamsModel new];
-                paramsModel.className = className;
-                paramsModel.userName = userName;
-                paramsModel.userId = weakself.uid;
-                paramsModel.channelName = channelName;
-                
-                UIStoryboard *story = [UIStoryboard storyboardWithName:@"Room" bundle:[NSBundle mainBundle]];
-                MCViewController *vc = [story instantiateViewControllerWithIdentifier:identifier];
+                OneToOneViewController *vc = [story instantiateViewControllerWithIdentifier:identifier];
                 vc.modalPresentationStyle = UIModalPresentationFullScreen;
-                vc.paramsModel = paramsModel;
                 vc.educationManager = educationManager;
+                vc.paramsModel = paramsModel;
                 [weakself presentViewController:vc animated:YES completion:nil];
                 
             } else {
-                [AlertViewUtil showAlertWithController:self title:@"Room is full, please change another room"];
+                [AlertViewUtil showAlertWithController:self title:@"room is full, please change another room"];
             }
             
         } completeFailBlock:^{
-            
-            [AlertViewUtil showAlertWithController:weakself title:@"Request failed"];
+            [weakself showToast:@"query online student count error"];
             
             [weakself.activityIndicator stopAnimating];
             [weakself.joinButton setEnabled:YES];
         }];
         
+    } completeFailBlock:^{
         
-    } completeFailBlock: nil];
+        [weakself showToast:@"init signal error"];
+        
+        [weakself.activityIndicator stopAnimating];
+        [weakself.joinButton setEnabled:YES];
+    }];
 }
 
-- (void)joinBigRoomWithChannelName:(NSString *)channelName vcIdentifier:(NSString*)identifier {
-        
+- (void)joinMinRoomWithIdentifier:(NSString*)identifier {
+    
+    NSInteger maxCount = self.configInfoModel.smallClassStudentLimit.integerValue;
+    NSString *channelName = self.enterRoomInfoModel.room.channelName;
+    NSString *uid = [NSNumber numberWithInteger:self.enterRoomInfoModel.user.uid].stringValue;
+    
     WEAK(self);
     SignalModel *model = [SignalModel new];
     model.appId = [KeyCenter agoraAppid];
     model.token = [KeyCenter agoraRTMToken];
-    model.uid = self.uid;
-    BigEducationManager *educationManager = [BigEducationManager new];
+    model.uid = uid;
+    MinEducationManager *educationManager = [MinEducationManager new];
     [educationManager initSignalWithModel:model dataSourceDelegate:nil completeSuccessBlock:^{
         
-        NSString *className = weakself.classNameTextFiled.text;
-        NSString *userName = weakself.userNameTextFiled.text;
+        [educationManager queryOnlineStudentCountWithChannelName:channelName maxCount:maxCount excludeUids:@[uid] completeSuccessBlock:^(NSInteger count) {
+            
+            [weakself.activityIndicator stopAnimating];
+            [weakself.joinButton setEnabled:YES];
+            
+            if (count < maxCount) {
+                VCParamsModel *paramsModel = [weakself generateVCParamsModel];
+                UIStoryboard *story = [UIStoryboard storyboardWithName:@"Room" bundle:[NSBundle mainBundle]];
+                MCViewController *vc = [story instantiateViewControllerWithIdentifier:identifier];
+                vc.modalPresentationStyle = UIModalPresentationFullScreen;
+                vc.educationManager = educationManager;
+                vc.paramsModel = paramsModel;
+                [weakself presentViewController:vc animated:YES completion:nil];
+                
+            } else {
+                [AlertViewUtil showAlertWithController:self title:@"room is full, please change another room"];
+            }
+            
+        } completeFailBlock:^{
+            [weakself showToast:@"query online student count error"];
+            
+            [weakself.activityIndicator stopAnimating];
+            [weakself.joinButton setEnabled:YES];
+        }];
         
-        VCParamsModel *paramsModel = [VCParamsModel new];
-        paramsModel.className = className;
-        paramsModel.userName = userName;
-        paramsModel.userId = weakself.uid;
-        paramsModel.channelName = channelName;
+    } completeFailBlock:^{
         
-        UIStoryboard *story = [UIStoryboard storyboardWithName:@"Room" bundle:[NSBundle mainBundle]];
-        BCViewController *vc = [story instantiateViewControllerWithIdentifier:identifier];
-        vc.modalPresentationStyle = UIModalPresentationFullScreen;
-        vc.paramsModel = paramsModel;
-        vc.educationManager = educationManager;
-        [weakself presentViewController:vc animated:YES completion:nil];
+        [weakself showToast:@"init signal error"];
         
-    } completeFailBlock: nil];
+        [weakself.activityIndicator stopAnimating];
+        [weakself.joinButton setEnabled:YES];
+    }];
 }
 
-#pragma mark EEClassRoomTypeDelegate
-- (void)selectRoomTypeName:(NSString *)name {
-    [self.roomType setTitle:name forState:(UIControlStateNormal)];
-    self.classRoomTypeView.hidden = YES;
+- (void)joinBigRoomWithIdentifier:(NSString*)identifier {
+    
+    NSInteger maxCount = self.configInfoModel.largeClassStudentLimit.integerValue;
+    NSString *channelName = self.enterRoomInfoModel.room.channelName;
+    NSString *uid = [NSNumber numberWithInteger:self.enterRoomInfoModel.user.uid].stringValue;
+    
+    WEAK(self);
+    SignalModel *model = [SignalModel new];
+    model.appId = [KeyCenter agoraAppid];
+    model.token = [KeyCenter agoraRTMToken];
+    model.uid = uid;
+    BigEducationManager *educationManager = [BigEducationManager new];
+    
+    [educationManager initSignalWithModel:model dataSourceDelegate:nil completeSuccessBlock:^{
+        
+        [educationManager queryOnlineStudentCountWithChannelName:channelName maxCount:maxCount excludeUids:@[uid] completeSuccessBlock:^(NSInteger count) {
+            
+            [weakself.activityIndicator stopAnimating];
+            [weakself.joinButton setEnabled:YES];
+            
+            if (count < maxCount) {
+                VCParamsModel *paramsModel = [weakself generateVCParamsModel];
+                UIStoryboard *story = [UIStoryboard storyboardWithName:@"Room" bundle:[NSBundle mainBundle]];
+                BCViewController *vc = [story instantiateViewControllerWithIdentifier:identifier];
+                vc.modalPresentationStyle = UIModalPresentationFullScreen;
+                vc.educationManager = educationManager;
+                vc.paramsModel = paramsModel;vc.paramsModel = paramsModel;
+                [weakself presentViewController:vc animated:YES completion:nil];
+                
+            } else {
+                [AlertViewUtil showAlertWithController:self title:@"room is full, please change another room"];
+            }
+            
+        } completeFailBlock:^{
+            [weakself showToast:@"query online student count error"];
+            
+            [weakself.activityIndicator stopAnimating];
+            [weakself.joinButton setEnabled:YES];
+        }];
+        
+    } completeFailBlock:^{
+        
+        [weakself showToast:@"init signal error"];
+        
+        [weakself.activityIndicator stopAnimating];
+        [weakself.joinButton setEnabled:YES];
+    }];
+}
+
+- (VCParamsModel*)generateVCParamsModel {
+    
+    NSString *className = self.enterRoomInfoModel.room.roomName;
+    NSString *userName = self.userNameTextFiled.text;
+    
+    NSString *channelName = self.enterRoomInfoModel.room.channelName;
+    NSString *uid = [NSNumber numberWithInteger:self.enterRoomInfoModel.user.uid].stringValue;
+    NSString *userToken = self.enterRoomInfoModel.user.userToken;
+    NSString *roomid = @(self.enterRoomInfoModel.room.roomId).stringValue;
+    
+    VCParamsModel *paramsModel = [VCParamsModel new];
+    paramsModel.className = className;
+    paramsModel.userName = userName;
+    paramsModel.channelName = channelName;
+    paramsModel.uid = uid;
+    paramsModel.userToken = userToken;
+    paramsModel.roomId = roomid;
+    
+    return paramsModel;
 }
 @end
